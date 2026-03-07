@@ -1,0 +1,21 @@
+drug_name,disease,dosage,min_age,max_age,allergy,side_effect_severity,effectiveness_score
+Metformin,Diabetes,500mg,18,80,None,2,9
+Insulin,Diabetes,variable,10,90,None,3,10
+Glimepiride,Diabetes,2mg,18,75,Sulfa,4,8
+Amoxicillin,Bacterial Infection,500mg,5,65,Penicillin,4,8
+Azithromycin,Bacterial Infection,250mg,10,70,None,3,9
+Paracetamol,Viral Fever,500mg,1,90,None,1,8
+Ibuprofen,Viral Fever,400mg,10,65,None,2,7
+Losartan,Hypertension,50mg,30,85,None,3,9
+Amlodipine,Hypertension,5mg,25,80,None,2,8
+Omeprazole,Gastritis,20mg,18,80,None,2,9
+Pantoprazole,Gastritis,40mg,18,75,None,3,8
+Sumatriptan,Migraine,50mg,18,65,None,3,9
+Cetirizine,Common Cold,10mg,5,70,None,1,8
+Levocetirizine,Common Cold,5mg,6,65,None,1,8
+Salbutamol,Asthma,2mg,5,80,None,3,9
+Budesonide,Asthma,200mcg,6,75,None,4,8
+Azithromycin,Pneumonia,500mg,10,80,None,3,9
+Levofloxacin,Pneumonia,500mg,18,75,None,4,8
+Iron Supplements,Anemia,100mg,5,90,None,2,9
+Ferrous Sulfate,Anemia,325mg,5,85,None,3,8

@@ -1,0 +1,49 @@
+{
+  "Viral Fever": {
+    "drug": "Paracetamol 500mg",
+    "dosage": "Every 6 hours if fever persists",
+    "duration": "3-5 days",
+    "explanation": "Paracetamol reduces fever and relieves body pain.",
+    "lifestyle": [
+      "Drink plenty of fluids",
+      "Take adequate rest",
+      "Monitor temperature regularly"
+    ]
+  },
+
+  "Common Cold": {
+    "drug": "Paracetamol + Antihistamine (Cetirizine)",
+    "dosage": "Paracetamol every 6 hours, Cetirizine once daily",
+    "duration": "3-5 days",
+    "explanation": "Paracetamol reduces fever and Cetirizine relieves nasal symptoms.",
+    "lifestyle": [
+      "Steam inhalation",
+      "Stay hydrated",
+      "Rest well"
+    ]
+  },
+
+  "Dengue": {
+    "drug": "Paracetamol (avoid NSAIDs)",
+    "dosage": "500mg every 6 hours if fever persists",
+    "duration": "5-7 days monitoring",
+    "explanation": "Paracetamol is used to reduce fever. NSAIDs are avoided due to bleeding risk.",
+    "lifestyle": [
+      "Drink oral rehydration fluids",
+      "Monitor platelet count",
+      "Seek medical care if bleeding occurs"
+    ]
+  },
+
+  "Pneumonia": {
+    "drug": "Azithromycin 500mg",
+    "dosage": "Once daily",
+    "duration": "5 days",
+    "explanation": "Azithromycin treats bacterial lung infections.",
+    "lifestyle": [
+      "Rest adequately",
+      "Stay hydrated",
+      "Complete antibiotic course"
+    ]
+  }
+}

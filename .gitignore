@@ -1,6 +1,18 @@
-venv/
+# Python
 __pycache__/
 *.pyc
-*.pdf
+*.pyo
+*.pyd
+.venv/
+env/
+
+# Node
+node_modules/
+.next/
+
+# Environment
 .env
+
+# OS
 .DS_Store
+Thumbs.db
