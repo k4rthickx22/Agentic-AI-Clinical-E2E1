@@ -13,7 +13,7 @@ class TriageTreeAgent:
             # -------------------------
             # Dengue screening
             # -------------------------
-            if name == "Dengue":
+            if name == "Dengue Fever":
 
                 if not (
                     symptoms.get("rash")

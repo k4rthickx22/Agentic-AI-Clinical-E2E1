@@ -1,8 +1,12 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
+from database.db import engine
+from database.models import Base
 
-app = FastAPI()
+# Auto-create tables on startup
+Base.metadata.create_all(bind=engine)
+
+app = FastAPI(title="AI Clinic DSS API", version="2.0.0")
 
 # CORS
 app.add_middleware(
@@ -13,62 +17,13 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Home API
 @app.get("/")
 def home():
-    return {"message": "Drug AI Agent Backend Running"}
+    return {"message": "AI Clinic DSS Backend v2.0 Running"}
 
-# Request schema
-class PatientData(BaseModel):
-    age: int
-    gender: str
-    symptoms: list[str]
-    conditions: list[str]
+from api.diagnosis_api import router as diagnosis_router
+from api.auth_api import router as auth_router
 
-# Diagnose API
-@app.post("/diagnose")
-def diagnose(data: PatientData):
-
-    # simple demo logic
-    if "fever" in data.symptoms:
-        disease = "Viral Fever"
-        drug = "Paracetamol"
-        triage_level = "LOW"
-        risk_score = 20
-    else:
-        disease = "General Checkup Needed"
-        drug = "Consult Physician"
-        triage_level = "LOW"
-        risk_score = 5
-
-    return {
-        "treatment": {
-            "predicted_disease": disease,
-            "recommended_drug": drug,
-            "dosage": "500mg twice daily",
-            "duration": "3-5 days",
-            "warnings": [],
-            "lifestyle": [
-                "Drink plenty of fluids",
-                "Take adequate rest",
-                "Avoid cold foods"
-            ]
-        },
-        "triage": {
-            "level": triage_level,
-            "score": risk_score,
-            "recommendation": "Monitor symptoms and rest"
-        },
-        "drug_safety": {
-            "safety_level": "SAFE",
-            "risk_score": risk_score,
-            "clinical_warnings": []
-        },
-        "patient_profile": {
-            "disease_probabilities": [
-                {"disease": disease, "probability": 0.75},
-                {"disease": "Flu", "probability": 0.15},
-                {"disease": "Dengue", "probability": 0.10}
-            ]
-        }
-    }
+app.include_router(diagnosis_router, prefix="/api")
+app.include_router(auth_router, prefix="/api")
+

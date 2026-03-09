@@ -1,0 +1,104 @@
+﻿{
+    "primary_diagnosis":  {
+                              "disease":  "Viral Fever",
+                              "probability":  0.0378,
+                              "flag":  "likely"
+                          },
+    "differential_diagnoses":  [
+                                   {
+                                       "disease":  "Viral Fever",
+                                       "probability":  0.0378,
+                                       "flag":  "likely"
+                                   },
+                                   {
+                                       "disease":  "Hypertension",
+                                       "probability":  0.0149
+                                   },
+                                   {
+                                       "disease":  "Diabetes",
+                                       "probability":  0.0129
+                                   }
+                               ],
+    "follow_up_questions":  [
+                                "Do you have a rash?",
+                                "Do you have joint pain?"
+                            ],
+    "treatment":  {
+                      "predicted_disease":  "Viral Fever",
+                      "recommended_drug":  "Paracetamol 500mg",
+                      "dosage":  "Every 6 hours if fever persists",
+                      "duration":  "3â5 days",
+                      "explanation":  "Paracetamol reduces fever and body pain in viral infections.",
+                      "lifestyle":  [
+                                        "Drink plenty of fluids",
+                                        "Take adequate rest"
+                                    ],
+                      "warnings":  [
+                                       "Consult doctor if fever lasts more than 5 days"
+                                   ],
+                      "risk_score":  "Clinically Optimized"
+                  },
+    "triage":  {
+                   "level":  "LOW",
+                   "recommendation":  "â\u0085 Home care possible with monitoring.",
+                   "score":  30,
+                   "reasons":  [
+                                   "High confidence disease prediction",
+                                   "High-risk disease suspected: Dengue Fever",
+                                   "High-risk disease suspected: Pneumonia"
+                               ]
+               },
+    "drug_safety":  {
+                        "safety_level":  "SAFE",
+                        "risk_score":  0,
+                        "clinical_warnings":  [
+
+                                              ],
+                        "final_recommendation":  "Paracetamol 500mg"
+                    },
+    "patient_profile":  {
+                            "age":  21,
+                            "gender":  "male",
+                            "symptoms":  "i have high fever",
+                            "structured_symptoms":  {
+                                                        "fever":  true,
+                                                        "cough":  false,
+                                                        "chest_pain":  false,
+                                                        "breathing_difficulty":  false,
+                                                        "fatigue":  false,
+                                                        "headache":  false,
+                                                        "sore_throat":  false,
+                                                        "runny_nose":  false,
+                                                        "vomiting":  false,
+                                                        "bleeding":  false,
+                                                        "duration_days":  null,
+                                                        "severity":  "unknown"
+                                                    },
+                            "allergies":  "",
+                            "conditions":  "",
+                            "predicted_disease":  "Viral Fever",
+                            "disease_probabilities":  [
+                                                          {
+                                                              "disease":  "Dengue Fever",
+                                                              "probability":  0.8226
+                                                          },
+                                                          {
+                                                              "disease":  "Pneumonia",
+                                                              "probability":  0.1036
+                                                          },
+                                                          {
+                                                              "disease":  "Viral Fever",
+                                                              "probability":  0.0378,
+                                                              "flag":  "likely"
+                                                          },
+                                                          {
+                                                              "disease":  "Hypertension",
+                                                              "probability":  0.0149
+                                                          },
+                                                          {
+                                                              "disease":  "Diabetes",
+                                                              "probability":  0.0129
+                                                          }
+                                                      ]
+                        }
+}

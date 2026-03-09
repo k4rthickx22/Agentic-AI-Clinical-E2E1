@@ -69,12 +69,17 @@ class ClinicalOrchestrator:
             profile,
             diagnosis
         )
+        
+        # KEY BUG FIX: Update the profile with the finalized, filtered diagnosis 
+        # so DecisionAgent and RiskAgent don't revert to the raw prediction
+        profile["predicted_disease"] = diagnosis["disease"]
 
         # -----------------------------
         # 5️⃣ Follow-up Questions
         # -----------------------------
         follow_up_questions = self.question_agent.generate_questions(
-            patient_data["symptoms"]
+            patient_data["symptoms"],
+            screened_diseases
         )
 
         # -----------------------------
@@ -114,6 +119,10 @@ class ClinicalOrchestrator:
             final_decision,
             severity
         )
+        
+        # Override drug if ContraindicationAgent adjusted it due to allergies/safety risks
+        if "final_recommendation" in safety:
+            final_decision["recommended_drug"] = safety["final_recommendation"]
 
         # -----------------------------
         # 🔟 Final Response

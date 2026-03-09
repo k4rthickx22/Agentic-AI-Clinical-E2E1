@@ -1,37 +1,11 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { diagnosePatient, fetchHistory, fetchAnalytics, sendChatMessage, downloadPdfReport, getStoredUser, logout } from "@/services/api";
+import { t, languages } from "@/lib/i18n";
 
-const diagnosePatient = async (age, symptoms, gender, conditions) => {
-  const response = await fetch("http://127.0.0.1:8000/diagnose", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      age,
-      gender,
-      symptoms: symptoms.split(",").map(s => s.trim()),
-      conditions: conditions ? conditions.split(",").map(c => c.trim()) : []
-    })
-  });
 
-  return response.json();
-};
-
-const aiChatKnowledge = (msg) => {
-  const m = msg.toLowerCase();
-  if (m.includes("diabetes")) return "Diabetes is a chronic condition where the body cannot properly regulate blood sugar.\n\nFirst-line treatment: **Metformin 500mg** twice daily after meals. Key lifestyle changes: low-carb diet, 30 mins walking daily, regular HbA1c monitoring every 3 months.";
-  if (m.includes("hypertension") || m.includes("blood pressure") || m.includes("bp")) return "**Hypertension** is persistently elevated blood pressure. First-line: **Amlodipine 5mg** once daily.\n\nLifestyle: reduce salt, exercise regularly, avoid smoking. Monitor BP weekly. Seek emergency care if chest pain occurs.";
-  if (m.includes("dengue")) return "**Dengue Fever** is a viral mosquito-borne illness. Treatment: **Paracetamol** for fever.\n\nAVOID NSAIDs/Aspirin due to bleeding risk. Monitor platelet count daily. Oral rehydration is critical. Seek hospital care if bleeding occurs.";
-  if (m.includes("pneumonia")) return "**Pneumonia** is a bacterial/viral lung infection. First-line antibiotic: **Azithromycin 500mg** once daily for 5 days.\n\nRest, hydration, complete the full antibiotic course. Seek emergency care if breathing worsens significantly.";
-  if (m.includes("asthma")) return "**Asthma** causes reversible airway narrowing. Rescue: **Salbutamol Inhaler** (1-2 puffs during attack).\n\nAvoid dust, smoke, pollen triggers. Keep rescue inhaler nearby always. Frequent attacks require preventive therapy evaluation.";
-  if (m.includes("anemia")) return "**Anemia** is low hemoglobin/RBC count. Treatment: **Ferrous Sulfate 325mg** once daily after meals for 3 months.\n\nEat iron-rich foods (spinach, lentils, meat) + Vitamin C for better absorption.";
-  if (m.includes("cold") || m.includes("sneezing") || m.includes("runny")) return "**Common Cold** is a viral upper respiratory infection. Symptomatic treatment: **Paracetamol + Cetirizine**.\n\nSteam inhalation, warm fluids, adequate rest. No antibiotics needed for viral colds.";
-  if (m.includes("fever")) return "**Viral Fever** - Take **Paracetamol 500mg** every 6 hours if fever persists. Drink plenty of fluids, rest well.\n\nConsult a doctor if fever lasts more than 5 days or exceeds 39.4C.";
-  if (m.includes("malaria")) return "**Malaria** is treated with **Artemisinin Combination Therapy (ACT)**. Complete the full 3-day course.\n\nStay hydrated, use mosquito nets. Follow up if symptoms do not improve within 48 hours.";
-  if (m.includes("hello") || m.includes("hi") || m.includes("hey")) return "Hello! I am your AI Medical Assistant. I can help you understand diagnoses, medications, symptoms, and health guidelines.\n\nAsk me about any condition like diabetes, hypertension, pneumonia, dengue, and more!";
-  if (m.includes("thank")) return "You are welcome! Remember, this is for informational purposes. Always consult a qualified healthcare professional for personal medical decisions. Stay healthy!";
-  return "I can help with clinical questions about conditions like Diabetes, Hypertension, Dengue, Pneumonia, Asthma, Anemia, Common Cold, Viral Fever, and Malaria.\n\nTry asking: 'What is the treatment for dengue?' or 'Explain diabetes management.'";
-};
 
 const BG = "#060912";
 const SURFACE = "rgba(255,255,255,0.04)";
@@ -44,43 +18,12 @@ const TEXT = "#f2f2f7";
 const TEXT2 = "rgba(242,242,247,0.55)";
 const TEXT3 = "rgba(242,242,247,0.3)";
 
-const patientHistory = [
-  { id: 1, name: "Arjun Kumar", age: 34, disease: "Diabetes", triage: "MODERATE", date: "Mar 05, 2026", drug: "Metformin 500mg", symptoms: "Frequent urination, excessive thirst, fatigue" },
-  { id: 2, name: "Priya Sharma", age: 52, disease: "Hypertension", triage: "MODERATE", date: "Mar 04, 2026", drug: "Amlodipine 5mg", symptoms: "Persistent headache, dizziness, elevated BP" },
-  { id: 3, name: "Ravi Nair", age: 28, disease: "Viral Fever", triage: "LOW", date: "Mar 03, 2026", drug: "Paracetamol 500mg", symptoms: "Mild fever, body ache, fatigue" },
-  { id: 4, name: "Sneha Pillai", age: 19, disease: "Asthma", triage: "HIGH", date: "Mar 02, 2026", drug: "Salbutamol Inhaler", symptoms: "Wheezing, chest tightness, breathing difficulty" },
-  { id: 5, name: "Karthik Iyer", age: 41, disease: "Pneumonia", triage: "HIGH", date: "Feb 28, 2026", drug: "Azithromycin 500mg", symptoms: "High fever, productive cough, chest pain" },
-  { id: 6, name: "Meera Devi", age: 65, disease: "Anemia", triage: "LOW", date: "Feb 27, 2026", drug: "Ferrous Sulfate 325mg", symptoms: "Fatigue, pallor, dizziness, weakness" },
-];
 
-const analyticsData = {
-  diseases: [
-    { disease: "Viral Fever", count: 68, color: ACCENT },
-    { disease: "Hypertension", count: 42, color: "#5e5ce6" },
-    { disease: "Diabetes", count: 38, color: SUCCESS },
-    { disease: "Common Cold", count: 31, color: WARNING },
-    { disease: "Pneumonia", count: 24, color: DANGER },
-    { disease: "Dengue Fever", count: 18, color: "#ff9f0a" },
-    { disease: "Asthma", count: 15, color: "#64d2ff" },
-  ],
-  triage: [
-    { level: "LOW", count: 156, pct: 63, color: SUCCESS },
-    { level: "MODERATE", count: 53, pct: 21, color: WARNING },
-    { level: "HIGH", count: 38, pct: 15, color: DANGER },
-  ],
-  agents: [
-    { name: "PatientAgent", latency: "12ms" },
-    { name: "DiagnosisAgent", latency: "145ms" },
-    { name: "DrugAgent", latency: "8ms" },
-    { name: "RiskAgent", latency: "5ms" },
-    { name: "SeverityAgent", latency: "7ms" },
-  ]
-};
 
 const injectCSS = `
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 *{box-sizing:border-box;margin:0;padding:0}
-body{background:${BG};color:${TEXT};font-family:-apple-system,'SF Pro Display','Inter',sans-serif;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+body{background:radial-gradient(circle at 50% 0%, #1a2342 0%, #060912 60%);background-attachment:fixed;color:${TEXT};font-family:-apple-system,'SF Pro Display','Inter',sans-serif;-webkit-font-smoothing:antialiased;overflow-x:hidden}
 ::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.12);border-radius:4px}
 @keyframes fadeUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
 @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.6;transform:scale(0.95)}}
@@ -198,17 +141,78 @@ const Wave = ({ active }) => (
   </div>
 );
 
+// ── Structured AI chat message renderer ─────────────────────────────
+const ChatMessage = ({ content }) => {
+  const lines = content.split("\n");
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
+      {lines.map((line, i) => {
+        // Blank line → spacer
+        if (!line.trim()) return <div key={i} style={{ height: 4 }} />;
+
+        // Bullet lines starting with • or -
+        const isBullet = line.startsWith("•") || line.startsWith("-") || line.match(/^\d+\./);
+        // Section header: line ends with ':'
+        const isHeader = line.trim().endsWith(":") && line.trim().length < 60 && !isBullet;
+
+        // Render inline **bold** segments
+        const renderBold = (text) => {
+          const parts = text.split(/\*\*(.*?)\*\*/g);
+          return parts.map((p, j) =>
+            j % 2 === 1
+              ? <strong key={j} style={{ color: "#f2f2f7", fontWeight: 700 }}>{p}</strong>
+              : <span key={j}>{p}</span>
+          );
+        };
+
+        if (isHeader) return (
+          <div key={i} style={{ fontSize: 12, fontWeight: 700, color: "#3b7eff", letterSpacing: "0.05em", textTransform: "uppercase", marginTop: i > 0 ? 6 : 0 }}>
+            {renderBold(line.replace(/:$/, ""))}
+          </div>
+        );
+
+        if (isBullet) return (
+          <div key={i} style={{ display: "flex", gap: 8, alignItems: "flex-start" }}>
+            <span style={{ color: "#3b7eff", fontWeight: 700, marginTop: 1, flexShrink: 0 }}>•</span>
+            <span style={{ fontSize: 13.5, lineHeight: 1.6 }}>{renderBold(line.replace(/^[•\-]\s*/, "").replace(/^\d+\.\s*/, ""))}</span>
+          </div>
+        );
+
+        return (
+          <p key={i} style={{ fontSize: 13.5, lineHeight: 1.65, margin: 0 }}>{renderBold(line)}</p>
+        );
+      })}
+    </div>
+  );
+};
+
 export default function App() {
+  const router = useRouter();
   const [tab, setTab] = useState("diagnose");
+  // ── Fix hydration: don't read localStorage on server ──────────
+  const [lang, setLang] = useState("en");
+  const [currentUser, setCurrentUser] = useState(null);
+  useEffect(() => {
+    setLang(localStorage.getItem("lang") || "en");
+    setCurrentUser(getStoredUser());
+  }, []);
+  // ────────────────────────────────────────────────────────────────
+  const [name, setName] = useState("");
   const [age, setAge] = useState("");
   const [gender, setGender] = useState("Male");
   const [symptoms, setSymptoms] = useState("");
   const [conditions, setConditions] = useState("");
+  const [allergies, setAllergies] = useState("");
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
   const [listening, setListening] = useState(false);
+  const [chatListening, setChatListening] = useState(false);
+  
+  const [patientHistory, setPatientHistory] = useState([]);
+  const [analyticsData, setAnalyticsData] = useState(null);
+
   const [messages, setMessages] = useState([
-    { role: "ai", text: "Hello! I am your AI Medical Assistant. Ask me anything about diagnoses, medications, or symptoms.\n\nTry: 'What is dengue treatment?' or 'Explain diabetes management'" }
+    { role: "ai", content: "Hello! I'm your AI Medical Assistant 🩺\n\nI can help you with:\n• **Disease information** and symptoms\n• **Medication** guidance and dosages\n• **Lifestyle** recommendations\n• **Emergency** triage advice\n\nWhat would you like to know today?" }
   ]);
   const [chatInput, setChatInput] = useState("");
   const [chatLoading, setChatLoading] = useState(false);
@@ -216,15 +220,21 @@ export default function App() {
   const [histFilter, setHistFilter] = useState("All");
   const chatEnd = useRef(null);
   const recRef = useRef(null);
+  const chatRecRef = useRef(null);
 
   useEffect(() => { chatEnd.current?.scrollIntoView({ behavior: "smooth" }); }, [messages]);
+
+  useEffect(() => {
+    fetchHistory().then(setPatientHistory).catch(console.error);
+    fetchAnalytics().then(setAnalyticsData).catch(console.error);
+  }, []);
 
   const diagnose = async () => {
     if (!symptoms.trim()) return;
     setLoading(true);
     setResult(null);
     try {
-      const raw = await diagnosePatient(Number(age) || 30, symptoms, gender, conditions);
+      const raw = await diagnosePatient(Number(age) || 30, symptoms, gender, conditions, name || "Anonymous", allergies || "none");
 
       // Normalize backend response — handle all possible shapes safely
       const treatment = raw?.treatment || {};
@@ -260,6 +270,11 @@ export default function App() {
       };
 
       setResult(normalized);
+
+      // Refresh history & analytics in background
+      fetchHistory().then(setPatientHistory).catch(console.error);
+      fetchAnalytics().then(setAnalyticsData).catch(console.error);
+
     } catch (error) {
       console.error(error);
       alert("Backend connection failed. Check if FastAPI server is running.");
@@ -267,82 +282,85 @@ export default function App() {
     setLoading(false);
   };
 
-  const voiceInput = () => {
+
+  // ── Voice recognition – shared lang codes ───────────────────
+  const LANG_CODES = { en: "en-US", ta: "ta-IN", hi: "hi-IN" };
+
+  const toggleListen = () => {
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!SR) { alert("Speech recognition requires Chrome browser."); return; }
+    if (!SR) { alert("Voice recognition not supported in this browser."); return; }
     if (listening) { recRef.current?.stop(); setListening(false); return; }
     const rec = new SR();
-    rec.continuous = false; rec.interimResults = false; rec.lang = "en-US";
-    rec.onresult = e => { setSymptoms(e.results[0][0].transcript); setListening(false); };
+    rec.continuous = false; rec.interimResults = false;
+    rec.lang = LANG_CODES[lang] || "en-US";
+    rec.onresult = e => { setSymptoms(prev => prev + (prev ? " " : "") + e.results[0][0].transcript); setListening(false); };
     rec.onerror = rec.onend = () => setListening(false);
     recRef.current = rec; rec.start(); setListening(true);
   };
 
+  const toggleChatListen = () => {
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SR) { alert("Voice recognition not supported in this browser."); return; }
+    if (chatListening) { chatRecRef.current?.stop(); setChatListening(false); return; }
+    const rec = new SR();
+    rec.continuous = false; rec.interimResults = false;
+    rec.lang = LANG_CODES[lang] || "en-US";
+    rec.onresult = e => { setChatInput(prev => prev + (prev ? " " : "") + e.results[0][0].transcript); setChatListening(false); };
+    rec.onerror = rec.onend = () => setChatListening(false);
+    chatRecRef.current = rec; rec.start(); setChatListening(true);
+  };
+
+
   const sendChat = async () => {
     if (!chatInput.trim() || chatLoading) return;
     const msg = chatInput.trim(); setChatInput("");
-    setMessages(p => [...p, { role: "user", text: msg }]);
+    
+    const newMessages = [...messages, { role: "user", content: msg }];
+    setMessages(newMessages);
     setChatLoading(true);
-    await new Promise(r => setTimeout(r, 700 + Math.random()*700));
-    setMessages(p => [...p, { role: "ai", text: aiChatKnowledge(msg) }]);
+    
+    try {
+      // Send the history of the conversation to the backend for context
+      const chatHistoryForAPI = newMessages.map(m => ({ role: m.role === "ai" ? "assistant" : "user", content: m.content }));
+      const { reply } = await sendChatMessage(msg, chatHistoryForAPI.slice(0, -1)); // exclude the newly added user message
+      setMessages(p => [...p, { role: "ai", content: reply }]);
+    } catch (err) {
+      console.error(err);
+      setMessages(p => [...p, { role: "ai", content: "Sorry, I am having trouble connecting to the AI server right now." }]);
+    }
+    
     setChatLoading(false);
   };
 
-  const downloadReport = () => {
+  const downloadReport = async () => {
     if (!result) return;
-    const d = result.treatment, t = result.triage, s = result.drug_safety;
-    const content = [
-      "AI CLINICAL DECISION SUPPORT REPORT",
-      "=====================================",
-      `Generated: ${new Date().toLocaleString()}`,
-      `Case ID: ${Math.random().toString(36).substr(2,8).toUpperCase()}`,
-      "",
-      "PATIENT DETAILS",
-      "---------------",
-      `Age: ${age||"N/A"}  |  Gender: ${gender}`,
-      `Symptoms: ${symptoms}`,
-      `Pre-existing Conditions: ${conditions||"None"}`,
-      "",
-      "PRIMARY DIAGNOSIS",
-      "-----------------",
-      `Disease: ${d.predicted_disease}`,
-      `Confidence: ${(result.patient_profile.disease_probabilities[0].probability*100).toFixed(1)}%`,
-      "",
-      "TRIAGE ASSESSMENT",
-      "-----------------",
-      `Level: ${t.level}  |  Score: ${t.score}/100`,
-      `Recommendation: ${t.recommendation}`,
-      "",
-      "TREATMENT PLAN",
-      "--------------",
-      `Drug: ${d.recommended_drug}`,
-      `Dosage: ${d.dosage}`,
-      `Duration: ${d.duration}`,
-      "",
-      "LIFESTYLE MODIFICATIONS",
-      "-----------------------",
-      ...d.lifestyle.map(l => `  - ${l}`),
-      "",
-      "WARNINGS",
-      "--------",
-      ...d.warnings.map(w => `  ! ${w}`),
-      "",
-      "DRUG SAFETY",
-      "-----------",
-      `Safety Level: ${s.safety_level}  |  Risk Score: ${s.risk_score}`,
-      ...s.clinical_warnings.map(w => `  - ${w}`),
-      "",
-      "DIFFERENTIAL DIAGNOSES",
-      "----------------------",
-      ...result.patient_profile.disease_probabilities.map((p,i) => `  ${i+1}. ${p.disease} - ${(p.probability*100).toFixed(1)}%`),
-      "",
-      "-------------------------------------------",
-      "DISCLAIMER: AI-generated for clinical support only.",
-      "Does not replace a licensed healthcare professional.",
-    ].join("\n");
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(new Blob([content], { type: "text/plain" }));
-    a.download = `clinical-report-${Date.now()}.txt`; a.click();
+    try {
+      const d = result.treatment, t = result.triage, s = result.drug_safety;
+      const reportData = {
+        age: age,
+        gender: gender,
+        disease: d.predicted_disease,
+        symptoms: symptoms,
+        drug: d.recommended_drug,
+        dosage: d.dosage,
+        duration: d.duration,
+        lifestyle: d.lifestyle,
+        warnings: d.warnings,
+        triage: t.level
+      };
+      const blob = await downloadPdfReport(reportData);
+      const url = window.URL.createObjectURL(new Blob([blob]));
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `Clinical_Report_${Date.now()}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (e) {
+      console.error("PDF generation failed:", e);
+      alert("Failed to generate PDF report.");
+    }
   };
 
   const filteredHistory = histFilter === "All" ? patientHistory : patientHistory.filter(p => p.triage === histFilter);
@@ -363,17 +381,46 @@ export default function App() {
           </div>
 
           {[
-            ["diagnose","🩺","Diagnose"],
-            ["chat","💬","AI Chat"],
-            ["history","📁","History"],
-            ["analytics","📊","Analytics"],
+            ["diagnose","🩺", t(lang, "diagnose")],
+            ["chat","💬", t(lang, "chat")],
+            ["history","📁", t(lang, "history")],
+            ["analytics","📊", t(lang, "analytics")],
           ].map(([id,icon,label]) => (
             <button key={id} className={`slink ${tab===id?"active":""}`} onClick={() => setTab(id)}>
               <span style={{ fontSize: 16 }}>{icon}</span>{label}
             </button>
           ))}
 
+          {/* Profile nav */}
+          <button className="slink" onClick={() => router.push("/profile")} style={{ marginTop: 4 }}>
+            <span style={{ fontSize: 16 }}>👤</span>{t(lang, "profile")}
+          </button>
+
+          {/* Language toggle */}
+          <div style={{ marginTop: 10, paddingTop: 10, borderTop: `1px solid ${BORDER}` }}>
+            <div style={{ fontSize: 10, color: TEXT3, fontWeight: 600, letterSpacing: "0.05em", padding: "0 13px", marginBottom: 7 }}>LANGUAGE</div>
+            <div style={{ display: "flex", gap: 4, padding: "0 6px", flexWrap: "wrap" }}>
+              {languages.map(l => (
+                <button key={l.code} onClick={() => { setLang(l.code); localStorage.setItem("lang", l.code); }}
+                  style={{ padding: "5px 9px", borderRadius: 7, border: lang === l.code ? `1px solid ${ACCENT}` : `1px solid ${BORDER}`, background: lang === l.code ? `rgba(59,126,255,0.12)` : "transparent", color: lang === l.code ? ACCENT : TEXT2, fontSize: 11.5, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", transition: "all 0.15s" }}>
+                  {l.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
           <div style={{ marginTop: "auto", paddingTop: 16 }}>
+            {currentUser && (
+              <button onClick={() => router.push("/profile")} style={{ width: "100%", display: "flex", alignItems: "center", gap: 9, padding: "9px 13px", borderRadius: 11, background: "rgba(255,255,255,0.04)", border: `1px solid ${BORDER}`, cursor: "pointer", marginBottom: 10 }}>
+                <div style={{ width: 28, height: 28, borderRadius: "50%", background: "linear-gradient(135deg,#3b7eff,#5e5ce6)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 700, color: "white", flexShrink: 0 }}>
+                  {currentUser.name?.split(" ").map((w) => w[0]).join("").toUpperCase().slice(0,2)}
+                </div>
+                <div style={{ textAlign: "left", overflow: "hidden" }}>
+                  <div style={{ fontSize: 12, fontWeight: 600, color: TEXT, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{currentUser.name}</div>
+                  <div style={{ fontSize: 10, color: TEXT3 }}>{currentUser.role}</div>
+                </div>
+              </button>
+            )}
             <div style={{ padding: "12px 13px", borderRadius: 12, background: "rgba(59,126,255,0.08)", border: "1px solid rgba(59,126,255,0.2)" }}>
               <div style={{ fontSize: 10, color: ACCENT, fontWeight: 700, letterSpacing: "0.05em", marginBottom: 7 }}>SYSTEM STATUS</div>
               <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
@@ -382,6 +429,7 @@ export default function App() {
               </div>
             </div>
           </div>
+
         </nav>
 
         {/* Content */}
@@ -400,7 +448,11 @@ export default function App() {
                 <div className="glass" style={{ padding: 24 }}>
                   <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 18 }}>Patient Information</div>
                   <div style={{ display: "flex", flexDirection: "column", gap: 13 }}>
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10 }}>
+                      <div>
+                        <label style={{ fontSize: 11, color: TEXT2, display: "block", marginBottom: 5, letterSpacing: "0.04em" }}>NAME</label>
+                        <input className="field" placeholder="e.g. John Doe" type="text" value={name} onChange={e => setName(e.target.value)} />
+                      </div>
                       <div>
                         <label style={{ fontSize: 11, color: TEXT2, display: "block", marginBottom: 5, letterSpacing: "0.04em" }}>AGE</label>
                         <input className="field" placeholder="e.g. 35" type="number" value={age} onChange={e => setAge(e.target.value)} />
@@ -419,7 +471,7 @@ export default function App() {
                         <textarea className="field" rows={4} placeholder="Describe symptoms... e.g. high fever with severe headache and rash for 3 days"
                           value={symptoms} onChange={e => setSymptoms(e.target.value)}
                           style={{ resize: "none", paddingRight: 50 }} />
-                        <button onClick={voiceInput} title={listening ? "Stop" : "Voice input"}
+                        <button onClick={toggleListen} title={listening ? "Stop" : "Voice input"}
                           style={{ position: "absolute", bottom: 10, right: 10, width: 34, height: 34, borderRadius: "50%", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", background: listening ? DANGER : "rgba(255,255,255,0.08)", color: listening ? "white" : TEXT2, animation: listening ? "glow 1.5s infinite" : "none", transition: "all 0.2s" }}>
                           {listening
                             ? <div style={{ width: 9, height: 9, borderRadius: 2, background: "white" }} />
@@ -435,9 +487,15 @@ export default function App() {
                       )}
                     </div>
 
-                    <div>
-                      <label style={{ fontSize: 11, color: TEXT2, display: "block", marginBottom: 5, letterSpacing: "0.04em" }}>PRE-EXISTING CONDITIONS <span style={{ opacity: 0.4 }}>(optional)</span></label>
-                      <input className="field" placeholder="e.g. hypertension, kidney disease" value={conditions} onChange={e => setConditions(e.target.value)} />
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+                      <div>
+                        <label style={{ fontSize: 11, color: TEXT2, display: "block", marginBottom: 5, letterSpacing: "0.04em" }}>PRE-EXISTING CONDITIONS <span style={{ opacity: 0.4 }}>(optional)</span></label>
+                        <input className="field" placeholder="e.g. hypertension, kidney disease" value={conditions} onChange={e => setConditions(e.target.value)} />
+                      </div>
+                      <div>
+                        <label style={{ fontSize: 11, color: TEXT2, display: "block", marginBottom: 5, letterSpacing: "0.04em" }}>ALLERGIES <span style={{ opacity: 0.4 }}>(optional)</span></label>
+                        <input className="field" placeholder="e.g. penicillin, sulfa, peanuts" value={allergies} onChange={e => setAllergies(e.target.value)} />
+                      </div>
                     </div>
 
                     <button className="btn btn-primary" onClick={diagnose} disabled={loading || !symptoms.trim()} style={{ marginTop: 2, height: 46 }}>
@@ -490,13 +548,7 @@ export default function App() {
                       </div>
                     </div>
 
-                    <div className="glass" style={{ padding: 20, animation: "slideIn 0.4s ease 0.1s both" }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 14 }}>
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={TEXT2} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
-                        <span style={{ fontSize: 12.5, fontWeight: 600 }}>Differential Diagnosis Probabilities</span>
-                      </div>
-                      <ProbChart data={result.patient_profile.disease_probabilities} />
-                    </div>
+
 
                     {result.treatment.warnings?.length > 0 && (
                       <div className="glass" style={{ padding: 18, borderColor: "rgba(255,69,58,0.22)", background: "rgba(255,69,58,0.03)", animation: "slideIn 0.4s ease 0.2s both" }}>
@@ -508,7 +560,7 @@ export default function App() {
                     )}
 
                     <button className="btn btn-ghost" onClick={downloadReport} style={{ justifyContent: "center", width: "100%", animation: "slideIn 0.4s ease 0.3s both" }}>
-                      📄 Download Clinical Report (.txt)
+                      📄 Download Clinical Report (.pdf)
                     </button>
                   </>}
 
@@ -557,39 +609,56 @@ export default function App() {
           {/* CHAT */}
           {tab === "chat" && (
             <div style={{ maxWidth: 720, margin: "0 auto", display: "flex", flexDirection: "column", height: "calc(100vh - 56px)", animation: "fadeUp 0.4s ease" }}>
-              <div style={{ marginBottom: 18 }}>
-                <h1 style={{ fontSize: 26, fontWeight: 700, letterSpacing: "-0.4px", marginBottom: 3 }}>AI Medical Chat</h1>
-                <p style={{ color: TEXT2, fontSize: 14 }}>Clinical knowledge assistant powered by medical AI</p>
+              <div style={{ marginBottom: 16 }}>
+                <h1 style={{ fontSize: 26, fontWeight: 700, letterSpacing: "-0.4px", marginBottom: 3 }}>🩺 AI Medical Chat</h1>
+                <p style={{ color: TEXT2, fontSize: 14 }}>Clinical knowledge assistant — powered by medical AI · speaking <span style={{ color: ACCENT, fontWeight: 600 }}>{languages.find(l => l.code === lang)?.full || "English"}</span></p>
               </div>
 
-              <div className="glass" style={{ flex: 1, padding: 18, display: "flex", flexDirection: "column", gap: 12, overflowY: "auto", marginBottom: 14 }}>
+              {/* Messages */}
+              <div className="glass" style={{ flex: 1, padding: 18, display: "flex", flexDirection: "column", gap: 14, overflowY: "auto", marginBottom: 14 }}>
                 {messages.map((m, i) => (
                   <div key={i} className={m.role === "user" ? "chat-user" : "chat-ai"}>
                     {m.role === "ai" && (
-                      <div style={{ width: 30, height: 30, borderRadius: 9, background: "linear-gradient(135deg,#3b7eff,#5e5ce6)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, flexShrink: 0 }}>🧠</div>
+                      <div style={{ width: 32, height: 32, borderRadius: 10, background: "linear-gradient(135deg,#3b7eff,#5e5ce6)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, flexShrink: 0, marginBottom: 2 }}>🧠</div>
                     )}
-                    <div className={m.role === "user" ? "bubble-user" : "bubble-ai"}>{m.text}</div>
+                    <div className={m.role === "user" ? "bubble-user" : "bubble-ai"}>
+                      <ChatMessage content={m.content} />
+                    </div>
                   </div>
                 ))}
                 {chatLoading && (
                   <div className="chat-ai">
-                    <div style={{ width: 30, height: 30, borderRadius: 9, background: "linear-gradient(135deg,#3b7eff,#5e5ce6)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, flexShrink: 0 }}>🧠</div>
-                    <div className="bubble-ai"><Dots /></div>
+                    <div style={{ width: 32, height: 32, borderRadius: 10, background: "linear-gradient(135deg,#3b7eff,#5e5ce6)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, flexShrink: 0 }}>🧠</div>
+                    <div className="bubble-ai" style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                      <Dots /> <span style={{ fontSize: 12, color: TEXT3 }}>Thinking...</span>
+                    </div>
                   </div>
                 )}
                 <div ref={chatEnd} />
               </div>
 
-              <div style={{ display: "flex", gap: 9 }}>
-                <input className="field" placeholder="Ask about any disease, medication, or symptom..." value={chatInput} onChange={e => setChatInput(e.target.value)} onKeyDown={e => e.key==="Enter" && sendChat()} style={{ flex: 1 }} />
-                <button className="btn btn-primary" onClick={sendChat} disabled={!chatInput.trim()||chatLoading} style={{ width: 46, height: 46, padding: 0, borderRadius: 12, flexShrink: 0 }}>
+              {/* Input row */}
+              <div style={{ display: "flex", gap: 9, alignItems: "center" }}>
+                <input className="field" placeholder={t(lang, "chatPlaceholder")} value={chatInput}
+                  onChange={e => setChatInput(e.target.value)}
+                  onKeyDown={e => e.key === "Enter" && !e.shiftKey && sendChat()}
+                  style={{ flex: 1 }} />
+                {/* Mic button */}
+                <button onClick={toggleChatListen}
+                  style={{ width: 46, height: 46, borderRadius: 12, border: `1px solid ${chatListening ? "rgba(255,69,58,0.5)" : BORDER}`, background: chatListening ? "rgba(255,69,58,0.12)" : SURFACE, color: chatListening ? "#ff453a" : TEXT2, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "all 0.2s", animation: chatListening ? "pulse 1s ease infinite" : "none" }}
+                  title={`Voice input (${languages.find(l => l.code === lang)?.full})`}>
+                  {chatListening ? "🔴" : "🎙️"}
+                </button>
+                <button className="btn btn-primary" onClick={sendChat} disabled={!chatInput.trim() || chatLoading}
+                  style={{ width: 46, height: 46, padding: 0, borderRadius: 12, flexShrink: 0 }}>
                   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
                 </button>
               </div>
 
+              {/* Quick prompts */}
               <div style={{ display: "flex", flexWrap: "wrap", gap: 7, marginTop: 9 }}>
-                {["Dengue treatment?","Diabetes management","Asthma medications","Hypertension lifestyle","What is pneumonia?"].map(q => (
-                  <button key={q} className="btn btn-ghost" style={{ fontSize: 11.5, padding: "5px 11px", borderRadius: 20 }} onClick={() => setChatInput(q)}>{q}</button>
+                {["Dengue fever treatment","Diabetes lifestyle tips","Chest pain causes","COVID symptoms","Stress & mental health","Hypertension diet"].map(q => (
+                  <button key={q} className="btn btn-ghost" style={{ fontSize: 11.5, padding: "5px 12px", borderRadius: 20 }} onClick={() => { setChatInput(q); }}>{q}</button>
                 ))}
               </div>
             </div>
@@ -661,7 +730,7 @@ export default function App() {
           )}
 
           {/* ANALYTICS */}
-          {tab === "analytics" && (
+          {tab === "analytics" && analyticsData && (
             <div style={{ maxWidth: 980, margin: "0 auto", animation: "fadeUp 0.4s ease" }}>
               <div style={{ marginBottom: 22 }}>
                 <h1 style={{ fontSize: 26, fontWeight: 700, letterSpacing: "-0.4px", marginBottom: 3 }}>Analytics</h1>
