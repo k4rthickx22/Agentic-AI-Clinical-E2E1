@@ -15,7 +15,14 @@ class QuestionAgent:
         "Gastroenteritis": ["How many times have you had diarrhea today?", "Are you able to keep fluids down?", "Did you eat anything unusual or from outside recently?"],
         "Migraine": ["Is the headache on one side of your head?", "Do you experience nausea or sensitivity to light?", "Does physical activity worsen the headache?"],
         "Urinary Tract Infection": ["Do you feel a burning sensation while urinating?", "Do you need to urinate very frequently?", "Is there any unusual color or smell in your urine?"],
+        # New diseases
+        "Typhoid": ["Have you consumed outside food or untreated water recently?", "Do you have a sustained high fever (above 39°C) for more than 3 days?", "Do you have abdominal pain or constipation/diarrhea?"],
+        "COVID-19": ["Have you lost your sense of smell or taste?", "Have you been in close contact with a COVID-positive person recently?", "Do you have difficulty breathing or persistent chest pressure?"],
+        "Kidney Stone": ["Is the pain sharp and radiating from your back/side to the groin?", "Do you have blood in your urine?", "Have you had kidney stones before?"],
+        "Anxiety": ["Do you feel persistent worry or nervousness that is hard to control?", "Are you experiencing physical symptoms like palpitations, sweating, or trembling?", "Has your sleep been disturbed due to anxious thoughts?"],
+        "Back Pain": ["Is the pain localized or does it radiate down your leg?", "Did the pain start after a physical activity or injury?", "Do you feel numbness or tingling in your legs or feet?"],
     }
+
 
     DEFAULT_QUESTIONS = [
         "How long have you been experiencing these symptoms?",

@@ -6,6 +6,7 @@ def save_consultation(patient_data, result):
     db = SessionLocal()
     try:
         consultation = Consultation(
+            user_id=patient_data.get("user_id"),
             patient_name=patient_data.get("name", "Anonymous"),
             age=patient_data["age"],
             gender=patient_data["gender"],
@@ -47,7 +48,7 @@ def get_analytics():
                      .group_by(Consultation.predicted_disease)\
                      .order_by(desc(func.count(Consultation.id))).all()
 
-        total = db.query(func.count(Consultation.id)).scalar() or 1
+        total = int(db.query(func.count(Consultation.id)).scalar() or 1)
         triage_counts = {"LOW": 0, "MODERATE": 0, "HIGH": 0}
         all_consults = db.query(Consultation.triage).all()
         for c in all_consults:

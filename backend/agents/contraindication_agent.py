@@ -32,6 +32,7 @@ class ContraindicationAgent:
         return self._evaluate_rule_based(patient_profile, final_decision, triage)
 
     def _evaluate_with_llm(self, patient_profile, final_decision, triage):
+        assert client is not None, "client must be set before calling _evaluate_with_llm"
         prompt = f"""
 You are a strict Clinical Safety Agent checking for AI hallucinations and drug contraindications.
 You are reviewing a proposed treatment plan.
@@ -72,43 +73,89 @@ Instructions:
         allergies = str(patient_profile.get("allergies", "")).lower()
         structured = patient_profile["structured_symptoms"]
         drug = final_decision["recommended_drug"]
+        drug_lower = drug.lower()
 
         risk_score = 0
         warnings = []
         adjusted_drug = drug
 
-        # Allergies
-        if drug.lower() in allergies:
+        # ----------------------------------
+        # Allergy Checks
+        # ----------------------------------
+        if any(a in allergies for a in [drug_lower, drug_lower.split()[0] if drug_lower else ""]):
             risk_score += 80
             warnings.append(f"SEVERE ALLERGY WARNING: Patient is allergic to {drug}.")
-            adjusted_drug = "Alternative medication required"
+            adjusted_drug = "Alternative medication required — consult physician"
 
+        # Penicillin-class cross-allergy
+        if "penicillin" in allergies and any(x in drug_lower for x in ["amoxicillin", "ampicillin", "augmentin"]):
+            risk_score += 70
+            warnings.append("Penicillin allergy detected — cross-reactivity risk with Amoxicillin/Ampicillin.")
+            adjusted_drug = "Azithromycin or alternative antibiotic recommended"
+
+        # Sulfa allergy
+        if "sulfa" in allergies and any(x in drug_lower for x in ["sulfamethoxazole", "trimethoprim", "cotrimoxazole"]):
+            risk_score += 70
+            warnings.append("Sulfa allergy detected — avoid Cotrimoxazole/Sulfamethoxazole.")
+            adjusted_drug = "Alternative non-sulfa antibiotic required"
+
+        # NSAIDs contraindicated in Dengue
+        if "dengue" in str(final_decision.get("predicted_disease", "")).lower():
+            if any(x in drug_lower for x in ["ibuprofen", "aspirin", "naproxen", "diclofenac", "nsaid"]):
+                risk_score += 75
+                warnings.append("CRITICAL: NSAIDs/Aspirin are CONTRAINDICATED in Dengue — risk of life-threatening bleeding.")
+                adjusted_drug = "Paracetamol (Acetaminophen) only — NSAIDs strictly avoided"
+
+        # Aspirin in children
+        if age < 16 and "aspirin" in drug_lower:
+            risk_score += 60
+            warnings.append("Aspirin is CONTRAINDICATED in children under 16 — risk of Reye's syndrome.")
+            adjusted_drug = "Paracetamol (child-appropriate dose) recommended"
+
+        # ----------------------------------
+        # Age Risk
+        # ----------------------------------
         if age >= 65:
             risk_score += 15
-            warnings.append("Elderly patient — monitor drug tolerance closely.")
+            warnings.append("Elderly patient — monitor drug tolerance closely. Consider reduced dosage.")
         if age <= 5:
             risk_score += 20
-            warnings.append("Pediatric patient — dosage adjustment required.")
+            warnings.append("Pediatric patient — weight-based dosage adjustment required.")
 
-        if "kidney" in conditions:
+        # ----------------------------------
+        # Pre-existing Condition Checks
+        # ----------------------------------
+        if "kidney" in conditions or "renal" in conditions:
             risk_score += 25
-            warnings.append("Kidney condition detected — dosage adjustment required.")
-        if "liver" in conditions:
+            warnings.append("Kidney/renal condition detected — dosage adjustment required; avoid nephrotoxic drugs.")
+        if "liver" in conditions or "hepat" in conditions:
             risk_score += 20
-            warnings.append("Liver condition detected — caution with metabolism-dependent drugs.")
-        if "heart" in conditions:
+            warnings.append("Liver condition detected — caution with hepatically metabolized drugs.")
+        if "heart" in conditions or "cardiac" in conditions:
             risk_score += 20
-            warnings.append("Cardiac history detected — monitor closely.")
+            warnings.append("Cardiac history detected — monitor QT interval and fluid balance closely.")
+        if "diabetes" in conditions and any(x in drug_lower for x in ["steroid", "prednisolone", "dexamethasone", "corticosteroid"]):
+            risk_score += 20
+            warnings.append("Corticosteroid use in diabetic patient — monitor blood glucose levels closely.")
+        if "pregnant" in conditions or "pregnancy" in conditions:
+            risk_score += 30
+            warnings.append("⚠️ Pregnancy detected — verify drug safety in pregnancy (Category A/B only). Avoid tetracyclines, fluoroquinolones, and high-dose NSAIDs.")
 
-        if type(structured) == dict and structured.get("severity") == "severe":
+        # ----------------------------------
+        # Symptom-based overrides
+        # ----------------------------------
+        if isinstance(structured, dict) and structured.get("severity") == "severe":
             risk_score += 15
             warnings.append("Severe symptom presentation — outpatient medication may be insufficient.")
 
         if triage["level"] == "HIGH":
-            warnings.append("Emergency case — prioritize hospital treatment over medication.")
+            warnings.append("Emergency case — prioritize hospital treatment over outpatient medication.")
             adjusted_drug = "Hospital-based management required"
             risk_score += 40
 
+        # ----------------------------------
+        # Final Safety Level
+        # ----------------------------------
         if risk_score >= 60:
             safety_level = "UNSAFE"
         elif risk_score >= 30:

@@ -1,10 +1,12 @@
+import os
 import joblib
 import numpy as np
 
 class DiagnosisAgent:
 
     def __init__(self):
-        self.model = joblib.load("backend/models/disease_model.pkl")
+        BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        self.model = joblib.load(os.path.join(BASE_DIR, "models", "disease_model.pkl"))
 
     def predict_diseases(self, symptoms):
 

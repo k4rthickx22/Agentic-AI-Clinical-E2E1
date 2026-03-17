@@ -321,5 +321,125 @@ clinical_protocols = {
             "Seek emergency care if back/flank pain and fever develop - may be kidney infection",
             "Recurrent UTIs (>3/year) need further urological evaluation"
         ]
+    },
+
+    "Typhoid": {
+        "category": "infectious",
+        "first_line": "Azithromycin 500mg",
+        "dosage": "Once daily for 7 days",
+        "duration": "7 days",
+        "explanation": "Azithromycin is the WHO-recommended outpatient treatment for uncomplicated typhoid fever caused by Salmonella typhi.",
+        "lifestyle": [
+            "Drink only boiled or bottled water — avoid tap water",
+            "Eat freshly cooked food; avoid street food, raw salads, and unpeeled fruits",
+            "Complete strict bed rest — typhoid is extremely exhausting",
+            "Take frequent, small, easy-to-digest meals (khichdi, rice porridge, soups)",
+            "Monitor body temperature every 6 hours — fever may spike in the evening",
+            "Maintain strict hand hygiene — wash hands before meals and after toilet",
+            "Isolate utensils and bed linens to prevent household spread",
+            "Get a Typhoid Vi polysaccharide vaccine for future prevention"
+        ],
+        "warnings": [
+            "Seek immediate care if abdomen becomes rigid or suddenly pain-free — risk of intestinal perforation",
+            "Bloody stools or sudden worsening are red flags — go to ER immediately",
+            "Complete the full antibiotic course even if fever subsides after 2-3 days",
+            "Relasp is possible if antibiotics are stopped early"
+        ]
+    },
+
+    "COVID-19": {
+        "category": "infectious",
+        "first_line": "Supportive: Paracetamol 500mg + Rest + Hydration",
+        "dosage": "Paracetamol every 6 hours for fever; antiviral (Paxlovid) if high-risk — physician prescription required",
+        "duration": "10-14 days isolation; symptoms typically resolve in 7-10 days",
+        "explanation": "Most COVID-19 cases are managed with supportive care. High-risk patients (elderly, immunocompromised) may benefit from antiviral therapy within 5 days of symptom onset.",
+        "lifestyle": [
+            "Isolate immediately — stay home and avoid contact with others for at least 5 days",
+            "Wear a high-quality mask (N95/KN95) if you must be around others",
+            "Monitor oxygen saturation with a pulse oximeter — seek care if SpO2 drops below 94%",
+            "Stay well-hydrated — drink at least 2.5 liters of water/day",
+            "Rest completely — COVID fatigue is real and severe",
+            "Eat nutritious foods rich in Vitamin C, D, and Zinc to support immunity",
+            "Perform prone positioning (lying face down) if breathing feels uncomfortable",
+            "Report loss of smell/taste, persistent chest pain, or confusion to a doctor immediately"
+        ],
+        "warnings": [
+            "Seek emergency care if oxygen saturation falls below 94% or breathing becomes labored",
+            "Persistent fever beyond 7 days or sudden deterioration warrants immediate medical attention",
+            "Avoid NSAIDs (ibuprofen) in confirmed COVID-19 — use Paracetamol instead",
+            "Long COVID (fatigue, brain fog) can persist weeks/months after recovery — follow up with physician"
+        ]
+    },
+
+    "Kidney Stone": {
+        "category": "urological",
+        "first_line": "Diclofenac 50mg or Ketorolac (NSAID) + Tamsulosin 0.4mg",
+        "dosage": "Diclofenac 50mg three times daily with food; Tamsulosin once daily at bedtime",
+        "duration": "Until stone passes (typically 1-4 weeks for stones <6mm) or surgical intervention",
+        "explanation": "NSAIDs provide strong pain relief for renal colic. Tamsulosin (an alpha-blocker) relaxes the ureter to facilitate stone passage.",
+        "lifestyle": [
+            "Drink 2.5-3 liters of water daily — the single most important prevention strategy",
+            "Reduce sodium intake — high salt increases calcium in urine",
+            "Limit animal protein (red meat, eggs) — increases uric acid and calcium oxalate",
+            "Avoid oxalate-rich foods — spinach, nuts, chocolate, tea if prone to calcium oxalate stones",
+            "Include citrate-rich foods — lemon juice, citrus fruits (inhibit stone formation)",
+            "Do not restrict dietary calcium — ironically, low calcium diet increases stone risk",
+            "Use a urine strainer to catch any passed stones for laboratory analysis",
+            "Exercise regularly — sedentary lifestyle promotes stone formation"
+        ],
+        "warnings": [
+            "Seek emergency care if fever develops with flank pain — may indicate obstructive pyelonephritis",
+            "Stones >10mm typically require urological intervention (ESWL or ureteroscopy)",
+            "Renal colic pain can be extremely severe — do not delay treatment",
+            "Avoid NSAIDs in patients with kidney disease — use an alternative analgesic"
+        ]
+    },
+
+    "Anxiety": {
+        "category": "mental_health",
+        "first_line": "Sertraline 50mg (SSRI) — initiate only under physician supervision",
+        "dosage": "Sertraline 50mg once daily in the morning; dose may be titrated after 4-6 weeks",
+        "duration": "Minimum 6-12 months; reassess with physician before discontinuing",
+        "explanation": "SSRIs like Sertraline are the first-line pharmacological treatment for generalized anxiety disorder. Cognitive Behavioral Therapy (CBT) is equally effective and often recommended alongside medication.",
+        "lifestyle": [
+            "Practice diaphragmatic breathing (4-7-8 technique) daily to activate the parasympathetic system",
+            "Exercise aerobically for 30 minutes, 5 days a week — proven to reduce anxiety as effectively as medication",
+            "Limit caffeine and alcohol — both significantly worsen anxiety",
+            "Maintain a consistent sleep schedule — sleep deprivation dramatically amplifies anxiety",
+            "Practice mindfulness meditation using apps like Headspace or Calm for 10 minutes daily",
+            "Engage in Cognitive Behavioral Therapy (CBT) — most effective non-drug treatment",
+            "Reduce social media and news consumption — a key modern anxiety trigger",
+            "Build a social support network — isolation worsens anxiety"
+        ],
+        "warnings": [
+            "Never stop SSRIs abruptly — taper slowly under physician guidance to avoid withdrawal",
+            "SSRIs may worsen anxiety in the first 1-2 weeks before improving — persist through initial side effects",
+            "Seek immediate care if thoughts of self-harm arise",
+            "Avoid benzodiazepines (Alprazolam, Diazepam) as a long-term solution — high dependency risk"
+        ]
+    },
+
+    "Back Pain": {
+        "category": "musculoskeletal",
+        "first_line": "Ibuprofen 400mg + Muscle Relaxant (Methocarbamol/Cyclobenzaprine if spasm present)",
+        "dosage": "Ibuprofen 400mg three times daily with food; muscle relaxant as directed by physician",
+        "duration": "Acute: 3-7 days; Chronic: requires physiotherapy and specialist review",
+        "explanation": "NSAIDs are the first-line treatment for acute mechanical back pain. Muscle relaxants help with spasm. Physical therapy is essential for long-term recovery and prevention.",
+        "lifestyle": [
+            "Apply ice packs for the first 48 hours (15-20 min per session) — reduces inflammation",
+            "Switch to heat therapy (warm compress) after 48 hours — relaxes muscle spasms",
+            "Maintain proper posture — sit with lumbar support; avoid slouching",
+            "Sleep on a medium-firm mattress; avoid sleeping on your stomach",
+            "Begin gentle stretching (cat-cow, child's pose) as soon as pain allows",
+            "Core strengthening exercises (plank, bird-dog) once acute phase resolves",
+            "Avoid prolonged sitting — stand and move every 30-45 minutes",
+            "Physiotherapy sessions are highly effective for chronic low back pain"
+        ],
+        "warnings": [
+            "Seek immediate care if back pain is accompanied by leg weakness, numbness, or loss of bladder/bowel control — possible cauda equina syndrome",
+            "Radiating leg pain (sciatica) requires further imaging (MRI) to rule out disc herniation",
+            "Avoid bed rest for more than 1-2 days — prolonged rest delays recovery",
+            "Do not use NSAIDs long-term without physician supervision — risk of GI bleeding and kidney damage"
+        ]
     }
 }

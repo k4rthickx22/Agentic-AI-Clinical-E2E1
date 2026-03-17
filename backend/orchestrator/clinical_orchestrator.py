@@ -5,6 +5,7 @@ from agents.decision_agent import DecisionAgent
 from agents.severity_agent import SeverityAgent
 from agents.contraindication_agent import ContraindicationAgent
 from agents.diagnosis_supervisor import DiagnosisSupervisor
+from agents.interaction_agent import DrugInteractionAgent
 
 # NEW AGENTS
 from agents.question_agent import QuestionAgent
@@ -23,6 +24,7 @@ class ClinicalOrchestrator:
         self.severity_agent = SeverityAgent()
         self.contra_agent = ContraindicationAgent()
         self.supervisor = DiagnosisSupervisor()
+        self.interaction_agent = DrugInteractionAgent()
 
         # NEW AGENTS
         self.question_agent = QuestionAgent()
@@ -30,6 +32,8 @@ class ClinicalOrchestrator:
         self.triage_tree = TriageTreeAgent()
 
     def run_pipeline(self, patient_data):
+
+        reasoning_trace = []
 
         # -----------------------------
         # 1️⃣ Patient Analysis
@@ -46,6 +50,7 @@ class ClinicalOrchestrator:
         # profile["disease_probabilities"] → Top diseases
 
         differential = profile["disease_probabilities"]
+        reasoning_trace.append(f"Patient profile built. Top symptom match: {differential[0]['disease']} ({round(differential[0]['probability']*100,1)}% confidence).")
 
         # -----------------------------
         # 2️⃣ Decision Tree Screening
@@ -54,6 +59,7 @@ class ClinicalOrchestrator:
             profile,
             differential
         )
+        reasoning_trace.append(f"Triage tree screened {len(screened_diseases)} differential diagnoses for clinical plausibility.")
 
         # -----------------------------
         # 3️⃣ Supervisor Ranking
@@ -61,6 +67,7 @@ class ClinicalOrchestrator:
         diagnosis = self.supervisor.select_primary(
             screened_diseases
         )
+        reasoning_trace.append(f"Supervisor selected primary diagnosis: {diagnosis['disease']}.")
 
         # -----------------------------
         # 4️⃣ Safety Filtering
@@ -69,7 +76,11 @@ class ClinicalOrchestrator:
             profile,
             diagnosis
         )
-        
+        if diagnosis.get("flag"):
+            reasoning_trace.append(f"Safety agent adjusted diagnosis ({diagnosis['flag']}): {diagnosis['disease']} — over-diagnosis risk reduced.")
+        else:
+            reasoning_trace.append(f"Safety agent confirmed diagnosis: {diagnosis['disease']} — no over-diagnosis flags raised.")
+
         # KEY BUG FIX: Update the profile with the finalized, filtered diagnosis 
         # so DecisionAgent and RiskAgent don't revert to the raw prediction
         profile["predicted_disease"] = diagnosis["disease"]
@@ -103,6 +114,7 @@ class ClinicalOrchestrator:
             profile,
             ranked_drugs
         )
+        reasoning_trace.append(f"Treatment decision: {final_decision['recommended_drug']} prescribed for {final_decision['predicted_disease']}. Dosage: {final_decision.get('dosage', 'N/A')}.")
 
         # -----------------------------
         # 8️⃣ Severity Detection
@@ -110,6 +122,7 @@ class ClinicalOrchestrator:
         severity = self.severity_agent.detect_severity(
             profile
         )
+        reasoning_trace.append(f"Triage severity assessed as {severity['level']} (score: {severity['score']}). {len(severity.get('reasons', []))} risk factor(s) identified.")
 
         # -----------------------------
         # 9️⃣ Contraindication Check
@@ -119,10 +132,23 @@ class ClinicalOrchestrator:
             final_decision,
             severity
         )
-        
+        reasoning_trace.append(f"Contraindication check: Safety level = {safety['safety_level']} (risk score: {safety['risk_score']}/100). {len(safety.get('clinical_warnings', []))} warning(s) issued.")
+
         # Override drug if ContraindicationAgent adjusted it due to allergies/safety risks
         if "final_recommendation" in safety:
             final_decision["recommended_drug"] = safety["final_recommendation"]
+
+        # -----------------------------
+        # 🔟 Drug Interaction Check
+        # -----------------------------
+        drug_interactions = self.interaction_agent.check_interactions(
+            final_decision,
+            profile
+        )
+        if drug_interactions:
+            reasoning_trace.append(f"Drug interaction check: {len(drug_interactions)} interaction(s) detected — review warnings before dispensing.")
+        else:
+            reasoning_trace.append("Drug interaction check: No significant interactions detected with patient's current conditions/medications.")
 
         # -----------------------------
         # 🔟 Final Response
@@ -134,5 +160,7 @@ class ClinicalOrchestrator:
             "treatment": final_decision,
             "triage": severity,
             "drug_safety": safety,
+            "drug_interactions": drug_interactions,
+            "reasoning_trace": reasoning_trace,
             "patient_profile": profile
-        }
+        }

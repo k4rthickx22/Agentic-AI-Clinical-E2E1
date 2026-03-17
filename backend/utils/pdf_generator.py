@@ -55,7 +55,8 @@ def generate_pdf(file_path, patient_data, decision, severity):
     # ===============================
     # HEADER WITH LOGO
     # ===============================
-    logo_path = "assets/medical_logo.png"
+    _BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    logo_path = os.path.join(_BASE_DIR, "assets", "medical_logo.png")
 
     if os.path.exists(logo_path):
         logo = Image(logo_path, width=1.2 * inch, height=1.2 * inch)

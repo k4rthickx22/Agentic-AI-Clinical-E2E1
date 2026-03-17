@@ -192,6 +192,7 @@ export default function App() {
   // ── Fix hydration: don't read localStorage on server ──────────
   const [lang, setLang] = useState("en");
   const [currentUser, setCurrentUser] = useState(null);
+  const [traceOpen, setTraceOpen] = useState(false);
   useEffect(() => {
     setLang(localStorage.getItem("lang") || "en");
     setCurrentUser(getStoredUser());
@@ -256,12 +257,16 @@ export default function App() {
           level:          triage.level          || "LOW",
           recommendation: triage.recommendation || "Monitor symptoms.",
           score:          typeof triage.score === "number" ? triage.score : 0,
+          reasons:        Array.isArray(triage.reasons) ? triage.reasons : [],
         },
         drug_safety: {
           safety_level:      safety.safety_level      || "SAFE",
           risk_score:        safety.risk_score        ?? 0,
           clinical_warnings: Array.isArray(safety.clinical_warnings) ? safety.clinical_warnings : [],
         },
+        drug_interactions:  Array.isArray(raw?.drug_interactions) ? raw.drug_interactions : [],
+        reasoning_trace:    Array.isArray(raw?.reasoning_trace) ? raw.reasoning_trace : [],
+        follow_up_questions: Array.isArray(raw?.follow_up_questions) ? raw.follow_up_questions : [],
         patient_profile: {
           disease_probabilities: Array.isArray(profile.disease_probabilities) && profile.disease_probabilities.length > 0
             ? profile.disease_probabilities
@@ -574,33 +579,96 @@ export default function App() {
                 </div>
               </div>
 
-              {/* Lifestyle + Safety */}
+              {/* Differential Diagnoses + Lifestyle + Safety */}
               {result && !loading && (
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 18, marginTop: 18, animation: "fadeUp 0.5s ease 0.2s both" }}>
+                <div style={{ display: "flex", flexDirection: "column", gap: 18, marginTop: 18, animation: "fadeUp 0.5s ease 0.2s both" }}>
+
+                  {/* Differential diagnosis probability chart */}
                   <div className="glass" style={{ padding: 20 }}>
-                    <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 13 }}>🌿 Lifestyle Recommendations</div>
-                    {result.treatment.lifestyle?.map((l,i) => (
-                      <div key={i} style={{ display: "flex", gap: 10, alignItems: "flex-start", padding: "5px 0" }}>
-                        <div style={{ width: 5, height: 5, borderRadius: "50%", background: SUCCESS, marginTop: 5.5, flexShrink: 0 }} />
-                        <span style={{ fontSize: 13, color: TEXT2, lineHeight: 1.5 }}>{l}</span>
+                    <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 14 }}>📊 Differential Diagnoses</div>
+                    <ProbChart data={result.patient_profile.disease_probabilities} />
+                  </div>
+
+                  {/* Follow-up Questions */}
+                  {result.follow_up_questions?.length > 0 && (
+                    <div className="glass" style={{ padding: 20 }}>
+                      <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 12 }}>❓ Follow-up Questions</div>
+                      <div style={{ fontSize: 12, color: TEXT3, marginBottom: 10 }}>Click a question to send it to the AI Chat</div>
+                      <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                        {result.follow_up_questions.map((q, i) => (
+                          <button key={i}
+                            onClick={() => { setTab("chat"); setChatInput(q); }}
+                            style={{ padding: "7px 13px", borderRadius: 20, border: `1px solid ${BORDER}`, background: "rgba(59,126,255,0.06)", color: TEXT2, fontSize: 12.5, cursor: "pointer", fontFamily: "inherit", transition: "all 0.18s" }}
+                            onMouseEnter={e => { e.target.style.background = "rgba(59,126,255,0.14)"; e.target.style.color = TEXT; }}
+                            onMouseLeave={e => { e.target.style.background = "rgba(59,126,255,0.06)"; e.target.style.color = TEXT2; }}
+                          >
+                            {q}
+                          </button>
+                        ))}
                       </div>
-                    ))}
-                  </div>
-                  <div className="glass" style={{ padding: 20 }}>
-                    <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 13 }}>🛡️ Drug Safety Assessment</div>
-                    <div style={{ display: "flex", justifyContent: "space-between", padding: "6px 0", borderBottom: `1px solid rgba(255,255,255,0.05)` }}>
-                      <span style={{ fontSize: 13, color: TEXT2 }}>Safety Level</span>
-                      <span style={{ fontSize: 12, fontWeight: 700, padding: "3px 10px", borderRadius: 12, background: result.drug_safety.safety_level==="SAFE"?"rgba(48,209,88,0.1)":"rgba(255,214,10,0.1)", color: result.drug_safety.safety_level==="SAFE"?SUCCESS:WARNING }}>{result.drug_safety.safety_level}</span>
                     </div>
-                    <div style={{ display: "flex", justifyContent: "space-between", padding: "6px 0" }}>
-                      <span style={{ fontSize: 13, color: TEXT2 }}>Risk Score</span>
-                      <span style={{ fontSize: 13, fontWeight: 600 }}>{result.drug_safety.risk_score}/100</span>
+                  )}
+
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 18 }}>
+                    <div className="glass" style={{ padding: 20 }}>
+                      <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 13 }}>🌿 Lifestyle Recommendations</div>
+                      {result.treatment.lifestyle?.map((l,i) => (
+                        <div key={i} style={{ display: "flex", gap: 10, alignItems: "flex-start", padding: "5px 0" }}>
+                          <div style={{ width: 5, height: 5, borderRadius: "50%", background: SUCCESS, marginTop: 5.5, flexShrink: 0 }} />
+                          <span style={{ fontSize: 13, color: TEXT2, lineHeight: 1.5 }}>{l}</span>
+                        </div>
+                      ))}
                     </div>
-                    {result.drug_safety.clinical_warnings?.length === 0
-                      ? <div style={{ marginTop: 8, fontSize: 12, color: SUCCESS, padding: "6px 10px", borderRadius: 8, background: "rgba(48,209,88,0.06)", border: "1px solid rgba(48,209,88,0.15)" }}>✅ No contraindications detected</div>
-                      : result.drug_safety.clinical_warnings.map((w,i) => <div key={i} style={{ marginTop: 6, fontSize: 12, color: WARNING, padding: "6px 10px", borderRadius: 8, background: "rgba(255,214,10,0.06)", border: "1px solid rgba(255,214,10,0.14)" }}>⚠️ {w}</div>)
-                    }
+                    <div className="glass" style={{ padding: 20 }}>
+                      <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 13 }}>🛡️ Drug Safety Assessment</div>
+                      <div style={{ display: "flex", justifyContent: "space-between", padding: "6px 0", borderBottom: `1px solid rgba(255,255,255,0.05)` }}>
+                        <span style={{ fontSize: 13, color: TEXT2 }}>Safety Level</span>
+                        <span style={{ fontSize: 12, fontWeight: 700, padding: "3px 10px", borderRadius: 12, background: result.drug_safety.safety_level==="SAFE"?"rgba(48,209,88,0.1)":result.drug_safety.safety_level==="UNSAFE"?"rgba(255,69,58,0.1)":"rgba(255,214,10,0.1)", color: result.drug_safety.safety_level==="SAFE"?SUCCESS:result.drug_safety.safety_level==="UNSAFE"?DANGER:WARNING }}>{result.drug_safety.safety_level}</span>
+                      </div>
+                      <div style={{ display: "flex", justifyContent: "space-between", padding: "6px 0" }}>
+                        <span style={{ fontSize: 13, color: TEXT2 }}>Risk Score</span>
+                        <span style={{ fontSize: 13, fontWeight: 600 }}>{result.drug_safety.risk_score}/100</span>
+                      </div>
+                      {result.drug_safety.clinical_warnings?.length === 0
+                        ? <div style={{ marginTop: 8, fontSize: 12, color: SUCCESS, padding: "6px 10px", borderRadius: 8, background: "rgba(48,209,88,0.06)", border: "1px solid rgba(48,209,88,0.15)" }}>✅ No contraindications detected</div>
+                        : result.drug_safety.clinical_warnings.map((w,i) => <div key={i} style={{ marginTop: 6, fontSize: 12, color: WARNING, padding: "6px 10px", borderRadius: 8, background: "rgba(255,214,10,0.06)", border: "1px solid rgba(255,214,10,0.14)" }}>⚠️ {w}</div>)
+                      }
+                    </div>
                   </div>
+
+                  {/* Drug Interactions */}
+                  {result.drug_interactions?.length > 0 && (
+                    <div className="glass" style={{ padding: 20, borderColor: "rgba(255,149,0,0.25)", background: "rgba(255,149,0,0.03)", animation: "slideIn 0.4s ease 0.25s both" }}>
+                      <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 12, color: "#ff9500" }}>💊 Drug Interaction Alerts ({result.drug_interactions.length})</div>
+                      {result.drug_interactions.map((w, i) => (
+                        <div key={i} style={{ fontSize: 12.5, color: TEXT2, padding: "7px 10px", marginBottom: 6, borderRadius: 9, background: "rgba(255,149,0,0.07)", border: "1px solid rgba(255,149,0,0.18)", lineHeight: 1.55 }}>{w}</div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Reasoning Trace Accordion */}
+                  {result.reasoning_trace?.length > 0 && (
+                    <div className="glass" style={{ padding: 0, overflow: "hidden" }}>
+                      <button
+                        onClick={() => setTraceOpen(o => !o)}
+                        style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 20px", background: "transparent", border: "none", cursor: "pointer", fontFamily: "inherit" }}
+                      >
+                        <span style={{ fontSize: 13, fontWeight: 600, color: TEXT }}>🧠 How did AI decide this?</span>
+                        <span style={{ fontSize: 18, color: TEXT3, transition: "transform 0.2s", transform: traceOpen ? "rotate(180deg)" : "rotate(0deg)" }}>⌄</span>
+                      </button>
+                      {traceOpen && (
+                        <div style={{ padding: "0 20px 16px", display: "flex", flexDirection: "column", gap: 8 }}>
+                          {result.reasoning_trace.map((step, i) => (
+                            <div key={i} style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
+                              <div style={{ width: 22, height: 22, borderRadius: "50%", background: "rgba(59,126,255,0.12)", border: `1px solid rgba(59,126,255,0.3)`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10, fontWeight: 700, color: ACCENT, flexShrink: 0, marginTop: 1 }}>{i + 1}</div>
+                              <span style={{ fontSize: 12.5, color: TEXT2, lineHeight: 1.6 }}>{step}</span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+
                 </div>
               )}
             </div>
@@ -739,10 +807,10 @@ export default function App() {
 
               <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 13, marginBottom: 18 }}>
                 {[
-                  ["247","Total Consultations","🩺","+12% this week"],
-                  ["38","High Risk Cases","🚨","+3% this week"],
-                  ["84.2%","Avg Confidence","🎯","+2.1% this week"],
-                  ["10/10","Agents Active","🤖","100% uptime"],
+                  [analyticsData?.totalConsultations ?? patientHistory.length ?? "...", "Total Consultations", "🩺", analyticsData?.totalConsultations ? `${patientHistory.length} records` : "Live from DB"],
+                  [analyticsData?.triage?.find(t => t.level === "HIGH")?.count ?? "...", "High Risk Cases", "🚨", "Real-time triage data"],
+                  [analyticsData?.diseases?.length ? `${analyticsData.diseases.length} types` : "...", "Disease Types", "🎯", "Tracked from records"],
+                  ["10/10", "Agents Active", "🤖", "100% uptime"],
                 ].map(([v,l,ic,t],i) => (
                   <div key={i} className="glass" style={{ padding: 18, animation: `fadeUp 0.3s ease ${i*0.07}s both` }}>
                     <div style={{ fontSize: 22 }}>{ic}</div>

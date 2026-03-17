@@ -1,5 +1,6 @@
 import os
 import json
+from typing import Any
 
 
 class DrugAgent:
@@ -10,10 +11,10 @@ class DrugAgent:
 
         DATA_PATH = os.path.join(BASE_DIR, "data", "treatments.json")
 
-        with open("data/treatments.json") as f:
+        with open(DATA_PATH) as f:
             self.treatments = json.load(f)
 
-    def get_drugs_for_disease(self, disease):
+    def get_drugs_for_disease(self, disease: str) -> dict[str, Any]:
 
         if disease in self.treatments:
 

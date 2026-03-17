@@ -34,6 +34,31 @@ class SeverityAgent:
             emergency_score += 15
             reasons.append("Severe vomiting")
 
+        # New symptom signals
+        if structured.get("confusion"):
+            emergency_score += 40
+            reasons.append("⚠️ Confusion/altered consciousness detected — possible encephalopathy")
+
+        if structured.get("rash"):
+            emergency_score += 10
+            reasons.append("Skin rash detected — possible viral or allergic etiology")
+
+        if structured.get("joint_pain") and structured.get("fever"):
+            emergency_score += 10
+            reasons.append("Fever with joint pain — possible Dengue or Chikungunya")
+
+        if structured.get("dizziness"):
+            emergency_score += 10
+            reasons.append("Dizziness reported — monitor for dehydration or cardiovascular cause")
+
+        if structured.get("diarrhea") and structured.get("fever"):
+            emergency_score += 10
+            reasons.append("Fever with diarrhea — possible enteric/GI infection")
+
+        if structured.get("abdominal_pain") and structured.get("vomiting"):
+            emergency_score += 15
+            reasons.append("Abdominal pain with vomiting — possible GI emergency")
+
         # ----------------------------------
         # 2️⃣ Duration Risk
         # ----------------------------------
