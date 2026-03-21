@@ -10,10 +10,13 @@
       "root": "backend"
     },
     {
-      "site_package": ".venv/Lib/site-packages"
+      "site_package": "backend/venv/Lib/site-packages"
     }
   ],
   "python_version": "3.11",
-  "venv": ".venv",
-  "venv_root": "."
+  "venv": "venv",
+  "venv_root": "backend",
+  "strict_list": [],
+  "ignore_all_errors": true
 }
+

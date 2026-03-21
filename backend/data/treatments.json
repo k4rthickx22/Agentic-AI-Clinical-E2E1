@@ -1,49 +1,182 @@
 {
   "Viral Fever": {
     "drug": "Paracetamol 500mg",
-    "dosage": "Every 6 hours if fever persists",
-    "duration": "3-5 days",
-    "explanation": "Paracetamol reduces fever and relieves body pain.",
+    "dosage": "500mg every 6 hours (max 4g/day)",
+    "duration": "3–5 days",
+    "explanation": "Paracetamol effectively reduces fever and relieves body pain in viral infections. Stay hydrated and rest well.",
     "lifestyle": [
-      "Drink plenty of fluids",
-      "Take adequate rest",
-      "Monitor temperature regularly"
-    ]
+      "Drink at least 8–10 glasses of water or ORS per day",
+      "Take complete bed rest for 2–3 days",
+      "Eat light, easily digestible food (dal, khichdi, soups)",
+      "Monitor temperature every 4 hours",
+      "Avoid heavy exercise until fully recovered",
+      "Do not self-medicate with antibiotics (viral, not bacterial)"
+    ],
+    "when_to_seek_care": "If fever exceeds 103°F, lasts more than 5 days, or you develop difficulty breathing — seek medical attention immediately."
   },
-
+  "Normal Fever": {
+    "drug": "Paracetamol 500mg",
+    "dosage": "500mg every 6 hours as needed (max 4g/day)",
+    "duration": "3–5 days",
+    "explanation": "A mild fever is usually the body's immune response. Paracetamol helps control temperature and discomfort.",
+    "lifestyle": [
+      "Drink plenty of fluids — water, coconut water, ORS",
+      "Rest adequately and avoid strenuous activities",
+      "Eat light nutritious food",
+      "Monitor temperature regularly",
+      "Wear light clothing and keep room well-ventilated",
+      "Avoid cold baths — use lukewarm sponging if needed"
+    ],
+    "when_to_seek_care": "Seek care if fever > 103°F, lasts more than 3 days, or accompanied by rash, stiff neck, or breathing trouble."
+  },
   "Common Cold": {
-    "drug": "Paracetamol + Antihistamine (Cetirizine)",
-    "dosage": "Paracetamol every 6 hours, Cetirizine once daily",
-    "duration": "3-5 days",
-    "explanation": "Paracetamol reduces fever and Cetirizine relieves nasal symptoms.",
+    "drug": "Paracetamol 500mg + Cetirizine 10mg",
+    "dosage": "Paracetamol every 6 hours | Cetirizine once daily at bedtime",
+    "duration": "3–5 days",
+    "explanation": "Paracetamol manages fever and body ache. Cetirizine (antihistamine) relieves runny nose and sneezing.",
     "lifestyle": [
-      "Steam inhalation",
-      "Stay hydrated",
-      "Rest well"
-    ]
+      "Steam inhalation twice daily (add eucalyptus oil if available)",
+      "Drink warm fluids — herbal tea, warm water with honey and ginger",
+      "Rest well — 8+ hours of sleep",
+      "Avoid cold beverages and exposure to cold air",
+      "Gargle with warm saline water for throat comfort",
+      "Wash hands frequently to prevent spreading"
+    ],
+    "when_to_seek_care": "Seek care if symptoms worsen after 7 days, high fever develops, or you experience sinus pain or earache."
   },
-
   "Dengue Fever": {
-    "drug": "Paracetamol (avoid NSAIDs)",
-    "dosage": "500mg every 6 hours if fever persists",
-    "duration": "5-7 days monitoring",
-    "explanation": "Paracetamol is used to reduce fever. NSAIDs are avoided due to bleeding risk.",
+    "drug": "Paracetamol 500mg (NSAIDs strictly avoided)",
+    "dosage": "500mg every 6 hours — NEVER use Ibuprofen or Aspirin",
+    "duration": "5–7 days with strict medical monitoring",
+    "explanation": "Dengue is a viral hemorrhagic fever. Paracetamol controls fever. NSAIDs like Ibuprofen increase bleeding risk and are contraindicated.",
     "lifestyle": [
-      "Drink oral rehydration fluids",
-      "Monitor platelet count",
-      "Seek medical care if bleeding occurs"
-    ]
+      "Drink oral rehydration solution (ORS) every 2–3 hours",
+      "Complete bed rest — no physical exertion",
+      "Eat soft foods — soups, khichdi, fruit juice",
+      "Monitor platelet count daily (hospital/clinic)",
+      "Sleep under mosquito nets and use repellent",
+      "Seek immediate care if gums bleed or rash appears"
+    ],
+    "when_to_seek_care": "EMERGENCY: Go to hospital immediately if you have bleeding gums, petechiae (red spots on skin), severe abdominal pain, or vomiting blood."
   },
-
   "Pneumonia": {
-    "drug": "Azithromycin 500mg",
-    "dosage": "Once daily",
-    "duration": "5 days",
-    "explanation": "Azithromycin treats bacterial lung infections.",
+    "drug": "Azithromycin 500mg (antibiotic)",
+    "dosage": "500mg once daily for 5 days",
+    "duration": "5–7 days (full antibiotic course must be completed)",
+    "explanation": "Azithromycin is a broad-spectrum antibiotic effective for community-acquired pneumonia. Complete the full course even if feeling better.",
     "lifestyle": [
-      "Rest adequately",
-      "Stay hydrated",
-      "Complete antibiotic course"
-    ]
+      "Complete absolute bed rest for 5–7 days",
+      "Drink 8–10 glasses of water daily to loosen mucus",
+      "Eat high-protein food — eggs, dal, chicken broth",
+      "Do NOT stop antibiotics early even if symptoms improve",
+      "Practice deep breathing exercises to aid lung recovery",
+      "Avoid smoking and second-hand smoke completely"
+    ],
+    "when_to_seek_care": "Seek emergency if breathing worsens, lips turn blue, chest pain is severe, or oxygen levels drop below 94%."
+  },
+  "Asthma": {
+    "drug": "Salbutamol Inhaler 100mcg (bronchodilator)",
+    "dosage": "2 puffs every 4–6 hours as needed; Budesonide 200mcg inhaler twice daily for control",
+    "duration": "Ongoing management — consult pulmonologist for long-term plan",
+    "explanation": "Salbutamol (reliever inhaler) opens airways during an attack. Budesonide (controller) reduces airway inflammation daily.",
+    "lifestyle": [
+      "Identify and avoid personal triggers (dust, pollen, smoke, pets)",
+      "Keep windows closed during high pollen seasons",
+      "Use air purifier at home if possible",
+      "Practice breathing exercises (diaphragmatic breathing) daily",
+      "Never smoke or allow smoking near you",
+      "Carry your reliever inhaler at all times"
+    ],
+    "when_to_seek_care": "Call emergency services if inhaler provides no relief, breathing is very fast and labored, or lips/fingertips turn blue."
+  },
+  "Anemia": {
+    "drug": "Iron Supplements (Ferrous Sulfate 325mg) + Folic Acid 5mg",
+    "dosage": "Ferrous Sulfate 325mg twice daily with Vitamin C | Folic Acid 5mg once daily",
+    "duration": "3–6 months (until hemoglobin normalizes)",
+    "explanation": "Iron supplements replenish iron stores. Vitamin C enhances absorption. Folic acid supports red blood cell production.",
+    "lifestyle": [
+      "Eat iron-rich foods — spinach, lentils, red meat, beans, tofu",
+      "Take iron tablets with citrus juice (Vitamin C boosts absorption)",
+      "Avoid tea/coffee 1 hour before and after iron tablets",
+      "Cook in iron cookware when possible",
+      "Get adequate sleep — 7–8 hours per night",
+      "Light exercise like walking improves oxygen circulation"
+    ],
+    "when_to_seek_care": "Seek care if dizziness is severe, heart palpitations occur, or hemoglobin is below 8g/dL — may need IV iron or transfusion."
+  },
+  "Diabetes": {
+    "drug": "Metformin 500mg (Type 2) / Insulin (as directed by doctor)",
+    "dosage": "Metformin 500mg twice daily with meals (initial dose)",
+    "duration": "Lifelong management with regular monitoring",
+    "explanation": "Metformin reduces liver glucose production and improves insulin sensitivity. Dose adjusted by doctor based on HbA1c levels.",
+    "lifestyle": [
+      "Follow a low-glycemic diet — reduce white rice, sugar, refined carbs",
+      "Walk 30 minutes daily — exercise lowers blood sugar naturally",
+      "Monitor blood glucose levels morning and evening",
+      "Avoid sugary drinks, sweets, and processed foods",
+      "Eat small frequent meals every 3–4 hours",
+      "Check feet daily for wounds (diabetes reduces healing)"
+    ],
+    "when_to_seek_care": "Seek care if blood sugar exceeds 300 mg/dL, you feel confused/drowsy, or experience chest pain or difficulty breathing."
+  },
+  "Hypertension": {
+    "drug": "Amlodipine 5mg (calcium channel blocker)",
+    "dosage": "5mg once daily (morning)",
+    "duration": "Lifelong management — never stop without doctor's advice",
+    "explanation": "Amlodipine relaxes blood vessels and reduces blood pressure. May be combined with Losartan 50mg based on severity.",
+    "lifestyle": [
+      "Reduce salt intake to less than 5g per day (avoid pickles, papad)",
+      "Eat a DASH diet — fruits, vegetables, whole grains, low-fat dairy",
+      "Exercise moderately — 30 min brisk walking 5 days/week",
+      "Quit smoking and limit alcohol completely",
+      "Manage stress — meditation, yoga, or deep breathing daily",
+      "Monitor blood pressure at home twice daily"
+    ],
+    "when_to_seek_care": "Seek emergency if BP exceeds 180/120 mmHg, you have sudden severe headache, chest pain, or vision loss."
+  },
+  "Gastritis": {
+    "drug": "Omeprazole 20mg (proton pump inhibitor)",
+    "dosage": "20mg once daily before breakfast",
+    "duration": "4–8 weeks",
+    "explanation": "Omeprazole reduces stomach acid production, allowing the gastric lining to heal.",
+    "lifestyle": [
+      "Eat small meals every 3–4 hours — avoid skipping meals",
+      "Avoid spicy, oily, and acidic foods",
+      "Limit coffee, tea, and carbonated drinks",
+      "Do not take painkillers (NSAIDs) on empty stomach",
+      "Eat slowly and chew food well",
+      "Sleep with head slightly elevated if you experience reflux"
+    ],
+    "when_to_seek_care": "Seek care if you vomit blood, pass black stools, or have severe stomach pain that doesn't resolve."
+  },
+  "Migraine": {
+    "drug": "Sumatriptan 50mg (acute migraine) + Paracetamol 1g",
+    "dosage": "Sumatriptan 50mg at onset of migraine | Paracetamol 1g as needed",
+    "duration": "Per episode (preventive therapy if >4 episodes/month)",
+    "explanation": "Sumatriptan is a triptan that selectively constricts dilated blood vessels causing migraine pain.",
+    "lifestyle": [
+      "Maintain a headache diary to identify triggers (stress, food, sleep)",
+      "Sleep at consistent times — avoid over-sleeping on weekends",
+      "Stay hydrated — dehydration is a major trigger",
+      "Avoid migraine triggers: alcohol, aged cheese, strong perfumes",
+      "Manage stress with regular meditation or relaxation techniques",
+      "Rest in a dark, quiet room during a migraine attack"
+    ],
+    "when_to_seek_care": "Seek emergency if migraine is the 'worst headache of your life', accompanied by fever/neck stiffness, or loss of vision/speech."
+  },
+  "Bacterial Infection": {
+    "drug": "Amoxicillin 500mg (or Azithromycin 250mg if penicillin allergy)",
+    "dosage": "Amoxicillin 500mg three times daily | Azithromycin 250mg once daily",
+    "duration": "5–7 days (complete full course)",
+    "explanation": "Amoxicillin is a broad-spectrum antibiotic effective for most bacterial infections. Never stop early.",
+    "lifestyle": [
+      "Complete the full antibiotic course even if you feel better",
+      "Rest adequately — 8+ hours of sleep",
+      "Stay hydrated — drink 8–10 glasses of water",
+      "Eat probiotic foods (curd/yogurt) to maintain gut health",
+      "Practice good hand hygiene to prevent spread",
+      "Avoid sharing utensils or personal items"
+    ],
+    "when_to_seek_care": "Seek care if fever persists after 48 hours of antibiotics, or if symptoms worsen significantly."
   }
 }

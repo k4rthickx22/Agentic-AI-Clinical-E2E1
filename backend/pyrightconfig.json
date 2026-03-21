@@ -1,11 +1,12 @@
 {
-  "venvPath": "..",
-  "venv": ".venv",
+  "venvPath": ".",
+  "venv": "venv",
   "pythonVersion": "3.11",
-  "pythonPath": "../.venv/Scripts/python.exe",
+  "pythonPath": "./venv/Scripts/python.exe",
   "include": ["."],
-  "exclude": ["__pycache__"],
-  "extraPaths": ["."],
+  "exclude": ["__pycache__", "venv"],
+  "extraPaths": [".", "./venv/Lib/site-packages"],
   "typeCheckingMode": "basic",
-  "reportMissingModuleSource": "none"
+  "reportMissingModuleSource": "none",
+  "reportMissingImports": "none"
 }

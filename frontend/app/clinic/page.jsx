@@ -193,9 +193,17 @@ export default function App() {
   const [lang, setLang] = useState("en");
   const [currentUser, setCurrentUser] = useState(null);
   const [traceOpen, setTraceOpen] = useState(false);
+  const [backendOnline, setBackendOnline] = useState(null); // null=checking, true=ok, false=offline
+  const [speaking, setSpeaking] = useState(false); // TTS state
+
   useEffect(() => {
     setLang(localStorage.getItem("lang") || "en");
     setCurrentUser(getStoredUser());
+    // ── Backend health check ──────────────────────────────────────
+    fetch("http://127.0.0.1:8000/api/health")
+      .then(r => r.ok ? r.json() : Promise.reject())
+      .then(d => setBackendOnline(d.status === "ok"))
+      .catch(() => setBackendOnline(false));
   }, []);
   // ────────────────────────────────────────────────────────────────
   const [name, setName] = useState("");
@@ -222,6 +230,9 @@ export default function App() {
   const chatEnd = useRef(null);
   const recRef = useRef(null);
   const chatRecRef = useRef(null);
+  // Refs to hold transcript without triggering re-renders mid-speech
+  const diagTranscriptRef = useRef("");
+  const chatTranscriptRef = useRef("");
 
   useEffect(() => { chatEnd.current?.scrollIntoView({ behavior: "smooth" }); }, [messages]);
 
@@ -252,6 +263,8 @@ export default function App() {
           explanation:        treatment.explanation        || "",
           lifestyle:          Array.isArray(treatment.lifestyle)  ? treatment.lifestyle  : [],
           warnings:           Array.isArray(treatment.warnings)   ? treatment.warnings   : [],
+          treatment_plan:     Array.isArray(treatment.treatment_plan) ? treatment.treatment_plan : [],
+          when_to_seek_care:  treatment.when_to_seek_care || "",
         },
         triage: {
           level:          triage.level          || "LOW",
@@ -291,85 +304,105 @@ export default function App() {
   // ── Voice recognition – shared lang codes ───────────────────
   const LANG_CODES = { en: "en-US", ta: "ta-IN", hi: "hi-IN" };
 
-  // Diagnosis voice: auto-submits after speech stops
+  // ── Diagnosis voice: continuous mode so English doesn't cut off ─
   const toggleListen = () => {
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!SR) { alert("Voice recognition not supported in this browser. Please use Chrome."); return; }
-    if (listening) { recRef.current?.stop(); setListening(false); return; }
+    if (!SR) { alert("Voice recognition not supported. Please use Chrome or Edge."); return; }
+    if (listening) {
+      recRef.current?.stop();
+      setListening(false);
+      return;
+    }
+    diagTranscriptRef.current = "";
     const rec = new SR();
-    rec.continuous = false;
-    rec.interimResults = true;
+    rec.continuous = true;       // ← KEY FIX: keeps listening across pauses
+    rec.interimResults = true;   // show words as you speak
+    rec.maxAlternatives = 1;
     rec.lang = LANG_CODES[lang] || "en-US";
     rec.onresult = e => {
-      const transcript = Array.from(e.results).map(r => r[0].transcript).join("");
-      setSymptoms(prev => (prev ? prev + " " : "") + transcript);
+      // Accumulate all results (interim + final) into one string
+      let full = "";
+      for (let i = 0; i < e.results.length; i++) {
+        full += e.results[i][0].transcript + (e.results[i].isFinal ? " " : "");
+      }
+      diagTranscriptRef.current = full.trim();
+      setSymptoms(full.trim());
     };
     rec.onend = () => {
       setListening(false);
-      // Auto-submit diagnosis after voice stops
-      setTimeout(() => {
-        setSymptoms(prev => {
-          if (prev.trim()) {
-            // Trigger diagnose via a ref flag
-            window.__voiceAutoSubmit = true;
-          }
-          return prev;
-        });
-      }, 100);
+      // Auto-submit after voice ends if there's a transcript
+      const captured = diagTranscriptRef.current.trim();
+      if (captured) {
+        setTimeout(() => diagnose(), 300);
+      }
     };
-    rec.onerror = () => setListening(false);
-    recRef.current = rec; rec.start(); setListening(true);
+    rec.onerror = (e) => {
+      if (e.error !== "no-speech") setListening(false);
+    };
+    recRef.current = rec;
+    rec.start();
+    setListening(true);
   };
 
-  // Effect: auto-submit diagnosis when voice ends
-  useEffect(() => {
-    if (window.__voiceAutoSubmit && symptoms.trim() && !loading) {
-      window.__voiceAutoSubmit = false;
-      diagnose();
-    }
-  // eslint-disable-next-line
-  }, [symptoms]);
-
-  // Chat voice: auto-sends after speech stops
+  // ── Chat voice: continuous mode, auto-sends on stop ─────────────
   const toggleChatListen = () => {
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!SR) { alert("Voice recognition not supported in this browser. Please use Chrome."); return; }
-    if (chatListening) { chatRecRef.current?.stop(); setChatListening(false); return; }
+    if (!SR) { alert("Voice recognition not supported. Please use Chrome or Edge."); return; }
+    if (chatListening) {
+      chatRecRef.current?.stop();
+      setChatListening(false);
+      return;
+    }
+    chatTranscriptRef.current = "";
     const rec = new SR();
-    rec.continuous = false;
+    rec.continuous = true;       // ← KEY FIX: keeps listening across pauses
     rec.interimResults = true;
+    rec.maxAlternatives = 1;
     rec.lang = LANG_CODES[lang] || "en-US";
-    let finalTranscript = "";
     rec.onresult = e => {
-      finalTranscript = Array.from(e.results).map(r => r[0].transcript).join("");
-      setChatInput(finalTranscript);
+      let full = "";
+      for (let i = 0; i < e.results.length; i++) {
+        full += e.results[i][0].transcript + (e.results[i].isFinal ? " " : "");
+      }
+      chatTranscriptRef.current = full.trim();
+      setChatInput(full.trim());
     };
     rec.onend = () => {
       setChatListening(false);
-      // Auto-send the chat message after voice stops
-      if (finalTranscript.trim()) {
-        setTimeout(() => {
-          window.__chatVoiceMsg = finalTranscript.trim();
-          window.__chatVoiceSend = true;
-        }, 150);
+      const captured = chatTranscriptRef.current.trim();
+      if (captured) {
+        setChatInput("");
+        chatTranscriptRef.current = "";
+        setTimeout(() => sendChatWithMsg(captured), 200);
       }
     };
-    rec.onerror = () => setChatListening(false);
-    chatRecRef.current = rec; rec.start(); setChatListening(true);
+    rec.onerror = (e) => {
+      if (e.error !== "no-speech") setChatListening(false);
+    };
+    chatRecRef.current = rec;
+    rec.start();
+    setChatListening(true);
   };
 
-  // Effect: auto-send chat message when voice ends
-  useEffect(() => {
-    if (window.__chatVoiceSend && window.__chatVoiceMsg && !chatLoading) {
-      window.__chatVoiceSend = false;
-      const msg = window.__chatVoiceMsg;
-      window.__chatVoiceMsg = "";
-      setChatInput("");
-      sendChatWithMsg(msg);
-    }
-  // eslint-disable-next-line
-  }, [chatListening]);
+  // ── Text-to-Speech: AI reads responses aloud ─────────────────
+  const speakText = (text) => {
+    if (!window.speechSynthesis) return;
+    window.speechSynthesis.cancel();
+    const utter = new SpeechSynthesisUtterance(text.replace(/[\u{1F600}-\u{1FFFF}]/gu, "").trim());
+    const voiceLang = { en: "en-US", ta: "ta-IN", hi: "hi-IN" }[lang] || "en-US";
+    utter.lang = voiceLang;
+    utter.rate = 0.92;
+    utter.pitch = 1;
+    utter.onstart = () => setSpeaking(true);
+    utter.onend = () => setSpeaking(false);
+    utter.onerror = () => setSpeaking(false);
+    window.speechSynthesis.speak(utter);
+  };
 
+  const stopSpeaking = () => {
+    window.speechSynthesis?.cancel();
+    setSpeaking(false);
+  };
 
   const sendChatWithMsg = async (msg) => {
     if (!msg || chatLoading) return;
@@ -378,7 +411,6 @@ export default function App() {
     setChatLoading(true);
     try {
       const chatHistoryForAPI = newMessages.map(m => ({ role: m.role === "ai" ? "assistant" : "user", content: m.content }));
-      // Build diagnosis context for the AI
       const diagCtx = result ? {
         disease: result.treatment.predicted_disease,
         drug: result.treatment.recommended_drug,
@@ -489,11 +521,12 @@ export default function App() {
                 </div>
               </button>
             )}
-            <div style={{ padding: "10px 13px", borderRadius: 12, background: "rgba(59,126,255,0.08)", border: "1px solid rgba(59,126,255,0.2)" }}>
-              <div style={{ fontSize: 10, color: ACCENT, fontWeight: 700, letterSpacing: "0.05em", marginBottom: 7 }}>AI AGENTS ONLINE</div>
+            {/* Backend Status */}
+            <div style={{ padding: "10px 13px", borderRadius: 12, background: backendOnline === false ? "rgba(255,69,58,0.08)" : "rgba(59,126,255,0.08)", border: `1px solid ${backendOnline === false ? "rgba(255,69,58,0.2)" : "rgba(59,126,255,0.2)"}` }}>
+              <div style={{ fontSize: 10, color: backendOnline === false ? DANGER : ACCENT, fontWeight: 700, letterSpacing: "0.05em", marginBottom: 7 }}>BACKEND SERVER</div>
               <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
-                <div style={{ width: 6, height: 6, borderRadius: "50%", background: SUCCESS, animation: "pulse 2s infinite" }} />
-                <span style={{ fontSize: 11.5, color: TEXT2 }}>10 agents ready</span>
+                <div style={{ width: 6, height: 6, borderRadius: "50%", background: backendOnline === null ? WARNING : backendOnline ? SUCCESS : DANGER, animation: backendOnline !== false ? "pulse 2s infinite" : "none" }} />
+                <span style={{ fontSize: 11.5, color: TEXT2 }}>{backendOnline === null ? "Checking..." : backendOnline ? "Connected · 10 agents ready" : "Offline — Start backend!"}</span>
               </div>
             </div>
             <button onClick={() => { logout(); router.push("/landing"); }} style={{ width: "100%", margin: "8px 0 0", padding: "8px", borderRadius: 10, border: `1px solid rgba(255,69,58,0.2)`, background: "rgba(255,69,58,0.06)", color: "rgba(255,69,58,0.8)", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", transition: "all 0.2s" }}>
@@ -505,6 +538,19 @@ export default function App() {
 
         {/* Content */}
         <main style={{ flex: 1, overflow: "auto", padding: "28px 26px" }}>
+
+          {/* Backend offline banner */}
+          {backendOnline === false && (
+            <div style={{ maxWidth: 1060, margin: "0 auto 18px", padding: "13px 18px", borderRadius: 14, background: "rgba(255,69,58,0.07)", border: "1px solid rgba(255,69,58,0.25)", display: "flex", alignItems: "center", gap: 12, animation: "fadeUp 0.4s ease" }}>
+              <span style={{ fontSize: 20 }}>🔴</span>
+              <div>
+                <div style={{ fontSize: 13, fontWeight: 700, color: DANGER, marginBottom: 2 }}>Backend Offline — Cannot Connect to AI Server</div>
+                <div style={{ fontSize: 12, color: TEXT2 }}>
+                  Double-click <strong>backend/start_backend.bat</strong> or run: <code style={{ background: "rgba(255,255,255,0.08)", padding: "1px 7px", borderRadius: 5, fontFamily: "monospace", fontSize: 11 }}>python -m uvicorn main:app --reload --port 8000</code> inside the backend folder.
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* DIAGNOSE */}
           {tab === "diagnose" && (
@@ -645,15 +691,31 @@ export default function App() {
                 </div>
               </div>
 
-              {/* Differential Diagnoses + Lifestyle + Safety */}
+              {/* Results — bottom sections */}
               {result && !loading && (
                 <div style={{ display: "flex", flexDirection: "column", gap: 18, marginTop: 18, animation: "fadeUp 0.5s ease 0.2s both" }}>
 
-                  {/* Differential diagnosis probability chart */}
-                  <div className="glass" style={{ padding: 20 }}>
-                    <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 14 }}>📊 Differential Diagnoses</div>
-                    <ProbChart data={result.patient_profile.disease_probabilities} />
-                  </div>
+                  {/* Explanation card */}
+                  {result.treatment.explanation && (
+                    <div className="glass" style={{ padding: 20, animation: "slideIn 0.4s ease 0.15s both" }}>
+                      <div style={{ fontSize: 11, color: TEXT3, letterSpacing: "0.05em", marginBottom: 8 }}>📋 CLINICAL EXPLANATION</div>
+                      <div style={{ fontSize: 13.5, color: TEXT2, lineHeight: 1.65 }}>{result.treatment.explanation}</div>
+                    </div>
+                  )}
+
+                  {/* Step-by-step treatment plan */}
+                  {result.treatment.treatment_plan?.length > 0 && (
+                    <div className="glass" style={{ padding: 20, animation: "slideIn 0.4s ease 0.18s both" }}>
+                      <div style={{ fontSize: 11, color: TEXT3, letterSpacing: "0.05em", marginBottom: 12 }}>🗂️ STEP-BY-STEP TREATMENT PLAN</div>
+                      <div style={{ display: "flex", flexDirection: "column", gap: 9 }}>
+                        {result.treatment.treatment_plan.map((step, i) => (
+                          <div key={i} style={{ fontSize: 13, color: TEXT2, lineHeight: 1.55, padding: "8px 12px", borderRadius: 10, background: "rgba(59,126,255,0.05)", border: "1px solid rgba(59,126,255,0.1)" }}>
+                            {step}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
 
                   {/* Follow-up Questions */}
                   {result.follow_up_questions?.length > 0 && (
@@ -676,15 +738,21 @@ export default function App() {
                   )}
 
                   <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 18 }}>
+                    {/* Lifestyle */}
                     <div className="glass" style={{ padding: 20 }}>
                       <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 13 }}>🌿 Lifestyle Recommendations</div>
-                      {result.treatment.lifestyle?.map((l,i) => (
-                        <div key={i} style={{ display: "flex", gap: 10, alignItems: "flex-start", padding: "5px 0" }}>
-                          <div style={{ width: 5, height: 5, borderRadius: "50%", background: SUCCESS, marginTop: 5.5, flexShrink: 0 }} />
-                          <span style={{ fontSize: 13, color: TEXT2, lineHeight: 1.5 }}>{l}</span>
-                        </div>
-                      ))}
+                      {result.treatment.lifestyle?.length > 0 ? (
+                        result.treatment.lifestyle.map((l, i) => (
+                          <div key={i} style={{ display: "flex", gap: 10, alignItems: "flex-start", padding: "7px 0", borderBottom: i < result.treatment.lifestyle.length - 1 ? `1px solid rgba(255,255,255,0.04)` : "none" }}>
+                            <div style={{ width: 20, height: 20, borderRadius: "50%", background: "rgba(48,209,88,0.12)", border: "1px solid rgba(48,209,88,0.25)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10, flexShrink: 0, marginTop: 1 }}>✓</div>
+                            <span style={{ fontSize: 13, color: TEXT2, lineHeight: 1.55 }}>{l}</span>
+                          </div>
+                        ))
+                      ) : (
+                        <div style={{ fontSize: 13, color: TEXT3, fontStyle: "italic" }}>Run a diagnosis to see personalized lifestyle recommendations.</div>
+                      )}
                     </div>
+                    {/* Drug Safety */}
                     <div className="glass" style={{ padding: 20 }}>
                       <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 13 }}>🛡️ Drug Safety Assessment</div>
                       <div style={{ display: "flex", justifyContent: "space-between", padding: "6px 0", borderBottom: `1px solid rgba(255,255,255,0.05)` }}>
@@ -701,6 +769,14 @@ export default function App() {
                       }
                     </div>
                   </div>
+
+                  {/* When to seek care */}
+                  {result.treatment.when_to_seek_care && (
+                    <div className="glass" style={{ padding: 18, borderColor: "rgba(255,214,10,0.22)", background: "rgba(255,214,10,0.03)" }}>
+                      <div style={{ fontSize: 11, color: WARNING, fontWeight: 700, letterSpacing: "0.05em", marginBottom: 8 }}>🏥 WHEN TO SEEK MEDICAL CARE</div>
+                      <div style={{ fontSize: 13, color: TEXT2, lineHeight: 1.6 }}>{result.treatment.when_to_seek_care}</div>
+                    </div>
+                  )}
 
                   {/* Drug Interactions */}
                   {result.drug_interactions?.length > 0 && (
@@ -755,8 +831,19 @@ export default function App() {
                     {m.role === "ai" && (
                       <div style={{ width: 32, height: 32, borderRadius: 10, background: "linear-gradient(135deg,#3b7eff,#5e5ce6)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, flexShrink: 0, marginBottom: 2 }}>🧠</div>
                     )}
-                    <div className={m.role === "user" ? "bubble-user" : "bubble-ai"}>
-                      <ChatMessage content={m.content} />
+                    <div style={{ display: "flex", flexDirection: "column", gap: 4, maxWidth: m.role === "ai" ? "78%" : "72%" }}>
+                      <div className={m.role === "user" ? "bubble-user" : "bubble-ai"}>
+                        <ChatMessage content={m.content} />
+                      </div>
+                      {m.role === "ai" && (
+                        <button
+                          onClick={() => speaking ? stopSpeaking() : speakText(m.content)}
+                          title={speaking ? "Stop speaking" : "Read aloud"}
+                          style={{ alignSelf: "flex-start", background: "transparent", border: "none", cursor: "pointer", fontSize: 14, color: speaking ? DANGER : TEXT3, padding: "2px 4px", borderRadius: 6, transition: "all 0.2s" }}
+                        >
+                          {speaking ? "🔇" : "🔊"}
+                        </button>
+                      )}
                     </div>
                   </div>
                 ))}

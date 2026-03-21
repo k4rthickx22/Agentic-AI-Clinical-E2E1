@@ -7,13 +7,13 @@ from dotenv import load_dotenv
 from fastapi import Request
 
 try:
-    from openai import OpenAI
-    HAS_LLM_DEPS = True
+    from groq import Groq
+    HAS_GROQ = True
 except ImportError:
-    HAS_LLM_DEPS = False
+    HAS_GROQ = False
 
 load_dotenv()
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY")) if HAS_LLM_DEPS and os.getenv("OPENAI_API_KEY") else None
+groq_client = Groq(api_key=os.getenv("GROQ_API_KEY")) if HAS_GROQ and os.getenv("GROQ_API_KEY") else None
 
 router = APIRouter()
 orchestrator = ClinicalOrchestrator()
@@ -103,8 +103,8 @@ class ChatRequest(BaseModel):
 
 @router.post("/chat")
 def chat(request: ChatRequest):
-    if not client:
-        return {"reply": "⚠️ AI Chat is offline. Please configure your OpenAI API Key in the .env file to enable the AI assistant."}
+    if not groq_client:
+        return {"reply": "⚠️ AI Chat is offline. Please add your GROQ_API_KEY to backend/.env and restart the server."}
     
     # Build system prompt with language hint
     system_content = MEDICAL_SYSTEM_PROMPT
@@ -129,15 +129,15 @@ def chat(request: ChatRequest):
     messages.append({"role": "user", "content": request.message})
 
     try:
-        response = client.chat.completions.create(
-            model="gpt-4o-mini",
+        response = groq_client.chat.completions.create(
+            model="llama-3.1-8b-instant",
             messages=messages,
             max_tokens=1200,
             temperature=0.7
         )
         return {"reply": response.choices[0].message.content}
     except Exception as e:
-        print(f"Chat API Error: {e}")
+        print(f"Groq Chat API Error: {e}")
         return {"reply": "I apologize — my AI inference engine is temporarily unavailable. Please try again in a moment."}
 
 

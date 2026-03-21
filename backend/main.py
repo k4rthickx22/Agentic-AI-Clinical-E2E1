@@ -10,7 +10,7 @@ Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="AI Clinic DSS API", version="2.0.0")
 
-# CORS
+# CORS — allow all origins for local development
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -25,4 +25,18 @@ app.include_router(auth_router, prefix="/api")
 @app.get("/")
 def home():
     return {"message": "AI Clinic DSS Backend v2.0 Running"}
+
+@app.get("/api/health")
+def health():
+    """Health check endpoint — used by frontend to verify backend connectivity."""
+    try:
+        from sqlalchemy import text
+        from database.db import SessionLocal
+        db = SessionLocal()
+        db.execute(text("SELECT 1"))
+        db.close()
+        return {"status": "ok", "database": "connected", "version": "2.0.0"}
+    except Exception as e:
+        return {"status": "error", "database": "disconnected", "detail": str(e)}
+
 
