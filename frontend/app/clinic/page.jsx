@@ -291,50 +291,113 @@ export default function App() {
   // ── Voice recognition – shared lang codes ───────────────────
   const LANG_CODES = { en: "en-US", ta: "ta-IN", hi: "hi-IN" };
 
+  // Diagnosis voice: auto-submits after speech stops
   const toggleListen = () => {
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!SR) { alert("Voice recognition not supported in this browser."); return; }
+    if (!SR) { alert("Voice recognition not supported in this browser. Please use Chrome."); return; }
     if (listening) { recRef.current?.stop(); setListening(false); return; }
     const rec = new SR();
-    rec.continuous = false; rec.interimResults = false;
+    rec.continuous = false;
+    rec.interimResults = true;
     rec.lang = LANG_CODES[lang] || "en-US";
-    rec.onresult = e => { setSymptoms(prev => prev + (prev ? " " : "") + e.results[0][0].transcript); setListening(false); };
-    rec.onerror = rec.onend = () => setListening(false);
+    rec.onresult = e => {
+      const transcript = Array.from(e.results).map(r => r[0].transcript).join("");
+      setSymptoms(prev => (prev ? prev + " " : "") + transcript);
+    };
+    rec.onend = () => {
+      setListening(false);
+      // Auto-submit diagnosis after voice stops
+      setTimeout(() => {
+        setSymptoms(prev => {
+          if (prev.trim()) {
+            // Trigger diagnose via a ref flag
+            window.__voiceAutoSubmit = true;
+          }
+          return prev;
+        });
+      }, 100);
+    };
+    rec.onerror = () => setListening(false);
     recRef.current = rec; rec.start(); setListening(true);
   };
 
+  // Effect: auto-submit diagnosis when voice ends
+  useEffect(() => {
+    if (window.__voiceAutoSubmit && symptoms.trim() && !loading) {
+      window.__voiceAutoSubmit = false;
+      diagnose();
+    }
+  // eslint-disable-next-line
+  }, [symptoms]);
+
+  // Chat voice: auto-sends after speech stops
   const toggleChatListen = () => {
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!SR) { alert("Voice recognition not supported in this browser."); return; }
+    if (!SR) { alert("Voice recognition not supported in this browser. Please use Chrome."); return; }
     if (chatListening) { chatRecRef.current?.stop(); setChatListening(false); return; }
     const rec = new SR();
-    rec.continuous = false; rec.interimResults = false;
+    rec.continuous = false;
+    rec.interimResults = true;
     rec.lang = LANG_CODES[lang] || "en-US";
-    rec.onresult = e => { setChatInput(prev => prev + (prev ? " " : "") + e.results[0][0].transcript); setChatListening(false); };
-    rec.onerror = rec.onend = () => setChatListening(false);
+    let finalTranscript = "";
+    rec.onresult = e => {
+      finalTranscript = Array.from(e.results).map(r => r[0].transcript).join("");
+      setChatInput(finalTranscript);
+    };
+    rec.onend = () => {
+      setChatListening(false);
+      // Auto-send the chat message after voice stops
+      if (finalTranscript.trim()) {
+        setTimeout(() => {
+          window.__chatVoiceMsg = finalTranscript.trim();
+          window.__chatVoiceSend = true;
+        }, 150);
+      }
+    };
+    rec.onerror = () => setChatListening(false);
     chatRecRef.current = rec; rec.start(); setChatListening(true);
   };
 
+  // Effect: auto-send chat message when voice ends
+  useEffect(() => {
+    if (window.__chatVoiceSend && window.__chatVoiceMsg && !chatLoading) {
+      window.__chatVoiceSend = false;
+      const msg = window.__chatVoiceMsg;
+      window.__chatVoiceMsg = "";
+      setChatInput("");
+      sendChatWithMsg(msg);
+    }
+  // eslint-disable-next-line
+  }, [chatListening]);
+
+
+  const sendChatWithMsg = async (msg) => {
+    if (!msg || chatLoading) return;
+    const newMessages = [...messages, { role: "user", content: msg }];
+    setMessages(newMessages);
+    setChatLoading(true);
+    try {
+      const chatHistoryForAPI = newMessages.map(m => ({ role: m.role === "ai" ? "assistant" : "user", content: m.content }));
+      // Build diagnosis context for the AI
+      const diagCtx = result ? {
+        disease: result.treatment.predicted_disease,
+        drug: result.treatment.recommended_drug,
+        triage: result.triage.level,
+        symptoms: symptoms
+      } : {};
+      const { reply } = await sendChatMessage(msg, chatHistoryForAPI.slice(0, -1), lang, diagCtx);
+      setMessages(p => [...p, { role: "ai", content: reply }]);
+    } catch (err) {
+      console.error(err);
+      setMessages(p => [...p, { role: "ai", content: "Sorry, I'm having trouble connecting to the AI server right now. Please try again." }]);
+    }
+    setChatLoading(false);
+  };
 
   const sendChat = async () => {
     if (!chatInput.trim() || chatLoading) return;
     const msg = chatInput.trim(); setChatInput("");
-    
-    const newMessages = [...messages, { role: "user", content: msg }];
-    setMessages(newMessages);
-    setChatLoading(true);
-    
-    try {
-      // Send the history of the conversation to the backend for context
-      const chatHistoryForAPI = newMessages.map(m => ({ role: m.role === "ai" ? "assistant" : "user", content: m.content }));
-      const { reply } = await sendChatMessage(msg, chatHistoryForAPI.slice(0, -1)); // exclude the newly added user message
-      setMessages(p => [...p, { role: "ai", content: reply }]);
-    } catch (err) {
-      console.error(err);
-      setMessages(p => [...p, { role: "ai", content: "Sorry, I am having trouble connecting to the AI server right now." }]);
-    }
-    
-    setChatLoading(false);
+    await sendChatWithMsg(msg);
   };
 
   const downloadReport = async () => {
@@ -378,10 +441,10 @@ export default function App() {
         {/* Sidebar */}
         <nav style={{ width: 210, padding: "22px 12px", display: "flex", flexDirection: "column", gap: 3, borderRight: `1px solid ${BORDER}`, position: "sticky", top: 0, height: "100vh", flexShrink: 0, overflowY: "auto" }}>
           <div style={{ padding: "6px 12px 18px", display: "flex", alignItems: "center", gap: 10 }}>
-            <div style={{ width: 33, height: 33, borderRadius: 9, background: "linear-gradient(135deg,#3b7eff,#5e5ce6)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16 }}>🧠</div>
+            <div style={{ width: 33, height: 33, borderRadius: 9, background: "linear-gradient(135deg,#3b7eff,#5e5ce6)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16 }}>🩺</div>
             <div>
-              <div style={{ fontSize: 14, fontWeight: 700 }}>AI Clinic</div>
-              <div style={{ fontSize: 10, color: TEXT3 }}>Clinical DSS v2.0</div>
+              <div style={{ fontSize: 14, fontWeight: 700 }}>MedAI Doctor</div>
+              <div style={{ fontSize: 10, color: TEXT3 }}>Personal AI Health Assistant</div>
             </div>
           </div>
 
@@ -422,17 +485,20 @@ export default function App() {
                 </div>
                 <div style={{ textAlign: "left", overflow: "hidden" }}>
                   <div style={{ fontSize: 12, fontWeight: 600, color: TEXT, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{currentUser.name}</div>
-                  <div style={{ fontSize: 10, color: TEXT3 }}>{currentUser.role}</div>
+                  <div style={{ fontSize: 10, color: TEXT3 }}>Patient · My Account</div>
                 </div>
               </button>
             )}
-            <div style={{ padding: "12px 13px", borderRadius: 12, background: "rgba(59,126,255,0.08)", border: "1px solid rgba(59,126,255,0.2)" }}>
-              <div style={{ fontSize: 10, color: ACCENT, fontWeight: 700, letterSpacing: "0.05em", marginBottom: 7 }}>SYSTEM STATUS</div>
+            <div style={{ padding: "10px 13px", borderRadius: 12, background: "rgba(59,126,255,0.08)", border: "1px solid rgba(59,126,255,0.2)" }}>
+              <div style={{ fontSize: 10, color: ACCENT, fontWeight: 700, letterSpacing: "0.05em", marginBottom: 7 }}>AI AGENTS ONLINE</div>
               <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
                 <div style={{ width: 6, height: 6, borderRadius: "50%", background: SUCCESS, animation: "pulse 2s infinite" }} />
-                <span style={{ fontSize: 11.5, color: TEXT2 }}>10 agents online</span>
+                <span style={{ fontSize: 11.5, color: TEXT2 }}>10 agents ready</span>
               </div>
             </div>
+            <button onClick={() => { logout(); router.push("/landing"); }} style={{ width: "100%", margin: "8px 0 0", padding: "8px", borderRadius: 10, border: `1px solid rgba(255,69,58,0.2)`, background: "rgba(255,69,58,0.06)", color: "rgba(255,69,58,0.8)", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", transition: "all 0.2s" }}>
+              Sign Out
+            </button>
           </div>
 
         </nav>
@@ -487,7 +553,7 @@ export default function App() {
                       {listening && (
                         <div style={{ display: "flex", alignItems: "center", gap: 9, marginTop: 8, padding: "7px 11px", borderRadius: 8, background: "rgba(255,69,58,0.07)", border: "1px solid rgba(255,69,58,0.18)" }}>
                           <Wave active />
-                          <span style={{ fontSize: 12, color: DANGER }}>Listening... speak your symptoms</span>
+                          <span style={{ fontSize: 12, color: DANGER }}>🎙️ Listening in {lang === "ta" ? "Tamil" : lang === "hi" ? "Hindi" : "English"} — will auto-submit when done</span>
                         </div>
                       )}
                     </div>
@@ -734,65 +800,99 @@ export default function App() {
 
           {/* HISTORY */}
           {tab === "history" && (
-            <div style={{ maxWidth: 860, margin: "0 auto", animation: "fadeUp 0.4s ease" }}>
+            <div style={{ maxWidth: 900, margin: "0 auto", animation: "fadeUp 0.4s ease" }}>
               <div style={{ marginBottom: 22 }}>
-                <h1 style={{ fontSize: 26, fontWeight: 700, letterSpacing: "-0.4px", marginBottom: 3 }}>Patient History</h1>
-                <p style={{ color: TEXT2, fontSize: 14 }}>Recent consultations and clinical records</p>
+                <h1 style={{ fontSize: 26, fontWeight: 700, letterSpacing: "-0.4px", marginBottom: 3 }}>📁 My Health Records</h1>
+                <p style={{ color: TEXT2, fontSize: 14 }}>Your personal consultation history — private and secure</p>
               </div>
 
-              <div className="glass" style={{ overflow: "hidden", marginBottom: 14 }}>
-                <div style={{ padding: "14px 18px", borderBottom: `1px solid ${BORDER}`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                  <span style={{ fontSize: 13.5, fontWeight: 600 }}>{filteredHistory.length} Records</span>
-                  <div style={{ display: "flex", gap: 5 }}>
-                    {["All","HIGH","MODERATE","LOW"].map(f => (
-                      <button key={f} className={`ntab ${histFilter===f?"on":""}`} onClick={() => setHistFilter(f)}>{f}</button>
-                    ))}
-                  </div>
+              {!currentUser ? (
+                <div className="glass" style={{ padding: 48, textAlign: "center" }}>
+                  <div style={{ fontSize: 44, marginBottom: 16 }}>🔒</div>
+                  <div style={{ fontSize: 17, fontWeight: 700, marginBottom: 8 }}>Sign in to view your records</div>
+                  <div style={{ fontSize: 14, color: TEXT2, marginBottom: 22 }}>Your consultation history is private and only visible when you're logged in.</div>
+                  <button className="btn btn-primary" onClick={() => router.push("/landing")}>Sign In</button>
                 </div>
-                <div style={{ padding: "8px 10px" }}>
-                  {filteredHistory.map((p, i) => (
-                    <div key={p.id} className="histrow" onClick={() => setSelHistory(selHistory?.id===p.id ? null : p)} style={{ animation: `fadeUp 0.3s ease ${i*0.05}s both` }}>
-                      <div style={{ width: 38, height: 38, borderRadius: 11, background: "rgba(59,126,255,0.1)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 17, flexShrink: 0 }}>
-                        {p.triage==="HIGH"?"🚨":p.triage==="MODERATE"?"⚠️":"✅"}
-                      </div>
-                      <div style={{ flex: 1 }}>
-                        <div style={{ fontSize: 14, fontWeight: 600 }}>{p.name}</div>
-                        <div style={{ fontSize: 12, color: TEXT2 }}>Age {p.age} · {p.date}</div>
-                      </div>
-                      <div style={{ textAlign: "right" }}>
-                        <div style={{ fontSize: 13.5, fontWeight: 600, marginBottom: 5 }}>{p.disease}</div>
-                        <TriageBadge level={p.triage} />
+              ) : (
+                <>
+                  <div className="glass" style={{ overflow: "hidden", marginBottom: 16 }}>
+                    <div style={{ padding: "14px 18px", borderBottom: `1px solid ${BORDER}`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                      <span style={{ fontSize: 13.5, fontWeight: 600 }}>{filteredHistory.length} Consultation{filteredHistory.length !== 1 ? "s" : ""}</span>
+                      <div style={{ display: "flex", gap: 5 }}>
+                        {["All","HIGH","MODERATE","LOW"].map(f => (
+                          <button key={f} className={`ntab ${histFilter===f?"on":""}`} onClick={() => setHistFilter(f)}>{f}</button>
+                        ))}
                       </div>
                     </div>
-                  ))}
-                  {filteredHistory.length === 0 && (
-                    <div style={{ padding: "24px", textAlign: "center", color: TEXT3, fontSize: 14 }}>No records for this filter</div>
+                    <div style={{ padding: "8px 10px" }}>
+                      {filteredHistory.map((p, i) => (
+                        <div key={p.id} className="histrow" onClick={() => setSelHistory(selHistory?.id===p.id ? null : p)} style={{ animation: `fadeUp 0.3s ease ${i*0.05}s both` }}>
+                          <div style={{ width: 40, height: 40, borderRadius: 12, background: p.triage==="HIGH" ? "rgba(255,69,58,0.12)" : p.triage==="MODERATE" ? "rgba(255,214,10,0.12)" : "rgba(48,209,88,0.1)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, flexShrink: 0 }}>
+                            {p.triage==="HIGH"?"🚨":p.triage==="MODERATE"?"⚠️":"✅"}
+                          </div>
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{ fontSize: 14.5, fontWeight: 700, marginBottom: 2 }}>{p.disease}</div>
+                            <div style={{ fontSize: 12, color: TEXT2 }}>{p.date}</div>
+                            <div style={{ fontSize: 12, color: TEXT3, marginTop: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.symptoms?.slice(0,60)}{p.symptoms?.length > 60 ? "..." : ""}</div>
+                          </div>
+                          <div style={{ textAlign: "right", flexShrink: 0 }}>
+                            <div style={{ fontSize: 12.5, fontWeight: 600, color: ACCENT, marginBottom: 4 }}>💊 {p.drug?.slice(0,18)}{p.drug?.length > 18 ? "..." : ""}</div>
+                            <TriageBadge level={p.triage} />
+                          </div>
+                        </div>
+                      ))}
+                      {filteredHistory.length === 0 && (
+                        <div style={{ padding: "40px 24px", textAlign: "center" }}>
+                          <div style={{ fontSize: 36, marginBottom: 12 }}>🩺</div>
+                          <div style={{ fontSize: 14, fontWeight: 600, color: TEXT2, marginBottom: 6 }}>No consultations yet</div>
+                          <div style={{ fontSize: 13, color: TEXT3 }}>Run your first AI diagnosis to see records here</div>
+                          <button className="btn btn-primary" style={{ marginTop: 16 }} onClick={() => setTab("diagnose")}>Start Diagnosis</button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {selHistory && (
+                    <div className="glass" style={{ padding: 22, animation: "slideIn 0.3s ease" }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 16 }}>
+                        <div>
+                          <div style={{ fontSize: 19, fontWeight: 700 }}>{selHistory.disease}</div>
+                          <div style={{ fontSize: 12.5, color: TEXT2, marginTop: 3 }}>{selHistory.date}</div>
+                        </div>
+                        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                          <TriageBadge level={selHistory.triage} />
+                          <button className="btn btn-ghost" style={{ fontSize: 12, padding: "6px 12px" }} onClick={() => setSelHistory(null)}>Close ✕</button>
+                        </div>
+                      </div>
+                      <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 11, marginBottom: 14 }}>
+                        {[["💊 Medication", selHistory.drug],["📏 Dosage", selHistory.dosage],["⏱️ Duration", selHistory.duration]].map(([l,v],i) => (
+                          <div key={i} style={{ padding: "14px 16px", borderRadius: 13, background: SURFACE, border: `1px solid ${BORDER}` }}>
+                            <div style={{ fontSize: 10.5, color: TEXT3, letterSpacing: "0.04em", marginBottom: 7 }}>{l}</div>
+                            <div style={{ fontSize: 13.5, fontWeight: 700, color: ACCENT }}>{v || "N/A"}</div>
+                          </div>
+                        ))}
+                      </div>
+                      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 11 }}>
+                        <div style={{ padding: "14px 16px", borderRadius: 13, background: SURFACE, border: `1px solid ${BORDER}` }}>
+                          <div style={{ fontSize: 10.5, color: TEXT3, letterSpacing: "0.04em", marginBottom: 8 }}>SYMPTOMS REPORTED</div>
+                          <div style={{ fontSize: 13, color: TEXT2, lineHeight: 1.6 }}>{selHistory.symptoms}</div>
+                        </div>
+                        <div style={{ padding: "14px 16px", borderRadius: 13, background: SURFACE, border: `1px solid ${BORDER}` }}>
+                          <div style={{ fontSize: 10.5, color: TEXT3, letterSpacing: "0.04em", marginBottom: 8 }}>🌿 LIFESTYLE TIPS</div>
+                          {selHistory.lifestyle?.length > 0 ? (
+                            <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+                              {selHistory.lifestyle.slice(0,3).map((l,i) => (
+                                <div key={i} style={{ fontSize: 12.5, color: TEXT2, display: "flex", gap: 7, alignItems: "flex-start" }}>
+                                  <span style={{ color: SUCCESS, flexShrink: 0 }}>•</span>{l}
+                                </div>
+                              ))}
+                            </div>
+                          ) : <div style={{ fontSize: 13, color: TEXT3 }}>No lifestyle data</div>}
+                        </div>
+                      </div>
+                    </div>
                   )}
-                </div>
-              </div>
-
-              {selHistory && (
-                <div className="glass" style={{ padding: 20, animation: "slideIn 0.3s ease" }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 14 }}>
-                    <div>
-                      <div style={{ fontSize: 17, fontWeight: 700 }}>{selHistory.name}</div>
-                      <div style={{ fontSize: 12.5, color: TEXT2, marginTop: 2 }}>Age {selHistory.age} · {selHistory.date}</div>
-                    </div>
-                    <button className="btn btn-ghost" style={{ fontSize: 12, padding: "6px 12px" }} onClick={() => setSelHistory(null)}>Close ✕</button>
-                  </div>
-                  <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 11, marginBottom: 14 }}>
-                    {[["Diagnosis",selHistory.disease],["Treatment",selHistory.drug],["Triage",<TriageBadge key="tb" level={selHistory.triage} />]].map(([l,v],i) => (
-                      <div key={i} style={{ padding: "14px 16px", borderRadius: 13, background: SURFACE, border: `1px solid ${BORDER}` }}>
-                        <div style={{ fontSize: 10.5, color: TEXT3, letterSpacing: "0.04em", marginBottom: 7 }}>{l}</div>
-                        <div style={{ fontSize: 13.5, fontWeight: 600 }}>{v}</div>
-                      </div>
-                    ))}
-                  </div>
-                  <div style={{ padding: "13px 15px", borderRadius: 11, background: SURFACE, border: `1px solid ${BORDER}` }}>
-                    <div style={{ fontSize: 10.5, color: TEXT3, letterSpacing: "0.04em", marginBottom: 5 }}>SYMPTOMS</div>
-                    <div style={{ fontSize: 13, color: TEXT2, lineHeight: 1.6 }}>{selHistory.symptoms}</div>
-                  </div>
-                </div>
+                </>
               )}
             </div>
           )}

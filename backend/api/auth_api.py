@@ -26,7 +26,7 @@ class RegisterRequest(BaseModel):
     name: str
     email: str
     password: str
-    role: str = "patient"
+    # Role is always 'patient' — doctors don't use this product
 
 
 class LoginRequest(BaseModel):
@@ -36,7 +36,6 @@ class LoginRequest(BaseModel):
 
 class ProfileUpdateRequest(BaseModel):
     name: str
-    role: str
 
 
 # ── Routes ─────────────────────────────────────────
@@ -53,7 +52,7 @@ def register(req: RegisterRequest, db: Session = Depends(get_db)):
         name=req.name.strip(),
         email=req.email.lower().strip(),
         hashed_password=hash_password(req.password),
-        role=req.role,
+        role="patient",  # Always patient
     )
     db.add(user)
     db.commit()
@@ -106,20 +105,19 @@ def update_profile(req: ProfileUpdateRequest, user_id: int = Depends(get_current
     if not user:
         raise HTTPException(status_code=404, detail="User not found.")
     user.name = req.name.strip()
-    user.role = req.role
     db.commit()
     return {"message": "Profile updated successfully.", "name": user.name, "role": user.role}
 
 
 @router.get("/activity")
 def get_activity(user_id: int = Depends(get_current_user_id), db: Session = Depends(get_db)):
-    """Fetch the authenticated user's recent consultation history."""
+    """Fetch the authenticated user's own consultation history."""
     from database.models import Consultation
     consultations = (
         db.query(Consultation)
         .filter(Consultation.user_id == user_id)
         .order_by(Consultation.created_at.desc())
-        .limit(20)
+        .limit(50)
         .all()
     )
     return [
@@ -128,7 +126,13 @@ def get_activity(user_id: int = Depends(get_current_user_id), db: Session = Depe
             "disease": c.predicted_disease,
             "triage": c.triage.get("level") if c.triage else "N/A",
             "drug": c.treatment.get("recommended_drug") if c.treatment else "N/A",
-            "date": c.created_at.strftime("%b %d, %Y") if c.created_at else "N/A",
+            "symptoms": c.symptoms,
+            "age": c.age,
+            "gender": c.gender,
+            "date": c.created_at.strftime("%b %d, %Y · %I:%M %p") if c.created_at else "N/A",
+            "lifestyle": c.treatment.get("lifestyle", []) if c.treatment else [],
+            "dosage": c.treatment.get("dosage", "As prescribed") if c.treatment else "As prescribed",
+            "duration": c.treatment.get("duration", "As advised") if c.treatment else "As advised",
         }
         for c in consultations
     ]

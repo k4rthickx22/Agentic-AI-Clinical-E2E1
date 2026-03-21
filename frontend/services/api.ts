@@ -12,8 +12,8 @@ const authHeaders = () => {
 };
 
 // ── Auth APIs ──────────────────────────────────────────────────
-export const registerUser = async (name: string, email: string, password: string, role: string) => {
-  const res = await axios.post(`${API_URL}/auth/register`, { name, email, password, role });
+export const registerUser = async (name: string, email: string, password: string, role: string = "patient") => {
+  const res = await axios.post(`${API_URL}/auth/register`, { name, email, password });
   if (res.data.access_token) localStorage.setItem("auth_token", res.data.access_token);
   if (res.data.user) localStorage.setItem("auth_user", JSON.stringify(res.data.user));
   return res.data;
@@ -31,8 +31,8 @@ export const getMe = async () => {
   return res.data;
 };
 
-export const updateProfile = async (name: string, role: string) => {
-  const res = await axios.put(`${API_URL}/auth/profile/update`, { name, role }, { headers: authHeaders() });
+export const updateProfile = async (name: string) => {
+  const res = await axios.put(`${API_URL}/auth/profile/update`, { name }, { headers: authHeaders() });
   return res.data;
 };
 
@@ -70,6 +70,7 @@ export const diagnosePatient = async (
 };
 
 export const fetchHistory = async () => {
+  // History now returns ONLY the logged-in user's records
   const response = await axios.get(`${API_URL}/history`, { headers: authHeaders() });
   return response.data;
 };
@@ -81,11 +82,13 @@ export const fetchAnalytics = async () => {
 
 export const sendChatMessage = async (
   message: string,
-  history: Array<{ role: string; content: string }>
+  history: Array<{ role: string; content: string }>,
+  language: string = "en",
+  diagnosisContext: Record<string, string> = {}
 ) => {
   const response = await axios.post(
     `${API_URL}/chat`,
-    { message, history },
+    { message, history, language, diagnosis_context: diagnosisContext },
     { headers: authHeaders() }
   );
   return response.data;

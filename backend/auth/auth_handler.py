@@ -58,6 +58,16 @@ def get_current_user_id(credentials: HTTPAuthorizationCredentials = Depends(bear
     return int(user_id)
 
 
+def get_current_user_id_from_token(token: str) -> Optional[int]:
+    """Decode user_id from a raw token string (no FastAPI DI)."""
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        user_id = payload.get("sub")
+        return int(user_id) if user_id else None
+    except Exception:
+        return None
+
+
 def get_optional_user_id(credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme)) -> Optional[int]:
     """Returns user_id if token present, None otherwise (for public routes)."""
     if not credentials:

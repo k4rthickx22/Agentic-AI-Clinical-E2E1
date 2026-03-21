@@ -2,6 +2,7 @@ from database.db import SessionLocal
 from database.models import Consultation
 from sqlalchemy import desc, func
 
+
 def save_consultation(patient_data, result):
     db = SessionLocal()
     try:
@@ -21,14 +22,52 @@ def save_consultation(patient_data, result):
     finally:
         db.close()
 
-def get_consultations():
+
+def get_user_consultations(user_id: int):
+    """Get consultations for a specific logged-in user."""
     db = SessionLocal()
     try:
-        results = db.query(Consultation).order_by(desc(Consultation.created_at)).limit(50).all()
+        results = (
+            db.query(Consultation)
+            .filter(Consultation.user_id == user_id)
+            .order_by(desc(Consultation.created_at))
+            .limit(100)
+            .all()
+        )
         return [
             {
                 "id": r.id,
                 "name": r.patient_name,
+                "age": r.age,
+                "gender": r.gender,
+                "disease": r.predicted_disease,
+                "triage": r.triage.get("level", "LOW") if r.triage else "LOW",
+                "triage_score": r.triage.get("score", 0) if r.triage else 0,
+                "triage_recommendation": r.triage.get("recommendation", "") if r.triage else "",
+                "date": r.created_at.strftime("%b %d, %Y · %I:%M %p") if r.created_at else "Unknown",
+                "drug": r.treatment.get("recommended_drug", "None") if r.treatment else "None",
+                "dosage": r.treatment.get("dosage", "As prescribed") if r.treatment else "As prescribed",
+                "duration": r.treatment.get("duration", "As advised") if r.treatment else "As advised",
+                "lifestyle": r.treatment.get("lifestyle", []) if r.treatment else [],
+                "warnings": r.treatment.get("warnings", []) if r.treatment else [],
+                "symptoms": r.symptoms,
+                "safety_level": r.drug_safety.get("safety_level", "SAFE") if r.drug_safety else "SAFE",
+            }
+            for r in results
+        ]
+    finally:
+        db.close()
+
+
+def get_consultations():
+    """Get all consultations (for analytics only)."""
+    db = SessionLocal()
+    try:
+        results = db.query(Consultation).order_by(desc(Consultation.created_at)).limit(200).all()
+        return [
+            {
+                "id": r.id,
+                "name": "Anonymous",  # Anonymize for public view
                 "age": r.age,
                 "disease": r.predicted_disease,
                 "triage": r.triage.get("level", "LOW") if r.triage else "LOW",
@@ -40,6 +79,7 @@ def get_consultations():
         ]
     finally:
         db.close()
+
 
 def get_analytics():
     db = SessionLocal()
