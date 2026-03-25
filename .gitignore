@@ -5,6 +5,7 @@ __pycache__/
 *.pyd
 .venv/
 venv/
+backend/venv/
 env/
 
 # Node / Next.js
@@ -18,12 +19,13 @@ build/
 .env.local
 .env.*.local
 backend/.env
+!.env.example
 
-# ML model artifacts (large binary files)
+# ML model artifacts
 *.pkl
 *.joblib
 
-# DB
+# Database
 *.db
 *.sqlite3
 
@@ -37,4 +39,9 @@ output_utf8.json
 Thumbs.db
 
 # IDE
-.vscode/settings.json
+.vscode/
+
+# Python build
+dist/
+build/
+*.egg-info/
