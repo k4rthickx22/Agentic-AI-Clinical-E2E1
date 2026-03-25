@@ -4,15 +4,37 @@ __pycache__/
 *.pyo
 *.pyd
 .venv/
+venv/
 env/
 
-# Node
+# Node / Next.js
 node_modules/
 .next/
+out/
+build/
 
-# Environment
+# Environment secrets — NEVER commit these
 .env
+.env.local
+.env.*.local
+backend/.env
+
+# ML model artifacts (large binary files)
+*.pkl
+*.joblib
+
+# DB
+*.db
+*.sqlite3
+
+# Logs & temp
+*.log
+output.json
+output_utf8.json
 
 # OS
 .DS_Store
 Thumbs.db
+
+# IDE
+.vscode/settings.json
