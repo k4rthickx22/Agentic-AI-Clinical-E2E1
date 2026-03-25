@@ -111,6 +111,33 @@ export const getDiagnosisExplanation = async (
   return response.data;
 };
 
+export const getExtendedAnalysis = async (
+  symptoms: string,
+  age: number = 30,
+  gender: string = "unknown",
+  conditions: string = "none",
+  allergies: string = "none",
+  language: string = "en",
+  confidenceScore: number = 1.0,
+  diseaseInDb: boolean = true
+) => {
+  const response = await axios.post(
+    `${API_URL}/diagnose/extended`,
+    {
+      symptoms,
+      age,
+      gender,
+      conditions,
+      allergies,
+      language,
+      confidence_score: confidenceScore,
+      disease_in_db: diseaseInDb,
+    },
+    { headers: authHeaders() }
+  );
+  return response.data;
+};
+
 export const downloadPdfReport = async (reportData: any) => {
   const response = await axios.post(`${API_URL}/generate_pdf`, reportData, {
     responseType: "blob",

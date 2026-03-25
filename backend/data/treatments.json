@@ -404,5 +404,320 @@
       "Dietary Program: Mediterranean or low-glycaemic index diet"
     ],
     "when_to_seek_care": "Follow up with doctor every 6 months to monitor HbA1c. If HbA1c rises above 6.5%, progression to Type 2 diabetes has occurred."
+  },
+  "Knee Pain": {
+    "drug": "Ibuprofen 400mg + Diclofenac gel (topical)",
+    "dosage": "Ibuprofen 400mg with food every 8 hours for up to 5 days. Apply Diclofenac gel directly to knee 3 times daily.",
+    "duration": "5-7 days for acute pain. If chronic (>2 weeks), physiotherapy evaluation needed.",
+    "explanation": "Knee pain arises from inflammation of the joint, ligament strains, cartilage damage, or overuse. NSAIDs reduce inflammation and relieve pain. Topical Diclofenac provides direct anti-inflammatory action without systemic effects.",
+    "lifestyle": [
+      "RICE: Rest, Ice (20 min every 2h for first 48h), Compression, Elevation",
+      "Avoid deep squatting, running, and high-impact activities",
+      "Gentle quad strengthening exercises after acute phase",
+      "Use a knee support/brace when walking",
+      "Lose weight if overweight — every kg reduces 4kg force on knee"
+    ],
+    "when_to_seek_care": "See a doctor if: pain is severe/non-weight-bearing, sudden swelling within 2h of injury, locking/giving way, or no improvement after 7 days of rest.",
+    "alternatives": [
+      "Paracetamol 500mg every 6h (preferred for elderly)",
+      "Ibuprofen gel instead of oral if GI-sensitive"
+    ],
+    "emergency": "Sudden severe swelling + fever + hot joint → possible septic arthritis → Emergency"
+  },
+  "Lower Back Pain": {
+    "drug": "Ibuprofen 400mg + Diclofenac gel",
+    "dosage": "Ibuprofen 400mg with food every 8 hours for 5 days. Diclofenac gel apply to lower back 3x daily.",
+    "duration": "Acute: 5-7 days. Chronic (>6 weeks): physiotherapy needed.",
+    "explanation": "Lower back pain is most commonly caused by muscle spasm, disc bulge, or poor posture. NSAIDs reduce inflammation and speed recovery. Bed rest for >2 days worsens outcomes — staying gently active is better.",
+    "lifestyle": [
+      "Gentle walking every hour",
+      "Maintain neutral spine — avoid prolonged sitting",
+      "Heat pad after 48h helps muscle spasm",
+      "Strengthen core muscles (physiotherapy)",
+      "Ergonomic chair and desk setup"
+    ],
+    "when_to_seek_care": "See doctor if: radiating pain down both legs, bladder/bowel loss, numbness in genital area (cauda equina emergency), or no improvement in 2 weeks.",
+    "emergency": "Loss of bladder/bowel control + back pain = Cauda Equina Syndrome — EMERGENCY"
+  },
+  "Shoulder Pain": {
+    "drug": "Ibuprofen 400mg",
+    "dosage": "400mg with food every 8 hours for 5-7 days.",
+    "duration": "Acute pain: 5-7 days. Frozen shoulder resolves in 12-24 months with physiotherapy.",
+    "explanation": "Shoulder pain is commonly caused by rotator cuff injury, frozen shoulder (adhesive capsulitis), or impingement. Anti-inflammatory treatment and specific physiotherapy exercises are the mainstay of treatment.",
+    "lifestyle": [
+      "Pendulum exercises gently 3x/day",
+      "Avoid carrying heavy bags on affected side",
+      "Apply ice 20 min after activity in acute phase",
+      "Physiotherapy: specific rotator cuff exercises",
+      "Do not sleep on affected shoulder"
+    ],
+    "when_to_seek_care": "See doctor if: cannot lift arm above head, pain after trauma, fever + swollen joint, or no improvement in 3 weeks."
+  },
+  "Neck Pain": {
+    "drug": "Ibuprofen 400mg",
+    "dosage": "400mg with food every 8 hours for 5 days.",
+    "duration": "Acute: 5-7 days. Cervical spondylosis: long-term physiotherapy.",
+    "explanation": "Neck pain most commonly results from poor posture (desk work, phone use), muscle spasm, or cervical disc disease. NSAIDs relieve inflammation. Posture correction and neck mobility exercises accelerate recovery.",
+    "lifestyle": [
+      "Computer screen at eye level",
+      "Take break every 30 min — chin tucks",
+      "Heat pad for muscle spasm",
+      "Avoid phone use while lying down",
+      "Cervical collar only for short-term acute use"
+    ],
+    "when_to_seek_care": "See doctor if: pain spreads into arm with numbness, tingling, weakness; sudden severe neck pain after trauma; fever + stiff neck (possible meningitis — EMERGENCY)."
+  },
+  "Ankle Sprain": {
+    "drug": "Ibuprofen 400mg",
+    "dosage": "400mg with food every 8 hours for 5 days.",
+    "duration": "Grade 1: 1-2 weeks. Grade 2: 3-6 weeks. Grade 3: 3-6 months (may need surgery).",
+    "explanation": "Ankle sprains occur when ligaments are overstretched or torn during rolling or twisting. RICE protocol is the first-line treatment. Early controlled movement improves recovery.",
+    "lifestyle": [
+      "RICE immediately: Rest, Ice (20 min every 2h), Compression bandage, Elevate above heart",
+      "Crutches if cannot bear weight",
+      "Begin gentle range of motion exercises after 48h",
+      "Proprioception balance exercises when pain allows",
+      "Avoid returning to sport too early"
+    ],
+    "when_to_seek_care": "See doctor if: cannot bear any weight, visible deformity, severe swelling, or no improvement in 5 days — X-ray to exclude fracture."
+  },
+  "Muscle Strain": {
+    "drug": "Ibuprofen 400mg",
+    "dosage": "400mg with food every 8 hours for 5 days.",
+    "duration": "Grade 1: 1-2 weeks. Grade 2: 4-6 weeks. Complete tear: 3-6 months.",
+    "explanation": "Muscle strains happen when muscle fibres are overstretched or torn. RICE protocol and NSAIDs are the first-line treatment. Gentle stretching after 48h helps recovery.",
+    "lifestyle": [
+      "RICE for first 48-72 hours",
+      "Gentle stretching from day 3 (pain-free range)",
+      "Return to activity gradually",
+      "Warm up properly before exercise in future",
+      "Hydration and magnesium for cramp prevention"
+    ],
+    "when_to_seek_care": "See doctor if: sudden severe pain + pop sound + visible deformity (possible complete tear) or no improvement in 2 weeks."
+  },
+  "Sciatica": {
+    "drug": "Ibuprofen 400mg",
+    "dosage": "400mg with food every 8 hours for 5-7 days.",
+    "duration": "Acute episode: 4-6 weeks. Chronic: 3-6 months physiotherapy.",
+    "explanation": "Sciatica is caused by compression of the sciatic nerve, usually from a herniated disc in the lower back. Pain radiates from lower back through the buttock and down the leg. NSAIDs reduce nerve inflammation.",
+    "lifestyle": [
+      "Walking and gentle movement — avoid bed rest",
+      "McKenzie exercises for disc herniation",
+      "Avoid sitting for prolonged periods",
+      "Ice or heat to lower back alternately",
+      "Sleep on side with pillow between knees"
+    ],
+    "when_to_seek_care": "See doctor if: both legs affected, bladder/bowel incontinence, progressive leg weakness, or no improvement in 4 weeks. These may indicate cauda equina — EMERGENCY.",
+    "emergency": "Bilateral leg weakness + bladder/bowel loss = Cauda Equina — Go to ER NOW"
+  },
+  "Osteoarthritis": {
+    "drug": "Paracetamol 500-1000mg (preferred, especially in elderly)",
+    "dosage": "500-1000mg every 6 hours, maximum 4g/day. Topical Diclofenac gel as alternative.",
+    "duration": "Long-term management — review monthly.",
+    "explanation": "Osteoarthritis is the most common form of arthritis, caused by cartilage breakdown in joints (especially knees, hips, hands). It is a chronic condition managed with pain relief, exercise, weight loss, and eventually joint replacement.",
+    "lifestyle": [
+      "Low-impact exercise: swimming, cycling, walking",
+      "Lose weight (each kg lost = 4kg less knee force)",
+      "Physiotherapy for strengthening muscles around joint",
+      "Heat for chronic pain, ice for flare-ups",
+      "Walking aids (stick/walker) if needed"
+    ],
+    "when_to_seek_care": "Refer rheumatology or orthopaedics if: severe joint deformity, loss of function affecting daily life, or considering joint replacement."
+  },
+  "Carpal Tunnel Syndrome": {
+    "drug": "Ibuprofen 400mg",
+    "dosage": "400mg with food every 8 hours for 7 days (short-term flare).",
+    "duration": "Wrist splint: 6-12 weeks. Surgery if conservative fails.",
+    "explanation": "Carpal Tunnel Syndrome is caused by compression of the median nerve at the wrist, causing numbness and tingling in the thumb, index, and middle fingers. Common in office workers and pregnant women.",
+    "lifestyle": [
+      "Wear wrist splint at night (maintains neutral wrist position)",
+      "Avoid repetitive wrist flexion",
+      "Take regular breaks from typing/computer",
+      "Ergonomic keyboard and mouse position",
+      "Vitamin B6 supplement (discuss with doctor)"
+    ],
+    "when_to_seek_care": "Refer to specialist if: muscle wasting at thumb base, constant numbness, or symptoms not controlled after 6 weeks of splinting — consider steroid injection or surgery."
+  },
+  "Tennis Elbow": {
+    "drug": "Diclofenac gel (topical) + Ibuprofen 400mg",
+    "dosage": "Diclofenac gel apply to elbow 3-4x daily. Ibuprofen 400mg every 8h with food for 5-7 days if needed.",
+    "duration": "6 weeks to 2 years. Most resolve with physiotherapy.",
+    "explanation": "Tennis elbow (lateral epicondylitis) is caused by overuse of forearm muscles, causing pain at the outer elbow. Common in people who use a computer mouse, rackets, or perform repetitive manual work.",
+    "lifestyle": [
+      "Rest from aggravating activity",
+      "Ice the elbow for 20 min 3x daily",
+      "Eccentric wrist extension exercises (physiotherapy)",
+      "Use tennis elbow clasp/strap when active",
+      "Ergonomic mouse and keyboard setup"
+    ],
+    "when_to_seek_care": "Refer physiotherapy. See doctor if no improvement after 6 weeks — consider steroid injection or shock wave therapy."
+  },
+  "Plantar Fasciitis": {
+    "drug": "Ibuprofen 400mg",
+    "dosage": "400mg with food every 8 hours for 7 days.",
+    "duration": "6-12 months with proper stretching and footwear.",
+    "explanation": "Plantar fasciitis is inflammation of the thick band of tissue that runs under the foot, causing heel pain — worst in the morning when taking first steps.",
+    "lifestyle": [
+      "Calf and plantar fascia stretch before getting out of bed",
+      "Wear supportive footwear — avoid flat shoes, bare feet on hard floors",
+      "Ice the heel 20 min after activity",
+      "Orthotic arch support insoles",
+      "Lose weight if overweight"
+    ],
+    "when_to_seek_care": "See podiatrist or orthopaedics if no improvement after 6 months — consider steroid injection or shock wave therapy."
+  },
+  "Conjunctivitis": {
+    "drug": "Chloramphenicol eye drops 0.5%",
+    "dosage": "1 drop in affected eye every 2 hours while awake for 2 days, then every 4 hours for 5 days.",
+    "duration": "5-7 days (bacterial). Viral resolves in 1-2 weeks.",
+    "explanation": "Conjunctivitis (red eye) is inflammation of the conjunctiva, most commonly caused by bacterial infection (producing discharge), viral infection, or allergy. Bacterial type responds to antibiotic drops.",
+    "lifestyle": [
+      "Wash hands frequently — highly contagious",
+      "Do not share towels or pillowcases",
+      "Remove contact lenses until resolved",
+      "Cool compress for comfort",
+      "Avoid rubbing eyes"
+    ],
+    "when_to_seek_care": "See doctor if: vision loss, severe eye pain, cloudy cornea, no improvement after 5 days of drops, or newborn with eye discharge (within first month — urgent)."
+  },
+  "Ear Infection": {
+    "drug": "Amoxicillin 500mg",
+    "dosage": "Adult: 500mg every 8 hours for 5 days. Child: 40mg/kg/day in 3 divided doses for 5 days.",
+    "duration": "5 days (adult), 7-10 days (child under 2 years).",
+    "explanation": "Ear infections (otitis media) are most common in children, often following an upper respiratory infection. Bacteria (Streptococcus, Haemophilus) invade the middle ear, causing ear pain, fever, and hearing loss.",
+    "lifestyle": [
+      "Pain relief: Paracetamol every 6h (age appropriate)",
+      "Warm pad over ear for comfort",
+      "Keep ear dry — no swimming",
+      "Exclusive breastfeeding reduces ear infection risk in infants",
+      "Complete the antibiotic course even if better"
+    ],
+    "when_to_seek_care": "See doctor if: discharge from ear, fever persisting beyond 48 hours on antibiotics, child appears very unwell, or repeated ear infections (ENT referral)."
+  },
+  "Sinusitis": {
+    "drug": "Nasal saline rinse + Cetirizine 10mg (allergic) or Amoxicillin 500mg (bacterial)",
+    "dosage": "Amoxicillin 500mg every 8h for 7 days if bacterial. Cetirizine 10mg once daily for allergic. Nasal saline rinse 2-3x daily.",
+    "duration": "Acute: 7-10 days. Chronic (>12 weeks): ENT referral.",
+    "explanation": "Sinusitis is inflammation of the paranasal sinuses, usually following a viral cold (viral sinusitis needs no antibiotics). Bacterial sinusitis causes facial pain, thick yellow/green discharge, and fever. Nasal saline rinses are highly effective.",
+    "lifestyle": [
+      "Steam inhalation 10 min twice daily",
+      "Saline nasal rinse (Neti pot or Nasobal)",
+      "Stay hydrated",
+      "Avoid cigarette smoke and allergens",
+      "Elevate head of bed"
+    ],
+    "when_to_seek_care": "See doctor if: fever > 39°C, severe facial pain, swelling around eye (possible orbital cellulitis — URGENT), or no improvement after 10 days."
+  },
+  "Acid Reflux": {
+    "drug": "Pantoprazole 40mg",
+    "dosage": "40mg once daily, 30 minutes before breakfast for 4 weeks.",
+    "duration": "4-8 weeks. Lifestyle changes required long-term.",
+    "explanation": "Acid reflux (GERD) occurs when stomach acid flows back into the oesophagus, causing heartburn and regurgitation. Proton pump inhibitors (PPIs) reduce acid production and heal the oesophageal lining.",
+    "lifestyle": [
+      "Avoid trigger foods: caffeine, alcohol, spicy/fatty food, chocolate, mint",
+      "Eat smaller meals — avoid large meals before bed",
+      "Raise head of bed by 20-30cm",
+      "Lose weight if overweight",
+      "Do not lie down within 3h of eating"
+    ],
+    "when_to_seek_care": "See doctor if: difficulty swallowing, weight loss, vomiting blood, chest pain (rule out cardiac), or symptoms persist despite 8 weeks of PPI therapy."
+  },
+  "Irritable Bowel Syndrome": {
+    "drug": "Mebeverine 135mg",
+    "dosage": "135mg 3 times daily, 20 minutes before meals.",
+    "duration": "4-8 weeks (reassess). IBS is a long-term condition needing lifestyle modification.",
+    "explanation": "IBS is a functional disorder of the gut characterised by abdominal pain, bloating, and alternating diarrhoea/constipation. Mebeverine relaxes intestinal smooth muscle to reduce spasms.",
+    "lifestyle": [
+      "Low-FODMAP diet under dietitian guidance",
+      "Eat regular meals — do not skip",
+      "Reduce caffeine and alcohol",
+      "Exercise regularly to regulate bowel",
+      "Stress management — mindfulness, CBT"
+    ],
+    "when_to_seek_care": "See doctor if: blood in stool, unintentional weight loss, family history of bowel cancer, or symptoms starting after age 45 — colonoscopy to exclude organic disease."
+  },
+  "Constipation": {
+    "drug": "Lactulose 15ml",
+    "dosage": "15ml twice daily initially, adjust to 1-2 soft stools/day.",
+    "duration": "Short-term until bowel habit normalised. Address root cause.",
+    "explanation": "Constipation occurs when bowel movements are infrequent or difficult. It is commonly caused by low fibre diet, dehydration, inactivity, and medications (iron, opioids). Lactulose is a safe osmotic laxative.",
+    "lifestyle": [
+      "Increase dietary fibre (30g/day): fruit, veg, wholegrains",
+      "Drink 2L water/day",
+      "Exercise daily — even walking stimulates bowel",
+      "Respond to urge to defecate immediately",
+      "Correct position on toilet (squatting angle)"
+    ],
+    "when_to_seek_care": "See doctor if: blood in stool, unexplained weight loss, constipation alternating with diarrhoea (possible bowel cancer), or no improvement with laxatives after 2 weeks."
+  },
+  "Tonsillitis": {
+    "drug": "Amoxicillin 500mg",
+    "dosage": "500mg every 8 hours for 10 days (bacterial strep). Child: 40mg/kg/day in 3 doses.",
+    "duration": "10 days full course to prevent rheumatic fever.",
+    "explanation": "Tonsillitis is inflammation of the tonsils caused by bacterial (Group A Streptococcus) or viral infection. Bacterial tonsillitis requires antibiotics to prevent complications including rheumatic fever.",
+    "lifestyle": [
+      "Adequate rest and hydration",
+      "Paracetamol or Ibuprofen for pain and fever",
+      "Gargle warm salt water",
+      "Soft diet — ice cream soothing",
+      "Complete antibiotic course even if better"
+    ],
+    "when_to_seek_care": "See doctor/ENT if: recurring tonsillitis (5+ times/year), peritonsillar abscess (quinsy — asymmetric swelling pushing uvula to one side), or difficulty breathing/swallowing — URGENT."
+  },
+  "Insomnia": {
+    "drug": "Melatonin 2mg (first line)",
+    "dosage": "2mg 30-60 minutes before bed. Short-term use (max 4 weeks).",
+    "duration": "Address root cause. Sleep hygiene should be primary intervention.",
+    "explanation": "Insomnia is difficulty falling or staying asleep. It is most commonly caused by stress, anxiety, poor sleep hygiene, or irregular circadian rhythm. Melatonin helps synchronise the sleep-wake cycle for sleep-onset insomnia.",
+    "lifestyle": [
+      "Fixed sleep and wake time every day",
+      "No screens 1h before bed (blue light reduces melatonin)",
+      "Dark, cool, quiet bedroom",
+      "No caffeine after 2pm",
+      "Wind-down routine: reading, bath, mindfulness"
+    ],
+    "when_to_seek_care": "See doctor if: insomnia lasting >3 months, daytime impairment, snoring + apnoeas (possible sleep apnoea — sleep study), or underlying anxiety/depression needing treatment."
+  },
+  "Vertigo": {
+    "drug": "Cinnarizine 25mg",
+    "dosage": "25mg 3 times daily. For BPPV — Epley manoeuvre is curative and preferred over long-term medication.",
+    "duration": "Until symptoms resolve. BPPV usually resolves with Epley manoeuvre in 1-3 sessions.",
+    "explanation": "Vertigo is the sensation that the room is spinning, caused by inner ear issues (BPPV, labyrinthitis, vestibular neuritis) or rarely central causes. BPPV (commonest) responds dramatically to the Epley manoeuvre.",
+    "lifestyle": [
+      "Epley manoeuvre (BPPV) — perform with guidance",
+      "Move slowly when changing position",
+      "Avoid sudden head movements",
+      "Stay hydrated and avoid salt if Meniere's",
+      "Drive only when fully symptom-free"
+    ],
+    "when_to_seek_care": "See doctor if: sudden onset with headache + new neurological symptoms (possible stroke — FAST protocol). Vertigo + facial drooping/arm weakness = EMERGENCY."
+  },
+  "Haemorrhoids": {
+    "drug": "Anusol cream / Proctosedyl ointment",
+    "dosage": "Apply to affected area 3 times daily and after each bowel movement.",
+    "duration": "4-6 weeks for mild-moderate. Persistent cases need surgical evaluation.",
+    "explanation": "Haemorrhoids (piles) are swollen blood vessels in the rectum/anus causing pain, itching, and rectal bleeding. Most are internal (higher up) or external (at anal opening). Conservative treatment with topical agents and stool softeners is first-line.",
+    "lifestyle": [
+      "High-fibre diet and 2L water/day to prevent straining",
+      "Lactulose if constipated",
+      "Warm sitz baths 15 min after bowel movement",
+      "Do not strain at toilet — respond to urge",
+      "Avoid prolonged sitting on toilet"
+    ],
+    "when_to_seek_care": "See doctor if: significant rectal bleeding (to rule out bowel cancer especially age>45), persistent severe pain, or prolapsed haemorrhoids — may need banding or surgery."
+  },
+  "Anxiety": {
+    "drug": "Propranolol 10-40mg (situational)",
+    "dosage": "10-40mg as a single dose 30 minutes before anxiety-provoking situation (e.g. presentation).",
+    "duration": "Short-term situational use only. CBT recommended for generalised anxiety.",
+    "explanation": "Anxiety is characterised by excessive worry, palpitations, trembling, and fear. Propranolol blocks the physical symptoms (racing heart, trembling). CBT is the evidence-based treatment for generalised anxiety disorder.",
+    "lifestyle": [
+      "Daily exercise: 30 min aerobic",
+      "Meditation or mindfulness 10-20 min morning",
+      "Limit caffeine and alcohol",
+      "Sleep 7-8 hours",
+      "Journaling worry thoughts and challenging them"
+    ],
+    "when_to_seek_care": "See GP/psychiatrist if: daily anxiety affecting function, panic attacks, depression co-existing, or needing long-term medication — do not self-prescribe anxiolytics."
   }
 }

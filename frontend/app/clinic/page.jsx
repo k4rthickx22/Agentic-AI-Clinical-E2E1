@@ -945,6 +945,7 @@ export default function App() {
                     </div>
                   )}
 
+
                   {/* Reasoning Trace Accordion */}
                   {result.reasoning_trace?.length > 0 && (
                     <div className="glass" style={{ padding: 0, overflow: "hidden" }}>

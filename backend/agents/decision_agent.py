@@ -5,19 +5,58 @@ import csv
 
 # Map ML model class names → treatment lookup keys
 DISEASE_ALIASES = {
+    # Core diseases
     "Normal Fever": "Normal Fever",
     "Viral Fever": "Viral Fever",
+    "Bacterial Fever": "Bacterial Fever",
     "Common Cold": "Common Cold",
     "Dengue Fever": "Dengue Fever",
     "Dengue": "Dengue Fever",
+    "Typhoid Fever": "Typhoid Fever",
+    "Typhoid": "Typhoid Fever",
+    "Malaria": "Malaria",
     "Pneumonia": "Pneumonia",
     "Asthma": "Asthma",
     "Anemia": "Anemia",
-    "Diabetes": "Diabetes",
+    "Anaemia": "Anemia",
+    # Diabetes variants
+    "Diabetes": "Diabetes Type 2",
+    "Diabetes Type 2": "Diabetes Type 2",
+    "Diabetes Type 1": "Diabetes Type 1",
+    "Prediabetes": "Prediabetes",
+    "Pre-diabetes": "Prediabetes",
+    # Hypertension
     "Hypertension": "Hypertension",
-    "Gastritis": "Gastritis",
+    "High Blood Pressure": "Hypertension",
+    # Respiratory
+    "Influenza": "Influenza",
+    "Flu": "Influenza",
+    "Bronchitis": "Bronchitis",
+    # Headache types
     "Migraine": "Migraine",
-    "Bacterial Infection": "Bacterial Infection",
+    "Tension Headache": "Tension Headache",
+    "Cluster Headache": "Cluster Headache",
+    "Sinus Headache": "Sinus Headache",
+    # Infections
+    "Bacterial Infection": "Bacterial Fever",
+    "UTI": "UTI",
+    "Urinary Tract Infection": "UTI",
+    # Digestive
+    "Gastritis": "Gastritis",
+    "Gastroenteritis": "Gastroenteritis",
+    "Stomach Flu": "Gastroenteritis",
+    # Viral
+    "COVID-19": "COVID-19",
+    "COVID": "COVID-19",
+    "Coronavirus": "COVID-19",
+    # Thyroid
+    "Hypothyroidism": "Hypothyroidism",
+    "Hyperthyroidism": "Hyperthyroidism",
+    # Skin
+    "Skin Allergy": "Skin Allergy",
+    "Urticaria": "Skin Allergy",
+    "Eczema": "Skin Allergy",
+    "Contact Dermatitis": "Skin Allergy",
 }
 
 
@@ -68,30 +107,35 @@ class DecisionAgent:
         for key, value in DISEASE_ALIASES.items():
             if key.lower() == disease.lower():
                 return value
-        # Partial: e.g. "fever" → "Normal Fever"
+        # Partial keyword matching
         dl = disease.lower()
-        if "dengue" in dl:
-            return "Dengue Fever"
-        if "fever" in dl or "viral" in dl:
-            return "Viral Fever"
-        if "cold" in dl:
-            return "Common Cold"
-        if "pneumonia" in dl:
-            return "Pneumonia"
-        if "asthma" in dl:
-            return "Asthma"
-        if "anemia" in dl or "anaemia" in dl:
-            return "Anemia"
-        if "diabetes" in dl or "diabetic" in dl:
-            return "Diabetes"
-        if "hypertension" in dl or "blood pressure" in dl:
-            return "Hypertension"
-        if "gastritis" in dl or "gastric" in dl:
-            return "Gastritis"
-        if "migraine" in dl:
-            return "Migraine"
-        if "bacterial" in dl or "infection" in dl:
-            return "Bacterial Infection"
+        if "dengue" in dl: return "Dengue Fever"
+        if "typhoid" in dl or "enteric" in dl: return "Typhoid Fever"
+        if "malaria" in dl or "plasmodium" in dl: return "Malaria"
+        if "type 1" in dl and ("diabet" in dl): return "Diabetes Type 1"
+        if "type 2" in dl and ("diabet" in dl): return "Diabetes Type 2"
+        if "prediabet" in dl or "pre-diabet" in dl: return "Prediabetes"
+        if "diabet" in dl: return "Diabetes Type 2"
+        if "influenza" in dl or " flu" in dl: return "Influenza"
+        if "bronchit" in dl: return "Bronchitis"
+        if "migraine" in dl: return "Migraine"
+        if "tension headache" in dl: return "Tension Headache"
+        if "cluster headache" in dl: return "Cluster Headache"
+        if "sinus headache" in dl or "sinusitis" in dl: return "Sinus Headache"
+        if "uti" in dl or "urinary tract" in dl or "cystitis" in dl: return "UTI"
+        if "covid" in dl or "coronavirus" in dl or "sars" in dl: return "COVID-19"
+        if "hypothyroid" in dl: return "Hypothyroidism"
+        if "hyperthyroid" in dl or "graves" in dl: return "Hyperthyroidism"
+        if "skin allerg" in dl or "urticaria" in dl or "eczema" in dl or "dermatitis" in dl: return "Skin Allergy"
+        if "gastroenteritis" in dl or "stomach flu" in dl: return "Gastroenteritis"
+        if "fever" in dl or "viral" in dl: return "Viral Fever"
+        if "bacteria" in dl or "infection" in dl: return "Bacterial Fever"
+        if "cold" in dl: return "Common Cold"
+        if "pneumonia" in dl: return "Pneumonia"
+        if "asthma" in dl: return "Asthma"
+        if "anemia" in dl or "anaemia" in dl: return "Anemia"
+        if "hypertension" in dl or "blood pressure" in dl: return "Hypertension"
+        if "gastritis" in dl or "gastric" in dl: return "Gastritis"
         return disease  # return as-is, may fall through to generic
 
     def _pick_best_drug_from_csv(self, disease: str, patient_age: int, patient_allergies: str) -> dict | None:

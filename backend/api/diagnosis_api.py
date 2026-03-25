@@ -12,8 +12,11 @@ try:
 except ImportError:
     HAS_GROQ = False
 
-load_dotenv()
+# Load .env from backend root — explicit path so it works regardless of CWD
+_env_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), ".env")
+load_dotenv(dotenv_path=_env_path, override=True)
 groq_client = Groq(api_key=os.getenv("GROQ_API_KEY")) if HAS_GROQ and os.getenv("GROQ_API_KEY") else None
+
 
 router = APIRouter()
 orchestrator = ClinicalOrchestrator()
@@ -241,6 +244,133 @@ Return ONLY valid JSON, no markdown, no code blocks."""
             "when_to_seek_care": "Visit your doctor for personalized advice.",
             "severity": "unknown",
             "disclaimer": "This is AI guidance, not a substitute for professional medical care."
+        }
+
+
+class ExtendedRequest(BaseModel):
+    symptoms: str
+    age: int = 30
+    gender: str = "unknown"
+    conditions: str = "none"
+    allergies: str = "none"
+    language: str = "en"
+    confidence_score: float = 1.0          # Pass from frontend if available
+    disease_in_db: bool = True             # Whether primary diagnosis was in DB
+
+
+@router.post("/diagnose/extended")
+def diagnose_extended(request: ExtendedRequest):
+    """
+    Extended Clinical Module — handles:
+    - Musculoskeletal pain, injuries, nerve pain, skin, digestive, EENT, general
+    - Pediatric (<12) and Geriatric (>65) age-specific guidance
+    - Low-confidence / no-DB-match fallback
+    """
+    from agents.extended_clinical_module import (
+        check_extended_trigger, get_extended_category,
+        check_emergency_escalation, build_extended_prompt,
+        EXTENDED_SYSTEM_PROMPT
+    )
+
+    # 1. Check if extended module should activate
+    should_activate = check_extended_trigger(
+        request.symptoms,
+        request.confidence_score,
+        request.disease_in_db
+    )
+
+    if not should_activate:
+        return {
+            "activated": False,
+            "message": "Primary diagnosis DB match found with high confidence. Extended module not required.",
+            "categories": []
+        }
+
+    # 2. Emergency screening (always first)
+    emergency_flag = check_emergency_escalation(request.symptoms)
+
+    # 3. Detect symptom categories
+    categories = get_extended_category(request.symptoms)
+
+    # 4. If no Groq, return structured fallback
+    if not groq_client:
+        return {
+            "activated": True,
+            "categories": categories,
+            "emergency_detected": bool(emergency_flag),
+            "emergency_message": emergency_flag,
+            "summary": "AI Extended Module unavailable — GROQ_API_KEY not configured.",
+            "probable_causes": [],
+            "immediate_home_care": ["Consult a healthcare professional for guidance."],
+            "otc_medication": {},
+            "physio_advice": [],
+            "when_to_see_doctor": ["Please visit a doctor for evaluation of your symptoms."],
+            "emergency_signs": [emergency_flag] if emergency_flag else [],
+            "source": "CLINICAL_KNOWLEDGE",
+            "severity": "unknown",
+            "age_flag": None,
+            "disclaimer": "AI-assisted guidance only. Consult a licensed physician for diagnosis and treatment."
+        }
+
+    # 5. Build Groq prompt using extended module
+    user_message = build_extended_prompt(
+        symptoms=request.symptoms,
+        age=request.age,
+        gender=request.gender,
+        conditions=request.conditions,
+        allergies=request.allergies,
+        language=request.language,
+        categories=categories,
+        emergency_flag=emergency_flag
+    )
+
+    try:
+        import json as _json
+        response = groq_client.chat.completions.create(
+            model="llama-3.3-70b-versatile",
+            messages=[
+                {"role": "system", "content": EXTENDED_SYSTEM_PROMPT},
+                {"role": "user", "content": user_message}
+            ],
+            max_tokens=1800,
+            temperature=0.35,
+            response_format={"type": "json_object"}
+        )
+        raw = response.choices[0].message.content
+        try:
+            parsed = _json.loads(raw)
+        except Exception:
+            import re as _re
+            match = _re.search(r'\{.*\}', raw, _re.DOTALL)
+            parsed = _json.loads(match.group()) if match else {}
+
+        # Inject emergency flag if AI missed it
+        if emergency_flag and not parsed.get("emergency_signs"):
+            parsed["emergency_signs"] = [emergency_flag]
+
+        parsed["activated"] = True
+        parsed["categories"] = categories
+        parsed["emergency_detected"] = bool(emergency_flag)
+        return parsed
+
+    except Exception as e:
+        print(f"Groq Extended API Error: {e}")
+        return {
+            "activated": True,
+            "categories": categories,
+            "emergency_detected": bool(emergency_flag),
+            "emergency_message": emergency_flag,
+            "summary": f"Extended AI module temporarily unavailable. Your symptoms ({request.symptoms[:80]}...) should be evaluated by a healthcare provider.",
+            "probable_causes": [{"rank": 1, "cause": "AI analysis unavailable", "reason": "Groq inference engine offline"}],
+            "immediate_home_care": ["Rest and monitor symptoms", "Stay hydrated", "Consult a doctor if symptoms worsen"],
+            "otc_medication": {"drug": "Paracetamol 500mg", "frequency": "Every 6 hours if needed", "max_duration": "3 days", "avoid_if": "Liver disease or allergy", "alternative": "Ibuprofen 400mg (with food)"},
+            "physio_advice": [],
+            "when_to_see_doctor": ["If symptoms worsen within 24 hours", "If no improvement in 3 days"],
+            "emergency_signs": [emergency_flag] if emergency_flag else [],
+            "source": "CLINICAL_KNOWLEDGE",
+            "severity": "unknown",
+            "age_flag": None,
+            "disclaimer": "AI-assisted guidance only. Consult a licensed physician for diagnosis and treatment."
         }
 
 

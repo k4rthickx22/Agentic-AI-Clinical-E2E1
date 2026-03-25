@@ -48,4 +48,39 @@ Methimazole,Hyperthyroidism,10-30mg daily,18,80,None,3,8,MODERATE,Graves disease
 Cetirizine,Skin Allergy,10mg once daily,5,75,None,1,9,LOW,allergic reaction histamine urticaria contact dermatitis,Loratadine
 Hydrocortisone cream,Skin Allergy,apply twice daily topically,5,80,Steroid allergy,2,8,LOW,skin inflammation eczema rash pruritus local corticosteroid,Betamethasone cream
 Oral Rehydration Salts,Gastroenteritis,200ml after each loose stool,1,90,None,1,9,LOW,viral gastroenteritis dehydration vomiting diarrhea electrolyte,Zinc supplement
-Metronidazole,Gastroenteritis,400mg three times daily,12,75,None,3,8,MODERATE,bacterial gastroenteritis Giardia amoeba parasitic infection,Tinidazole
+Metronidazole,Gastroenteritis,400mg three times daily,12,75,None,3,8,MODERATE,bacterial gastroenteritis Giardia amoeba parasitic infection,TinidazoleKnee Pain,Ibuprofen,400mg with food every 8h,18,65,"Ibuprofen,NSAIDs",8.2,moderate,"inflammation,sprain,strain,overuse",Paracetamol 500mg
+Knee Pain,Paracetamol,500mg every 6h,5,99,Paracetamol,7.5,mild,"pain,arthritis,elderly",Ibuprofen 400mg
+Knee Pain,Diclofenac gel,Apply 3x/day topically,12,99,Diclofenac,8.0,mild,"localised pain,inflammation",Ibuprofen gel
+Lower Back Pain,Ibuprofen,400mg with food every 8h for 5 days,18,65,NSAIDs,8.3,moderate,"muscle spasm,disc,inflammation",Paracetamol 500mg + Diclofenac gel
+Lower Back Pain,Paracetamol,500-1000mg every 6h max 4g/day,12,99,Paracetamol,7.5,mild,"back pain,elderly,pregnancy",Ibuprofen 400mg
+Lower Back Pain,Diclofenac gel,Apply lower back 3x daily,12,99,Diclofenac,7.8,mild,"muscle pain,localised",Voltaren gel
+Shoulder Pain,Ibuprofen,400mg every 8h with food,18,65,NSAIDs,8.0,moderate,"rotator cuff,frozen,inflammation",Paracetamol 500mg
+Shoulder Pain,Paracetamol,500mg every 6h,12,99,Paracetamol,7.5,mild,"elderly,mild pain",Ibuprofen 400mg
+Neck Pain,Ibuprofen,400mg every 8h with food 5 days,18,65,NSAIDs,8.2,moderate,"cervical,muscle spasm",Paracetamol 500mg
+Neck Pain,Paracetamol,500mg every 6h,12,99,Paracetamol,7.5,mild,"mild neck pain,elderly",Ibuprofen 400mg
+Ankle Sprain,Ibuprofen,400mg every 8h with food for 5 days,18,65,NSAIDs,8.5,moderate,"sprain,swelling,inflammation",Paracetamol 500mg
+Ankle Sprain,Paracetamol,500mg every 6h,5,99,Paracetamol,7.8,mild,"pain,children,elderly",Ibuprofen 400mg
+Muscle Strain,Ibuprofen,400mg every 8h with food for 5 days,18,65,NSAIDs,8.3,moderate,"muscle tear,inflammation,overuse",Paracetamol 500mg
+Muscle Strain,Paracetamol,500mg every 6h,5,99,Paracetamol,7.5,mild,"strain,cramp,elderly,children",Ibuprofen 400mg
+Sciatica,Ibuprofen,400mg every 8h with food,18,65,NSAIDs,8.2,moderate,"nerve,disc,inflammation",Paracetamol 500mg
+Sciatica,Paracetamol,1000mg every 6h,18,99,Paracetamol,7.0,moderate,"elderly,nerve pain",Ibuprofen 400mg
+Osteoarthritis,Paracetamol,500-1000mg every 6h (preferred in elderly),18,99,Paracetamol,8.0,chronic,"elderly,arthritis,long-term",Ibuprofen 400mg short-term
+Osteoarthritis,Ibuprofen,400mg with food every 8h — short-term only,18,65,NSAIDs,7.8,moderate,"inflammation,flare-up",Paracetamol 500mg
+Carpal Tunnel Syndrome,Ibuprofen,400mg with food every 8h for 7 days,18,99,NSAIDs,7.5,moderate,"tendon inflammation,nerve compression",Paracetamol 500mg
+Tennis Elbow,Ibuprofen,400mg every 8h with food for 5 days,18,65,NSAIDs,8.0,moderate,"tendinopathy,overuse,repetitive strain",Paracetamol 500mg
+Tennis Elbow,Diclofenac gel,Apply elbow 3x daily,12,99,Diclofenac,8.2,mild,"localised,topical preferred",Ibuprofen gel
+Plantar Fasciitis,Ibuprofen,400mg with food every 8h for 7 days,18,65,NSAIDs,7.8,moderate,"heel inflammation,fascial tear",Paracetamol 500mg
+Conjunctivitis,Chloramphenicol eye drops,1 drop in affected eye every 2h (awake) — 2 days then every 4h,1,99,Chloramphenicol,8.5,mild,"bacterial,red eye,discharge",Fusidic acid eye drops
+Ear Infection,Amoxicillin,500mg every 8h for 5 days (adult) / 40mg/kg/day in 3 doses (child),1,99,Penicillin,8.3,moderate,"otitis media,bacterial,child fever",Azithromycin 500mg
+Sinusitis,Amoxicillin,500mg every 8h for 7 days,5,99,Penicillin,7.8,moderate,"bacterial sinusitis,facial pain",Cetirizine 10mg + Nasal decongestant
+Sinusitis,Cetirizine,10mg once daily,5,99,Cetirizine,7.0,mild,"allergic sinusitis,congestion",Loratadine 10mg
+Acid Reflux,Pantoprazole,40mg once daily 30min before breakfast for 4 weeks,18,99,Pantoprazole,8.8,moderate,"GERD,reflux,heartburn",Omeprazole 20mg
+Acid Reflux,Antacid (Gelusil/Gaviscon),10ml after meals and at bedtime,5,99,None,7.5,mild,"acute heartburn,mild reflux",Pantoprazole 20mg
+Irritable Bowel Syndrome,Mebeverine,135mg 3x/day 20min before meals,18,99,None,8.0,moderate,"bowel spasm,cramps,IBS",Buscopan 10mg
+Constipation,Lactulose,"15ml twice daily, titrate to response",1,99,None,8.2,mild,"constipation,hard stool,elderly,pregnancy",Macrogol (Movicol)
+Tonsillitis,Amoxicillin,500mg every 8h for 10 days (strep),5,99,Penicillin,8.5,moderate,"strep,bacterial,severe sore throat",Azithromycin 500mg
+Tonsillitis,Paracetamol,500-1000mg every 6h for pain,5,99,Paracetamol,7.5,mild,"viral tonsillitis,pain relief",Ibuprofen 400mg
+Insomnia,Melatonin,2mg 30min before bed for max 4 weeks,18,99,None,7.5,mild,"sleep onset,circadian,jet lag",Sleep hygiene first
+Vertigo,Cinnarizine,"25mg 3x/day (acute), 75mg SR once daily (prophylaxis)",18,99,Cinnarizine,8.0,moderate,"inner ear,BPPV,motion sickness",Betahistine 16mg
+Haemorrhoids,Anusol cream,Apply to anus 3x/day and after each bowel movement,18,99,None,7.8,mild,"piles,anal itching,external haemorrhoid",Proctosedyl ointment
+Anxiety,Propranolol,10-40mg as needed (situational anxiety),18,65,Beta-blocker,7.5,moderate,"performance anxiety,palpitations",Refer for CBT
