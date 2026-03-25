@@ -23,6 +23,7 @@ const TEXT3 = "rgba(242,242,247,0.3)";
 const injectCSS = `
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 *{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 body{background:radial-gradient(circle at 50% 0%, #1a2342 0%, #060912 60%);background-attachment:fixed;color:${TEXT};font-family:-apple-system,'SF Pro Display','Inter',sans-serif;-webkit-font-smoothing:antialiased;overflow-x:hidden}
 ::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.12);border-radius:4px}
 @keyframes fadeUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
@@ -34,7 +35,7 @@ body{background:radial-gradient(circle at 50% 0%, #1a2342 0%, #060912 60%);backg
 @keyframes slideIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}
 .glass{background:${SURFACE};border:1px solid ${BORDER};border-radius:18px;backdrop-filter:blur(20px);transition:border-color 0.2s}
 .glass:hover{border-color:rgba(255,255,255,0.13)}
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:none;border-radius:12px;font-size:14px;font-weight:600;cursor:pointer;transition:all 0.2s;font-family:inherit}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:none;border-radius:12px;font-size:14px;font-weight:600;cursor:pointer;transition:all 0.2s;font-family:inherit;-webkit-tap-highlight-color:transparent}
 .btn-primary{background:${ACCENT};color:white;padding:12px 22px}
 .btn-primary:hover{background:#2d6fe8;transform:translateY(-1px);box-shadow:0 8px 24px rgba(59,126,255,0.4)}
 .btn-primary:disabled{opacity:0.45;cursor:not-allowed;transform:none;box-shadow:none}
@@ -43,7 +44,7 @@ body{background:radial-gradient(circle at 50% 0%, #1a2342 0%, #060912 60%);backg
 .field{width:100%;background:rgba(255,255,255,0.05);border:1px solid ${BORDER};border-radius:12px;padding:12px 15px;color:${TEXT};font-size:14px;outline:none;transition:all 0.2s;font-family:inherit}
 .field::placeholder{color:${TEXT3}}
 .field:focus{border-color:${ACCENT};box-shadow:0 0 0 3px rgba(59,126,255,0.12)}
-.slink{display:flex;align-items:center;gap:11px;padding:9px 13px;border-radius:10px;color:${TEXT2};font-size:14px;font-weight:500;cursor:pointer;transition:all 0.18s;background:transparent;border:none;width:100%;font-family:inherit}
+.slink{display:flex;align-items:center;gap:11px;padding:9px 13px;border-radius:10px;color:${TEXT2};font-size:14px;font-weight:500;cursor:pointer;transition:all 0.18s;background:transparent;border:none;width:100%;font-family:inherit;-webkit-tap-highlight-color:transparent}
 .slink:hover{background:rgba(255,255,255,0.06);color:${TEXT}}
 .slink.active{background:rgba(59,126,255,0.12);color:${ACCENT}}
 .skeleton{background:linear-gradient(90deg,rgba(255,255,255,0.04) 25%,rgba(255,255,255,0.08) 50%,rgba(255,255,255,0.04) 75%);background-size:200% 100%;animation:shimmer 1.5s infinite;border-radius:8px}
@@ -56,8 +57,44 @@ body{background:radial-gradient(circle at 50% 0%, #1a2342 0%, #060912 60%);backg
 .ntab{padding:6px 14px;border-radius:8px;font-size:12px;font-weight:500;cursor:pointer;transition:all 0.18s;border:none;background:transparent;color:${TEXT2};font-family:inherit}
 .ntab:hover{color:${TEXT}}
 .ntab.on{background:rgba(59,126,255,0.12);color:${ACCENT}}
-@media(max-width:768px){html{-webkit-text-size-adjust:100%}.bubble-user{max-width:88%}.bubble-ai{max-width:92%}.field{font-size:16px}.slink{padding:11px 13px;font-size:15px}}
+
+/* ── App shell layout ─────────────────────────────────────── */
+.app-shell{display:flex;min-height:100vh;position:relative}
+.app-sidebar{width:210px;padding:22px 12px;display:flex;flex-direction:column;gap:3px;border-right:1px solid ${BORDER};position:sticky;top:0;height:100vh;flex-shrink:0;overflow-y:auto;background:${BG};transition:transform 0.28s cubic-bezier(0.4,0,0.2,1);z-index:200}
+.app-content{flex:1;overflow:auto;padding:28px 26px;min-width:0}
+.mobile-topbar{display:none;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid ${BORDER};background:rgba(6,9,18,0.95);backdrop-filter:blur(16px);position:sticky;top:0;z-index:100}
+.sidebar-backdrop{display:none;position:fixed;inset:0;z-index:190;background:rgba(0,0,0,0.6);backdrop-filter:blur(3px)}
+.hamburger-btn{display:flex;flex-direction:column;gap:5px;background:transparent;border:1px solid rgba(255,255,255,0.1);border-radius:8px;cursor:pointer;padding:8px 10px;-webkit-tap-highlight-color:transparent}
+.hamburger-btn span{display:block;width:18px;height:2px;background:${TEXT};border-radius:2px;transition:all 0.2s}
+.close-sidebar-btn{display:none}
+
+/* ── Mobile breakpoint ────────────────────────────────────── */
+@media(max-width:768px){
+  .app-shell{flex-direction:column}
+  .mobile-topbar{display:flex}
+  .app-sidebar{position:fixed;top:0;left:0;height:100vh;transform:translateX(-110%)}
+  .app-sidebar.open{transform:translateX(0)}
+  .sidebar-backdrop.open{display:block}
+  .app-content{padding:14px 14px}
+  .close-sidebar-btn{display:flex;align-items:center;gap:6px;margin-left:auto;margin-bottom:10px;padding:5px 11px;background:rgba(255,255,255,0.06);border:none;border-radius:8px;cursor:pointer;color:${TEXT2};font-size:13px;font-family:inherit;-webkit-tap-highlight-color:transparent}
+  .bubble-user{max-width:90%}
+  .bubble-ai{max-width:94%}
+  .field{font-size:16px}
+  .slink{font-size:15px;padding:12px 13px;min-height:48px}
+  .btn{min-height:44px}
+  .glass{border-radius:14px}
+  /* Diagnose tab grid overrides */
+  .diagnose-cols{grid-template-columns:1fr !important}
+  .patient-info-grid{grid-template-columns:1fr !important}
+  .pair-grid{grid-template-columns:1fr !important}
+  .result-pair{grid-template-columns:1fr !important}
+  .two-col{grid-template-columns:1fr !important}
+  /* Chat tab */
+  .chat-height{height:calc(100vh - 180px) !important}
+}
 `;
+
+
 
 const TriageBadge = ({ level }) => {
   const cfg = {
@@ -687,35 +724,30 @@ export default function App() {
 
   const filteredHistory = histFilter === "All" ? patientHistory : patientHistory.filter(p => p.triage === histFilter);
 
+
   return (
     <>
       <style>{injectCSS}</style>
-      <div style={{ display: "flex", minHeight: "100vh", flexDirection: "column", position: "relative" }}>
 
-        {/* Mobile overlay backdrop */}
-        {isMobile && sidebarOpen && (
-          <div onClick={() => setSidebarOpen(false)} style={{ position: "fixed", inset: 0, zIndex: 190, background: "rgba(0,0,0,0.55)", backdropFilter: "blur(4px)" }} />
-        )}
+      {/* Backdrop – visible on mobile when sidebar open */}
+      <div className={`sidebar-backdrop${sidebarOpen ? " open" : ""}`} onClick={() => setSidebarOpen(false)} />
 
-        {/* Mobile top bar */}
-        {isMobile && (
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 16px", borderBottom: `1px solid ${BORDER}`, background: `rgba(6,9,18,0.9)`, backdropFilter: "blur(16px)", position: "sticky", top: 0, zIndex: 100, WebkitTapHighlightColor: "transparent" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
-              <div style={{ width: 28, height: 28, borderRadius: 8, background: "linear-gradient(135deg,#3b7eff,#5e5ce6)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14 }}>🩺</div>
-              <div style={{ fontSize: 13, fontWeight: 700 }}>MedAI Doctor</div>
-            </div>
-            <button onClick={() => setSidebarOpen(v => !v)} aria-label="Open navigation" style={{ display: "flex", flexDirection: "column", gap: 5, background: "transparent", border: "none", cursor: "pointer", padding: 6, WebkitTapHighlightColor: "transparent" }}>
-              <span style={{ display: "block", width: 20, height: 2, background: TEXT, borderRadius: 2 }} />
-              <span style={{ display: "block", width: 20, height: 2, background: TEXT, borderRadius: 2 }} />
-              <span style={{ display: "block", width: 20, height: 2, background: TEXT, borderRadius: 2 }} />
-            </button>
+      <div className="app-shell">
+
+        {/* Mobile top bar – CSS shows/hides via media query */}
+        <div className="mobile-topbar">
+          <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
+            <div style={{ width: 28, height: 28, borderRadius: 8, background: "linear-gradient(135deg,#3b7eff,#5e5ce6)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14 }}>🩺</div>
+            <div style={{ fontSize: 14, fontWeight: 700 }}>MedAI Doctor</div>
           </div>
-        )}
+          <button className="hamburger-btn" onClick={() => setSidebarOpen(v => !v)} aria-label="Open navigation">
+            <span /><span /><span />
+          </button>
+        </div>
 
-        <div style={{ display: "flex", flex: 1, minHeight: 0 }}>
-
-        {/* Sidebar */}
-        <nav style={{ width: 210, padding: "22px 12px", display: "flex", flexDirection: "column", gap: 3, borderRight: `1px solid ${BORDER}`, position: isMobile ? "fixed" : "sticky", top: 0, height: "100vh", flexShrink: 0, overflowY: "auto", zIndex: isMobile ? 200 : "auto", transform: isMobile ? (sidebarOpen ? "translateX(0)" : "translateX(-110%)") : "none", transition: "transform 0.28s cubic-bezier(0.4,0,0.2,1)", background: BG }}>
+        {/* Sidebar – CSS controls sticky vs fixed+offscreen via media query */}
+        <nav className={`app-sidebar${sidebarOpen ? " open" : ""}`}>
+          <button className="close-sidebar-btn" onClick={() => setSidebarOpen(false)}>✕ Close</button>
           <div style={{ padding: "6px 12px 18px", display: "flex", alignItems: "center", gap: 10 }}>
             <div style={{ width: 33, height: 33, borderRadius: 9, background: "linear-gradient(135deg,#3b7eff,#5e5ce6)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16 }}>🩺</div>
             <div>
@@ -782,7 +814,7 @@ export default function App() {
         </nav>
 
         {/* Content */}
-        <main style={{ flex: 1, overflow: "auto", padding: isMobile ? "12px 12px" : "28px 26px" }}>
+        <main className="app-content">
 
           {/* Backend offline banner */}
           {backendOnline === false && (
@@ -805,12 +837,12 @@ export default function App() {
                 <p style={{ color: TEXT2, fontSize: 14 }}>AI-powered multi-agent medical decision support system</p>
               </div>
 
-              <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: 18 }}>
+              <div className="diagnose-cols" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 18 }}>
                 {/* Input panel */}
                 <div className="glass" style={{ padding: 24 }}>
                   <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 18 }}>Patient Information</div>
                   <div style={{ display: "flex", flexDirection: "column", gap: 13 }}>
-                    <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr 1fr", gap: 10 }}>
+                    <div className="patient-info-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10 }}>
                       <div>
                         <label style={{ fontSize: 11, color: TEXT2, display: "block", marginBottom: 5, letterSpacing: "0.04em" }}>NAME</label>
                         <input className="field" placeholder="e.g. John Doe" type="text" value={name} onChange={e => setName(e.target.value)} />
@@ -849,7 +881,7 @@ export default function App() {
                       )}
                     </div>
 
-                    <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: 10 }}>
+                    <div className="pair-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
                       <div>
                         <label style={{ fontSize: 11, color: TEXT2, display: "block", marginBottom: 5, letterSpacing: "0.04em" }}>PRE-EXISTING CONDITIONS <span style={{ opacity: 0.4 }}>(optional)</span></label>
                         <input className="field" placeholder="e.g. hypertension, kidney disease" value={conditions} onChange={e => setConditions(e.target.value)} />
@@ -900,7 +932,7 @@ export default function App() {
                       <div style={{ fontSize: 13, color: TEXT2, lineHeight: 1.55 }}>{result.triage.recommendation}</div>
                     </div>
 
-                    <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr auto", gap: 14 }}>
+                    <div className="result-pair" style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 14 }}>
                       <div className="glass" style={{ padding: 20 }}>
                         <div style={{ fontSize: 11, color: TEXT3, letterSpacing: "0.05em", marginBottom: 12 }}>TREATMENT PLAN</div>
                         {[["DRUG", result.treatment.recommended_drug, ACCENT],["DOSAGE", result.treatment.dosage, TEXT],["DURATION", result.treatment.duration, TEXT]].map(([k,v,c]) => (
@@ -993,7 +1025,7 @@ export default function App() {
                     </div>
                   )}
 
-                  <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: 18 }}>
+                  <div className="two-col" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 18 }}>
                     {/* Lifestyle */}
                     <div className="glass" style={{ padding: 20 }}>
                       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 13 }}>
@@ -1449,7 +1481,6 @@ export default function App() {
             </div>
           )}
         </main>
-        </div>
       </div>
     </>
   );
