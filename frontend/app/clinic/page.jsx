@@ -200,7 +200,7 @@ export default function App() {
     setLang(localStorage.getItem("lang") || "en");
     setCurrentUser(getStoredUser());
     // ── Backend health check ──────────────────────────────────────
-    fetch("http://127.0.0.1:8000/api/health")
+    fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000"}/api/health`)
       .then(r => r.ok ? r.json() : Promise.reject())
       .then(d => setBackendOnline(d.status === "ok"))
       .catch(() => setBackendOnline(false));
@@ -322,7 +322,7 @@ export default function App() {
       if (mlConfidence < CONFIDENCE_THRESHOLD || missingTreatmentData) {
         console.log(`[GrokFallback] Triggering — confidence: ${(mlConfidence*100).toFixed(1)}%, missingData: ${missingTreatmentData}`);
         try {
-          const fbRes = await fetch("http://127.0.0.1:8000/api/diagnose/groq-fallback", {
+          const fbRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000"}/api/diagnose/groq-fallback`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
@@ -533,7 +533,7 @@ export default function App() {
     // ── Tamil: use backend proxy ──────────────────────────────
     if (lang === "ta") {
       setSpeakingField(fieldId);
-      fetch("http://127.0.0.1:8000/api/tts", {
+      fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000"}/api/tts`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ text: clean, lang: "ta" })
