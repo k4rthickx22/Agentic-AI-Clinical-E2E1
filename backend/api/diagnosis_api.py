@@ -1,4 +1,4 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Response
 from orchestrator.clinical_orchestrator import ClinicalOrchestrator
 from services.db_service import save_consultation, get_user_consultations, get_consultations, get_analytics
 from pydantic import BaseModel
@@ -374,6 +374,121 @@ def diagnose_extended(request: ExtendedRequest):
         }
 
 
+class GrokFallbackRequest(BaseModel):
+    symptoms: str
+    age: int = 30
+    gender: str = "unknown"
+    conditions: str = "none"
+    allergies: str = "none"
+    language: str = "en"
+
+
+GROQ_FALLBACK_SYSTEM_PROMPT = """You are Dr. MedAI — a world-class AI physician specialising in clinical diagnosis and personalised treatment plans.
+
+A patient has described their symptoms (possibly in a non-English language). Your goals:
+1. Understand the symptoms exactly as described (translate internally if needed).
+2. Derive the most accurate primary diagnosis for those symptoms.
+3. Return ONLY a valid JSON object — no markdown, no code fences, no prose.
+
+JSON schema (all fields required):
+{
+  "disease": "Primary diagnosis name in English",
+  "drug": "First-line medication name + dose",
+  "dosage": "Exact dosage instructions",
+  "duration": "Treatment duration",
+  "explanation": "2-3 sentence plain-language explanation (language depends on LANGUAGE_RULE below)",
+  "treatment_plan": ["Step 1", "Step 2", "Step 3"],
+  "lifestyle": ["Tip 1", "Tip 2", "Tip 3"],
+  "warnings": ["Warning 1 in English"],
+  "when_to_seek_care": "Emergency warning signs (language depends on LANGUAGE_RULE below)",
+  "confidence": 0.85
+}
+
+LANGUAGE_RULE — strictly follow based on the language tag provided:
+- language=en → ALL fields in ENGLISH ONLY. Never use Hindi, Tamil, or any other language.
+- language=ta → disease/drug/dosage/duration/warnings in English; explanation/treatment_plan/lifestyle/when_to_seek_care in Tamil.
+- language=hi → disease/drug/dosage/duration/warnings in English; explanation/treatment_plan/lifestyle/when_to_seek_care in Hindi.
+
+General rules:
+- Be specific: real drug names, real dosages, real durations.
+- Never refuse — patients need guidance.
+- Do NOT infer language from symptom text; use ONLY the language tag provided."""
+
+
+
+@router.post("/diagnose/groq-fallback")
+def diagnose_groq_fallback(request: GrokFallbackRequest):
+    """
+    Grok Fallback Diagnosis — activated when internal ML model confidence < 35%.
+    Uses Llama-3.3-70b-versatile to diagnose from raw symptoms (any language).
+    """
+    if not groq_client:
+        return {
+            "activated": False,
+            "reason": "GROQ_API_KEY not configured — fallback unavailable."
+        }
+
+    import json as _json, re as _re
+
+    lang_hints = {
+        "ta": "LANGUAGE=ta. Patient wrote in Tamil. Respond with explanation/treatment_plan/lifestyle/when_to_seek_care in Tamil. disease/drug/dosage/duration/warnings must be in English.",
+        "hi": "LANGUAGE=hi. Patient wrote in Hindi. Respond with explanation/treatment_plan/lifestyle/when_to_seek_care in Hindi. disease/drug/dosage/duration/warnings must be in English.",
+        "en": "LANGUAGE=en. ALL fields must be in ENGLISH ONLY. Do not use Hindi, Tamil, or any other language regardless of what language the symptom text appears to be in."
+    }
+    lang_hint = lang_hints.get(request.language, "")
+
+    user_message = f"""{lang_hint}
+
+Patient Details:
+- Age: {request.age}
+- Gender: {request.gender}
+- Pre-existing Conditions: {request.conditions}
+- Known Allergies: {request.allergies}
+- Symptoms (as reported by patient): {request.symptoms}
+
+Diagnose this patient accurately and return ONLY the JSON object as specified. No extra text."""
+
+    try:
+        response = groq_client.chat.completions.create(
+            model="llama-3.3-70b-versatile",
+            messages=[
+                {"role": "system", "content": GROQ_FALLBACK_SYSTEM_PROMPT},
+                {"role": "user", "content": user_message}
+            ],
+            max_tokens=1600,
+            temperature=0.3,
+            response_format={"type": "json_object"}
+        )
+        raw = response.choices[0].message.content
+        try:
+            parsed = _json.loads(raw)
+        except Exception:
+            match = _re.search(r'\{.*\}', raw, _re.DOTALL)
+            parsed = _json.loads(match.group()) if match else {}
+
+        return {
+            "activated": True,
+            "source": "GROQ_FALLBACK",
+            "disease": parsed.get("disease", "Unknown"),
+            "drug": parsed.get("drug", "Consult physician"),
+            "dosage": parsed.get("dosage", "As prescribed"),
+            "duration": parsed.get("duration", "As advised"),
+            "explanation": parsed.get("explanation", ""),
+            "treatment_plan": parsed.get("treatment_plan", []),
+            "lifestyle": parsed.get("lifestyle", []),
+            "warnings": parsed.get("warnings", []),
+            "when_to_seek_care": parsed.get("when_to_seek_care", ""),
+            "confidence": parsed.get("confidence", 0.75)
+        }
+
+    except Exception as e:
+        print(f"Groq Fallback API Error: {e}")
+        return {
+            "activated": False,
+            "reason": f"Groq API error: {str(e)}"
+        }
+
+
 from utils.pdf_generator import generate_pdf
 from fastapi.responses import FileResponse
 import tempfile
@@ -414,3 +529,48 @@ def generate_pdf_endpoint(data: dict):
         media_type="application/pdf",
         background=None
     )
+
+
+# ── Backend TTS proxy — uses gTTS (Google Text-to-Speech library) ────────────
+class TTSRequest(BaseModel):
+    text: str
+    lang: str = "ta"   # ta | hi | en
+
+
+@router.post("/tts")
+def tts_proxy(request: TTSRequest):
+    """
+    Converts text to speech using gTTS (pip install gTTS).
+    Used by the frontend for Tamil voice output (no Windows TTS engine for Tamil).
+    Returns MP3 audio bytes.
+    """
+    import io
+    try:
+        from gtts import gTTS
+    except ImportError:
+        from fastapi import HTTPException
+        raise HTTPException(status_code=500, detail="gTTS not installed. Run: pip install gTTS")
+
+    lang = request.lang.strip().lower() or "ta"
+    text = request.text.strip()
+    if not text:
+        return Response(content=b"", media_type="audio/mpeg")
+
+    # Map our lang codes to gTTS lang codes
+    gtts_lang_map = {"ta": "ta", "hi": "hi", "en": "en"}
+    gtts_lang = gtts_lang_map.get(lang, "ta")
+
+    try:
+        tts = gTTS(text=text, lang=gtts_lang, slow=False)
+        buf = io.BytesIO()
+        tts.write_to_fp(buf)
+        buf.seek(0)
+        return Response(
+            content=buf.read(),
+            media_type="audio/mpeg",
+            headers={"Cache-Control": "no-cache"}
+        )
+    except Exception as e:
+        print(f"[TTS] gTTS error: {e}")
+        from fastapi import HTTPException
+        raise HTTPException(status_code=502, detail=f"TTS failed: {str(e)}")

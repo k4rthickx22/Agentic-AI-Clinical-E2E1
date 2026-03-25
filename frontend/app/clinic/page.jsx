@@ -194,7 +194,7 @@ export default function App() {
   const [currentUser, setCurrentUser] = useState(null);
   const [traceOpen, setTraceOpen] = useState(false);
   const [backendOnline, setBackendOnline] = useState(null); // null=checking, true=ok, false=offline
-  const [speaking, setSpeaking] = useState(false); // TTS state
+  const [speakingField, setSpeakingField] = useState(null); // TTS state — null or field id string
 
   useEffect(() => {
     setLang(localStorage.getItem("lang") || "en");
@@ -218,7 +218,8 @@ export default function App() {
   const [chatListening, setChatListening] = useState(false);
   const [aiExplain, setAiExplain] = useState(null);
   const [explainLoading, setExplainLoading] = useState(false);
-  
+  const [groqFallback, setGroqFallback] = useState(false); // whether Grok fallback was used
+
   const [patientHistory, setPatientHistory] = useState([]);
   const [analyticsData, setAnalyticsData] = useState(null);
 
@@ -232,9 +233,23 @@ export default function App() {
   const chatEnd = useRef(null);
   const recRef = useRef(null);
   const chatRecRef = useRef(null);
+  const silenceTimerRef = useRef(null);      // auto-stops diagnosis mic after 2.5 s silence
+  const chatSilenceTimerRef = useRef(null);  // auto-stops chat mic after 2.5 s silence
+  const voicesRef = useRef([]);              // pre-loaded TTS voices (avoid empty getVoices())
+  const currentAudioRef = useRef(null);      // HTML5 Audio element for Tamil backend TTS
   // Refs to hold transcript without triggering re-renders mid-speech
   const diagTranscriptRef = useRef("");
   const chatTranscriptRef = useRef("");
+
+
+  // Pre-load TTS voices as soon as speechSynthesis is ready
+  useEffect(() => {
+    if (typeof window === "undefined" || !window.speechSynthesis) return;
+    const load = () => { voicesRef.current = window.speechSynthesis.getVoices(); };
+    load();
+    window.speechSynthesis.onvoiceschanged = load;
+    return () => { window.speechSynthesis.onvoiceschanged = null; };
+  }, []);
 
   useEffect(() => { chatEnd.current?.scrollIntoView({ behavior: "smooth" }); }, [messages]);
 
@@ -243,18 +258,25 @@ export default function App() {
     fetchAnalytics().then(setAnalyticsData).catch(console.error);
   }, []);
 
-  const diagnose = async () => {
-    if (!symptoms.trim()) return;
+  // symptomOverride: pass captured voice text directly to avoid stale-closure bug.
+  // NOTE: always call as diagnose() or diagnose(string) — never as an onClick handler directly
+  // (React would pass SyntheticEvent as first arg). Use onClick={() => diagnose()} instead.
+  const diagnose = async (symptomOverride = null) => {
+    // Only treat override as symptoms if it's actually a string (guards against SyntheticEvent)
+    const effectiveSymptoms = typeof symptomOverride === "string" ? symptomOverride : symptoms;
+    if (!effectiveSymptoms?.trim()) return;
     setLoading(true);
     setResult(null);
+    setGroqFallback(false);
     try {
-      const raw = await diagnosePatient(Number(age) || 30, symptoms, gender, conditions, name || "Anonymous", allergies || "none");
+      const raw = await diagnosePatient(Number(age) || 30, effectiveSymptoms, gender, conditions, name || "Anonymous", allergies || "none");
 
       // Normalize backend response — handle all possible shapes safely
       const treatment = raw?.treatment || {};
       const triage    = raw?.triage    || {};
       const safety    = raw?.drug_safety || {};
       const profile   = raw?.patient_profile || {};
+      const mlConfidence = typeof raw?.confidence_score === "number" ? raw.confidence_score : 1.0;
 
       const normalized = {
         treatment: {
@@ -287,7 +309,51 @@ export default function App() {
             ? profile.disease_probabilities
             : [{ disease: treatment.predicted_disease || "Unknown", probability: 1 }],
         },
+        confidence_score: mlConfidence,
       };
+
+      // ── Grok Fallback: activate when ML confidence < 35% OR key treatment fields are empty ──
+      const CONFIDENCE_THRESHOLD = 0.35;
+      const missingTreatmentData =
+        normalized.treatment.recommended_drug === "Consult physician" ||
+        normalized.treatment.treatment_plan.length === 0 ||
+        normalized.treatment.lifestyle.length === 0;
+
+      if (mlConfidence < CONFIDENCE_THRESHOLD || missingTreatmentData) {
+        console.log(`[GrokFallback] Triggering — confidence: ${(mlConfidence*100).toFixed(1)}%, missingData: ${missingTreatmentData}`);
+        try {
+          const fbRes = await fetch("http://127.0.0.1:8000/api/diagnose/groq-fallback", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              symptoms: effectiveSymptoms,
+              age: Number(age) || 30,
+              gender,
+              conditions: conditions || "none",
+              allergies: allergies || "none",
+              language: lang
+            })
+          });
+          const fb = await fbRes.json();
+          if (fb.activated) {
+            // Merge Grok result into treatment
+            normalized.treatment.predicted_disease = fb.disease || normalized.treatment.predicted_disease;
+            normalized.treatment.recommended_drug  = fb.drug    || normalized.treatment.recommended_drug;
+            normalized.treatment.dosage            = fb.dosage  || normalized.treatment.dosage;
+            normalized.treatment.duration          = fb.duration || normalized.treatment.duration;
+            normalized.treatment.explanation       = fb.explanation || normalized.treatment.explanation;
+            if (Array.isArray(fb.treatment_plan) && fb.treatment_plan.length) normalized.treatment.treatment_plan = fb.treatment_plan;
+            if (Array.isArray(fb.lifestyle) && fb.lifestyle.length) normalized.treatment.lifestyle = fb.lifestyle;
+            if (Array.isArray(fb.warnings) && fb.warnings.length) normalized.treatment.warnings = fb.warnings;
+            if (fb.when_to_seek_care) normalized.treatment.when_to_seek_care = fb.when_to_seek_care;
+            setGroqFallback(true);
+            console.log(`[GrokFallback] ✅ Grok diagnosed: ${fb.disease}`);
+          }
+        } catch (fbErr) {
+          console.warn("[GrokFallback] Grok API call failed:", fbErr);
+        }
+      }
+      // ─────────────────────────────────────────────────────────────────────
 
       setResult(normalized);
 
@@ -295,14 +361,14 @@ export default function App() {
       fetchHistory().then(setPatientHistory).catch(console.error);
       fetchAnalytics().then(setAnalyticsData).catch(console.error);
 
-      // Auto-trigger AI Doctor's Analysis
+      // Auto-trigger AI Doctor's Analysis (use potentially-updated disease from Grok)
       const disease = normalized.treatment.predicted_disease;
       if (disease && disease !== "Unknown") {
         setAiExplain(null);
         setExplainLoading(true);
         getDiagnosisExplanation(
           disease,
-          symptoms,
+          effectiveSymptoms,
           Number(age) || 30,
           gender,
           conditions || "none",
@@ -343,19 +409,20 @@ export default function App() {
   // ── Voice recognition – shared lang codes ───────────────────
   const LANG_CODES = { en: "en-US", ta: "ta-IN", hi: "hi-IN" };
 
-  // ── Diagnosis voice: continuous mode so English doesn't cut off ─
+  // ── Diagnosis voice: auto-stops after 2.5 s of silence and auto-submits ─
   const toggleListen = () => {
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SR) { alert("Voice recognition not supported. Please use Chrome or Edge."); return; }
     if (listening) {
+      if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
       recRef.current?.stop();
       setListening(false);
       return;
     }
     diagTranscriptRef.current = "";
     const rec = new SR();
-    rec.continuous = true;       // ← KEY FIX: keeps listening across pauses
-    rec.interimResults = true;   // show words as you speak
+    rec.continuous = true;
+    rec.interimResults = true;
     rec.maxAlternatives = 1;
     rec.lang = LANG_CODES[lang] || "en-US";
     rec.onresult = e => {
@@ -366,35 +433,46 @@ export default function App() {
       }
       diagTranscriptRef.current = full.trim();
       setSymptoms(full.trim());
+      // Reset silence timer on every new speech result — auto-stop after 2.5 s
+      if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
+      silenceTimerRef.current = setTimeout(() => {
+        recRef.current?.stop(); // triggers onend → auto-submit
+      }, 2500);
     };
     rec.onend = () => {
+      if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
       setListening(false);
-      // Auto-submit after voice ends if there's a transcript
+      // Auto-submit: pass captured text directly to diagnose (avoids stale closure)
       const captured = diagTranscriptRef.current.trim();
       if (captured) {
-        setTimeout(() => diagnose(), 300);
+        setSymptoms(captured);
+        setTimeout(() => diagnose(captured), 300);
       }
     };
     rec.onerror = (e) => {
-      if (e.error !== "no-speech") setListening(false);
+      if (e.error !== "no-speech") {
+        if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
+        setListening(false);
+      }
     };
     recRef.current = rec;
     rec.start();
     setListening(true);
   };
 
-  // ── Chat voice: continuous mode, auto-sends on stop ─────────────
+  // ── Chat voice: auto-stops after 2.5 s of silence and auto-sends ────────
   const toggleChatListen = () => {
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SR) { alert("Voice recognition not supported. Please use Chrome or Edge."); return; }
     if (chatListening) {
+      if (chatSilenceTimerRef.current) clearTimeout(chatSilenceTimerRef.current);
       chatRecRef.current?.stop();
       setChatListening(false);
       return;
     }
     chatTranscriptRef.current = "";
     const rec = new SR();
-    rec.continuous = true;       // ← KEY FIX: keeps listening across pauses
+    rec.continuous = true;
     rec.interimResults = true;
     rec.maxAlternatives = 1;
     rec.lang = LANG_CODES[lang] || "en-US";
@@ -405,8 +483,14 @@ export default function App() {
       }
       chatTranscriptRef.current = full.trim();
       setChatInput(full.trim());
+      // Reset silence timer
+      if (chatSilenceTimerRef.current) clearTimeout(chatSilenceTimerRef.current);
+      chatSilenceTimerRef.current = setTimeout(() => {
+        chatRecRef.current?.stop();
+      }, 2500);
     };
     rec.onend = () => {
+      if (chatSilenceTimerRef.current) clearTimeout(chatSilenceTimerRef.current);
       setChatListening(false);
       const captured = chatTranscriptRef.current.trim();
       if (captured) {
@@ -416,31 +500,121 @@ export default function App() {
       }
     };
     rec.onerror = (e) => {
-      if (e.error !== "no-speech") setChatListening(false);
+      if (e.error !== "no-speech") {
+        if (chatSilenceTimerRef.current) clearTimeout(chatSilenceTimerRef.current);
+        setChatListening(false);
+      }
     };
     chatRecRef.current = rec;
     rec.start();
     setChatListening(true);
   };
 
-  // ── Text-to-Speech: AI reads responses aloud ─────────────────
-  const speakText = (text) => {
+  // ── Text-to-Speech ───────────────────────────────────────────────────
+  // Tamil → backend proxy (Google Translate TTS, returns real MP3)
+  // English/Hindi → Web Speech API (has pre-installed Windows voices)
+  const speakText = (text, fieldId = "chat") => {
+    // Stop any existing playback
+    window.speechSynthesis?.cancel();
+    if (currentAudioRef.current) {
+      currentAudioRef.current.pause();
+      currentAudioRef.current = null;
+    }
+    if (speakingField === fieldId) { setSpeakingField(null); return; } // toggle off
+
+    const clean = text
+      .replace(/[\u{1F600}-\u{1FFFF}]/gu, "")
+      .replace(/[\u2700-\u27BF]/gu, "")
+      .replace(/[\u2600-\u26FF]/gu, "")
+      .replace(/[\u2300-\u23FF]/gu, "")
+      .trim();
+    if (!clean) return;
+
+    // ── Tamil: use backend proxy ──────────────────────────────
+    if (lang === "ta") {
+      setSpeakingField(fieldId);
+      fetch("http://127.0.0.1:8000/api/tts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: clean, lang: "ta" })
+      })
+        .then(res => {
+          if (!res.ok) throw new Error(`TTS error ${res.status}`);
+          return res.blob();
+        })
+        .then(blob => {
+          const url = URL.createObjectURL(blob);
+          const audio = new Audio(url);
+          currentAudioRef.current = audio;
+          audio.onended = () => { URL.revokeObjectURL(url); setSpeakingField(null); currentAudioRef.current = null; };
+          audio.onerror = () => { URL.revokeObjectURL(url); setSpeakingField(null); currentAudioRef.current = null; };
+          audio.play();
+        })
+        .catch(err => {
+          console.error("[TTS Tamil] Backend error:", err);
+          setSpeakingField(null);
+        });
+      return;
+    }
+
+    // ── English / Hindi: Web Speech API ────────────────────────
     if (!window.speechSynthesis) return;
-    window.speechSynthesis.cancel();
-    const utter = new SpeechSynthesisUtterance(text.replace(/[\u{1F600}-\u{1FFFF}]/gu, "").trim());
-    const voiceLang = { en: "en-US", ta: "ta-IN", hi: "hi-IN" }[lang] || "en-US";
+    const voiceLang = { en: "en-US", hi: "hi-IN" }[lang] || "en-US";
+    const voicePrefs = {
+      en: ["Microsoft Zira - English (United States)", "Microsoft Hazel - English (Great Britain)",
+           "Google UK English Female", "Microsoft Aria Online (Natural) - English (United States)",
+           "Microsoft Jenny Online (Natural) - English (United States)",
+           "Samantha", "Karen", "Victoria"],
+      hi: ["Microsoft Kalpana - Hindi (India)", "Microsoft Heera - Hindi (India)",
+           "Google \u0939\u093f\u0928\u094d\u0926\u0940", "Google Hindi"],
+    };
+    const prefs = voicePrefs[lang] || voicePrefs.en;
+    const voices = window.speechSynthesis.getVoices();
+    if (voices.length > voicesRef.current.length) voicesRef.current = voices;
+    const all = voicesRef.current;
+    let voice = null;
+    for (const n of prefs) { const v = all.find(v => v.name === n); if (v) { voice = v; break; } }
+    if (!voice) voice = all.find(v => v.lang.startsWith(voiceLang.split("-")[0]) && v.name.toLowerCase().includes("female"));
+    if (!voice) voice = all.find(v => v.lang.startsWith(voiceLang.split("-")[0]));
+
+    const utter = new SpeechSynthesisUtterance(clean);
     utter.lang = voiceLang;
-    utter.rate = 0.92;
-    utter.pitch = 1;
-    utter.onstart = () => setSpeaking(true);
-    utter.onend = () => setSpeaking(false);
-    utter.onerror = () => setSpeaking(false);
+    utter.rate = lang === "hi" ? 0.88 : 0.88;
+    utter.pitch = 1.2;
+    utter.volume = 1.0;
+    if (voice) utter.voice = voice;
+    utter.onstart = () => setSpeakingField(fieldId);
+    utter.onend = () => setSpeakingField(null);
+    utter.onerror = (e) => { console.warn("[TTS] Error:", e.error); setSpeakingField(null); };
     window.speechSynthesis.speak(utter);
   };
 
+
   const stopSpeaking = () => {
     window.speechSynthesis?.cancel();
-    setSpeaking(false);
+    if (currentAudioRef.current) { currentAudioRef.current.pause(); currentAudioRef.current = null; }
+    setSpeakingField(null);
+  };
+
+  // Reusable TTS button component (inline)
+  const TTSButton = ({ text, fieldId, style = {} }) => {
+    const isActive = speakingField === fieldId;
+    return (
+      <button
+        onClick={() => speakText(text, fieldId)}
+        title={isActive ? "Stop reading" : "Read aloud"}
+        style={{
+          display: "inline-flex", alignItems: "center", gap: 4,
+          padding: "3px 9px", borderRadius: 8, border: `1px solid ${isActive ? "rgba(255,69,58,0.35)" : "rgba(255,255,255,0.1)"}`,
+          background: isActive ? "rgba(255,69,58,0.08)" : "rgba(255,255,255,0.04)",
+          color: isActive ? DANGER : TEXT3, fontSize: 11.5, fontWeight: 600,
+          cursor: "pointer", fontFamily: "inherit", transition: "all 0.2s", flexShrink: 0,
+          ...style
+        }}
+      >
+        {isActive ? "⏹ Stop" : "🔊 Listen"}
+      </button>
+    );
   };
 
   const sendChatWithMsg = async (msg) => {
@@ -682,7 +856,12 @@ export default function App() {
                       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 10 }}>
                         <div>
                           <div style={{ fontSize: 11, color: TEXT3, letterSpacing: "0.05em", marginBottom: 4 }}>PRIMARY DIAGNOSIS</div>
-                          <div style={{ fontSize: 21, fontWeight: 700, letterSpacing: "-0.3px" }}>{result.treatment.predicted_disease}</div>
+                          <div style={{ display: "flex", alignItems: "center", gap: 9, flexWrap: "wrap" }}>
+                            <div style={{ fontSize: 21, fontWeight: 700, letterSpacing: "-0.3px" }}>{result.treatment.predicted_disease}</div>
+                            {groqFallback && (
+                              <span style={{ fontSize: 10, fontWeight: 700, padding: "3px 9px", borderRadius: 14, background: "rgba(94,92,230,0.12)", border: "1px solid rgba(94,92,230,0.3)", color: "#8b8be8", letterSpacing: "0.03em", whiteSpace: "nowrap" }}>🤖 AI-Enhanced (Grok)</span>
+                            )}
+                          </div>
                         </div>
                         <TriageBadge level={result.triage.level} />
                       </div>
@@ -737,7 +916,10 @@ export default function App() {
                   {/* Explanation card */}
                   {result.treatment.explanation && (
                     <div className="glass" style={{ padding: 20, animation: "slideIn 0.4s ease 0.15s both" }}>
-                      <div style={{ fontSize: 11, color: TEXT3, letterSpacing: "0.05em", marginBottom: 8 }}>📋 CLINICAL EXPLANATION</div>
+                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+                        <div style={{ fontSize: 11, color: TEXT3, letterSpacing: "0.05em" }}>📋 CLINICAL EXPLANATION</div>
+                        <TTSButton text={result.treatment.explanation} fieldId="explanation" />
+                      </div>
                       <div style={{ fontSize: 13.5, color: TEXT2, lineHeight: 1.65 }}>{result.treatment.explanation}</div>
                     </div>
                   )}
@@ -745,7 +927,10 @@ export default function App() {
                   {/* Step-by-step treatment plan */}
                   {result.treatment.treatment_plan?.length > 0 && (
                     <div className="glass" style={{ padding: 20, animation: "slideIn 0.4s ease 0.18s both" }}>
-                      <div style={{ fontSize: 11, color: TEXT3, letterSpacing: "0.05em", marginBottom: 12 }}>🗂️ STEP-BY-STEP TREATMENT PLAN</div>
+                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+                        <div style={{ fontSize: 11, color: TEXT3, letterSpacing: "0.05em" }}>🗂️ STEP-BY-STEP TREATMENT PLAN</div>
+                        <TTSButton text={result.treatment.treatment_plan.join(". ")} fieldId="treatment_plan" />
+                      </div>
                       <div style={{ display: "flex", flexDirection: "column", gap: 9 }}>
                         {result.treatment.treatment_plan.map((step, i) => (
                           <div key={i} style={{ fontSize: 13, color: TEXT2, lineHeight: 1.55, padding: "8px 12px", borderRadius: 10, background: "rgba(59,126,255,0.05)", border: "1px solid rgba(59,126,255,0.1)" }}>
@@ -779,7 +964,12 @@ export default function App() {
                   <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 18 }}>
                     {/* Lifestyle */}
                     <div className="glass" style={{ padding: 20 }}>
-                      <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 13 }}>🌿 Lifestyle Recommendations</div>
+                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 13 }}>
+                        <div style={{ fontSize: 13, fontWeight: 600 }}>🌿 Lifestyle Recommendations</div>
+                        {result.treatment.lifestyle?.length > 0 && (
+                          <TTSButton text={result.treatment.lifestyle.join(". ")} fieldId="lifestyle" />
+                        )}
+                      </div>
                       {result.treatment.lifestyle?.length > 0 ? (
                         result.treatment.lifestyle.map((l, i) => (
                           <div key={i} style={{ display: "flex", gap: 10, alignItems: "flex-start", padding: "7px 0", borderBottom: i < result.treatment.lifestyle.length - 1 ? `1px solid rgba(255,255,255,0.04)` : "none" }}>
@@ -839,15 +1029,28 @@ export default function App() {
                             <div style={{ fontSize: 10.5, color: "rgba(94,92,230,0.8)", marginTop: 1 }}>Powered by Groq · llama-3.3-70b-versatile</div>
                           </div>
                         </div>
-                        {!explainLoading && (
-                          <button onClick={regenerateExplain}
-                            style={{ padding: "6px 13px", borderRadius: 9, border: "1px solid rgba(94,92,230,0.3)", background: "rgba(94,92,230,0.08)", color: "#8b8be8", fontSize: 11.5, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", display: "flex", alignItems: "center", gap: 5, transition: "all 0.2s" }}
-                            onMouseEnter={e => e.currentTarget.style.background = "rgba(94,92,230,0.16)"}
-                            onMouseLeave={e => e.currentTarget.style.background = "rgba(94,92,230,0.08)"}
-                          >
-                            🔄 Regenerate
-                          </button>
-                        )}
+                        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                          {!explainLoading && aiExplain && (
+                            <TTSButton
+                              text={[
+                                aiExplain.summary,
+                                aiExplain.causes?.join(". "),
+                                aiExplain.lifestyle?.join(". "),
+                                aiExplain.when_to_seek_care
+                              ].filter(Boolean).join(" ")}
+                              fieldId="ai_analysis"
+                            />
+                          )}
+                          {!explainLoading && (
+                            <button onClick={regenerateExplain}
+                              style={{ padding: "6px 13px", borderRadius: 9, border: "1px solid rgba(94,92,230,0.3)", background: "rgba(94,92,230,0.08)", color: "#8b8be8", fontSize: 11.5, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", display: "flex", alignItems: "center", gap: 5, transition: "all 0.2s" }}
+                              onMouseEnter={e => e.currentTarget.style.background = "rgba(94,92,230,0.16)"}
+                              onMouseLeave={e => e.currentTarget.style.background = "rgba(94,92,230,0.08)"}
+                            >
+                              🔄 Regenerate
+                            </button>
+                          )}
+                        </div>
                       </div>
 
                       {/* Loading Skeleton */}
@@ -995,11 +1198,11 @@ export default function App() {
                       </div>
                       {m.role === "ai" && (
                         <button
-                          onClick={() => speaking ? stopSpeaking() : speakText(m.content)}
-                          title={speaking ? "Stop speaking" : "Read aloud"}
-                          style={{ alignSelf: "flex-start", background: "transparent", border: "none", cursor: "pointer", fontSize: 14, color: speaking ? DANGER : TEXT3, padding: "2px 4px", borderRadius: 6, transition: "all 0.2s" }}
+                          onClick={() => speakText(m.content, `chat_${i}`)}
+                          title={speakingField === `chat_${i}` ? "Stop speaking" : "Read aloud"}
+                          style={{ alignSelf: "flex-start", background: "transparent", border: "none", cursor: "pointer", fontSize: 14, color: speakingField === `chat_${i}` ? DANGER : TEXT3, padding: "2px 4px", borderRadius: 6, transition: "all 0.2s" }}
                         >
-                          {speaking ? "🔇" : "🔊"}
+                          {speakingField === `chat_${i}` ? "🔇" : "🔊"}
                         </button>
                       )}
                     </div>

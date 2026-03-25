@@ -162,5 +162,8 @@ class ClinicalOrchestrator:
             "drug_safety": safety,
             "drug_interactions": drug_interactions,
             "reasoning_trace": reasoning_trace,
-            "patient_profile": profile
-        }
+            "patient_profile": profile,
+            # Top confidence score from the ML model (used for Grok fallback threshold)
+            "confidence_score": float(profile.get("disease_probabilities", [{}])[0].get("probability", 1.0))
+        }
+
