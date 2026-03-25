@@ -56,6 +56,7 @@ body{background:radial-gradient(circle at 50% 0%, #1a2342 0%, #060912 60%);backg
 .ntab{padding:6px 14px;border-radius:8px;font-size:12px;font-weight:500;cursor:pointer;transition:all 0.18s;border:none;background:transparent;color:${TEXT2};font-family:inherit}
 .ntab:hover{color:${TEXT}}
 .ntab.on{background:rgba(59,126,255,0.12);color:${ACCENT}}
+@media(max-width:768px){html{-webkit-text-size-adjust:100%}.bubble-user{max-width:88%}.bubble-ai{max-width:92%}.field{font-size:16px}.slink{padding:11px 13px;font-size:15px}}
 `;
 
 const TriageBadge = ({ level }) => {
@@ -189,6 +190,8 @@ const ChatMessage = ({ content }) => {
 export default function App() {
   const router = useRouter();
   const [tab, setTab] = useState("diagnose");
+  const [isMobile, setIsMobile] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   // ── Fix hydration: don't read localStorage on server ──────────
   const [lang, setLang] = useState("en");
   const [currentUser, setCurrentUser] = useState(null);
@@ -197,13 +200,19 @@ export default function App() {
   const [speakingField, setSpeakingField] = useState(null); // TTS state — null or field id string
 
   useEffect(() => {
-    setLang(localStorage.getItem("lang") || "en");
+    // Always default to English on page load
+    setLang("en");
+    localStorage.setItem("lang", "en");
     setCurrentUser(getStoredUser());
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
     // ── Backend health check ──────────────────────────────────────
     fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000"}/api/health`)
       .then(r => r.ok ? r.json() : Promise.reject())
       .then(d => setBackendOnline(d.status === "ok"))
       .catch(() => setBackendOnline(false));
+    return () => window.removeEventListener("resize", checkMobile);
   }, []);
   // ────────────────────────────────────────────────────────────────
   const [name, setName] = useState("");
@@ -681,10 +690,32 @@ export default function App() {
   return (
     <>
       <style>{injectCSS}</style>
-      <div style={{ display: "flex", minHeight: "100vh" }}>
+      <div style={{ display: "flex", minHeight: "100vh", flexDirection: "column", position: "relative" }}>
+
+        {/* Mobile overlay backdrop */}
+        {isMobile && sidebarOpen && (
+          <div onClick={() => setSidebarOpen(false)} style={{ position: "fixed", inset: 0, zIndex: 190, background: "rgba(0,0,0,0.55)", backdropFilter: "blur(4px)" }} />
+        )}
+
+        {/* Mobile top bar */}
+        {isMobile && (
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 16px", borderBottom: `1px solid ${BORDER}`, background: `rgba(6,9,18,0.9)`, backdropFilter: "blur(16px)", position: "sticky", top: 0, zIndex: 100, WebkitTapHighlightColor: "transparent" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
+              <div style={{ width: 28, height: 28, borderRadius: 8, background: "linear-gradient(135deg,#3b7eff,#5e5ce6)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14 }}>🩺</div>
+              <div style={{ fontSize: 13, fontWeight: 700 }}>MedAI Doctor</div>
+            </div>
+            <button onClick={() => setSidebarOpen(v => !v)} aria-label="Open navigation" style={{ display: "flex", flexDirection: "column", gap: 5, background: "transparent", border: "none", cursor: "pointer", padding: 6, WebkitTapHighlightColor: "transparent" }}>
+              <span style={{ display: "block", width: 20, height: 2, background: TEXT, borderRadius: 2 }} />
+              <span style={{ display: "block", width: 20, height: 2, background: TEXT, borderRadius: 2 }} />
+              <span style={{ display: "block", width: 20, height: 2, background: TEXT, borderRadius: 2 }} />
+            </button>
+          </div>
+        )}
+
+        <div style={{ display: "flex", flex: 1, minHeight: 0 }}>
 
         {/* Sidebar */}
-        <nav style={{ width: 210, padding: "22px 12px", display: "flex", flexDirection: "column", gap: 3, borderRight: `1px solid ${BORDER}`, position: "sticky", top: 0, height: "100vh", flexShrink: 0, overflowY: "auto" }}>
+        <nav style={{ width: 210, padding: "22px 12px", display: "flex", flexDirection: "column", gap: 3, borderRight: `1px solid ${BORDER}`, position: isMobile ? "fixed" : "sticky", top: 0, height: "100vh", flexShrink: 0, overflowY: "auto", zIndex: isMobile ? 200 : "auto", transform: isMobile ? (sidebarOpen ? "translateX(0)" : "translateX(-110%)") : "none", transition: "transform 0.28s cubic-bezier(0.4,0,0.2,1)", background: BG }}>
           <div style={{ padding: "6px 12px 18px", display: "flex", alignItems: "center", gap: 10 }}>
             <div style={{ width: 33, height: 33, borderRadius: 9, background: "linear-gradient(135deg,#3b7eff,#5e5ce6)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16 }}>🩺</div>
             <div>
@@ -747,10 +778,11 @@ export default function App() {
             </button>
           </div>
 
+          {isMobile && (<button onClick={() => setSidebarOpen(false)} style={{ display: "flex", marginLeft: "auto", marginBottom: 8, padding: "5px 10px", background: "rgba(255,255,255,0.06)", border: "none", borderRadius: 8, cursor: "pointer", color: TEXT2, fontSize: 14, alignItems: "center", gap: 5 }}>✕ Close</button>)}
         </nav>
 
         {/* Content */}
-        <main style={{ flex: 1, overflow: "auto", padding: "28px 26px" }}>
+        <main style={{ flex: 1, overflow: "auto", padding: isMobile ? "12px 12px" : "28px 26px" }}>
 
           {/* Backend offline banner */}
           {backendOnline === false && (
@@ -773,12 +805,12 @@ export default function App() {
                 <p style={{ color: TEXT2, fontSize: 14 }}>AI-powered multi-agent medical decision support system</p>
               </div>
 
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 18 }}>
+              <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: 18 }}>
                 {/* Input panel */}
                 <div className="glass" style={{ padding: 24 }}>
                   <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 18 }}>Patient Information</div>
                   <div style={{ display: "flex", flexDirection: "column", gap: 13 }}>
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10 }}>
+                    <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr 1fr", gap: 10 }}>
                       <div>
                         <label style={{ fontSize: 11, color: TEXT2, display: "block", marginBottom: 5, letterSpacing: "0.04em" }}>NAME</label>
                         <input className="field" placeholder="e.g. John Doe" type="text" value={name} onChange={e => setName(e.target.value)} />
@@ -817,7 +849,7 @@ export default function App() {
                       )}
                     </div>
 
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+                    <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: 10 }}>
                       <div>
                         <label style={{ fontSize: 11, color: TEXT2, display: "block", marginBottom: 5, letterSpacing: "0.04em" }}>PRE-EXISTING CONDITIONS <span style={{ opacity: 0.4 }}>(optional)</span></label>
                         <input className="field" placeholder="e.g. hypertension, kidney disease" value={conditions} onChange={e => setConditions(e.target.value)} />
@@ -828,7 +860,7 @@ export default function App() {
                       </div>
                     </div>
 
-                    <button className="btn btn-primary" onClick={diagnose} disabled={loading || !symptoms.trim()} style={{ marginTop: 2, height: 46 }}>
+                    <button className="btn btn-primary" onClick={diagnose} disabled={loading || !symptoms.trim()} style={{ marginTop: 2, height: 46, width: "100%" }}>
                       {loading
                         ? <><div style={{ width: 15, height: 15, border: "2px solid rgba(255,255,255,0.3)", borderTopColor: "white", borderRadius: "50%", animation: "spin 0.7s linear infinite" }} /> Analyzing...</>
                         : "🧠 Run AI Diagnosis"}
@@ -868,7 +900,7 @@ export default function App() {
                       <div style={{ fontSize: 13, color: TEXT2, lineHeight: 1.55 }}>{result.triage.recommendation}</div>
                     </div>
 
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 14 }}>
+                    <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr auto", gap: 14 }}>
                       <div className="glass" style={{ padding: 20 }}>
                         <div style={{ fontSize: 11, color: TEXT3, letterSpacing: "0.05em", marginBottom: 12 }}>TREATMENT PLAN</div>
                         {[["DRUG", result.treatment.recommended_drug, ACCENT],["DOSAGE", result.treatment.dosage, TEXT],["DURATION", result.treatment.duration, TEXT]].map(([k,v,c]) => (
@@ -961,7 +993,7 @@ export default function App() {
                     </div>
                   )}
 
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 18 }}>
+                  <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: 18 }}>
                     {/* Lifestyle */}
                     <div className="glass" style={{ padding: 20 }}>
                       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 13 }}>
@@ -1417,6 +1449,7 @@ export default function App() {
             </div>
           )}
         </main>
+        </div>
       </div>
     </>
   );

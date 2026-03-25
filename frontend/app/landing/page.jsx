@@ -15,6 +15,7 @@ const SURFACE = "rgba(255,255,255,0.05)";
 const css = `
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { -webkit-text-size-adjust: 100%; }
 body { background: #030811; color: ${TEXT}; font-family: 'Inter', -apple-system, sans-serif; -webkit-font-smoothing: antialiased; overflow-x: hidden; }
 .bg-blobs { position: fixed; inset: 0; overflow: hidden; z-index: 0; pointer-events: none; }
 .blob { position: absolute; border-radius: 50%; filter: blur(80px); animation: float 18s ease-in-out infinite; }
@@ -44,7 +45,7 @@ body { background: #030811; color: ${TEXT}; font-family: 'Inter', -apple-system,
 .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none !important; box-shadow: none !important; }
 .hero { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 110px 24px 90px; }
 .hero-badge { display: inline-flex; align-items: center; gap: 8px; background: rgba(59,126,255,0.1); border: 1px solid rgba(59,126,255,0.3); border-radius: 100px; padding: 8px 20px; font-size: 13px; font-weight: 600; color: ${ACCENT}; margin-bottom: 30px; animation: fadeUp 0.5s ease; }
-.hero-title { font-size: clamp(42px, 7vw, 80px); font-weight: 800; letter-spacing: -2.5px; line-height: 1.06; margin-bottom: 22px; animation: fadeUp 0.5s ease 0.1s both; }
+.hero-title { font-size: clamp(32px, 7vw, 80px); font-weight: 800; letter-spacing: -2.5px; line-height: 1.06; margin-bottom: 22px; animation: fadeUp 0.5s ease 0.1s both; }
 .hero-gradient { background: linear-gradient(135deg, ${ACCENT} 0%, #a78bfa 50%, #34d399 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
 .hero-subtitle { font-size: 19px; color: ${TEXT2}; max-width: 560px; line-height: 1.7; margin-bottom: 48px; animation: fadeUp 0.5s ease 0.2s both; }
 .hero-cta { display: flex; gap: 14px; flex-wrap: wrap; justify-content: center; animation: fadeUp 0.5s ease 0.3s both; }
@@ -85,8 +86,8 @@ body { background: #030811; color: ${TEXT}; font-family: 'Inter', -apple-system,
 .cta-title { font-size: 38px; font-weight: 800; letter-spacing: -1px; margin-bottom: 16px; }
 .cta-sub { font-size: 17px; color: ${TEXT2}; margin-bottom: 36px; line-height: 1.65; }
 .footer { padding: 48px; border-top: 1px solid ${BORDER}; text-align: center; color: ${TEXT2}; font-size: 13px; }
-.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.75); backdrop-filter: blur(16px); z-index: 500; display: flex; align-items: center; justify-content: center; animation: fadeIn 0.2s ease; }
-.modal { background: rgba(8,13,24,0.99); border: 1px solid ${BORDER}; border-radius: 26px; padding: 44px; width: 440px; max-width: 94vw; animation: scaleIn 0.25s ease; }
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.75); backdrop-filter: blur(16px); z-index: 500; display: flex; align-items: center; justify-content: center; animation: fadeIn 0.2s ease; padding: 16px; }
+.modal { background: rgba(8,13,24,0.99); border: 1px solid ${BORDER}; border-radius: 26px; padding: 44px; width: 440px; max-width: 100%; max-height: 90vh; overflow-y: auto; animation: scaleIn 0.25s ease; }
 .modal-title { font-size: 26px; font-weight: 800; letter-spacing: -0.7px; margin-bottom: 6px; }
 .modal-sub { font-size: 14px; color: ${TEXT2}; margin-bottom: 30px; }
 .input-group { margin-bottom: 16px; }
@@ -103,11 +104,77 @@ body { background: #030811; color: ${TEXT}; font-family: 'Inter', -apple-system,
 .alert-error { background: rgba(255,69,58,0.1); border: 1px solid rgba(255,69,58,0.25); color: ${DANGER}; }
 .alert-success { background: rgba(48,209,88,0.1); border: 1px solid rgba(48,209,88,0.25); color: ${SUCCESS}; }
 .badge-pulse { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: ${SUCCESS}; animation: pulse 2s ease-in-out infinite; }
+/* Hamburger button */
+.hamburger { display: none; flex-direction: column; gap: 5px; background: none; border: none; cursor: pointer; padding: 6px; z-index: 200; -webkit-tap-highlight-color: transparent; }
+.hamburger span { display: block; width: 22px; height: 2px; background: ${TEXT}; border-radius: 2px; transition: all 0.3s; }
+/* Mobile nav overlay */
+.mobile-nav-overlay { display: none; position: fixed; inset: 0; background: rgba(3,8,17,0.97); z-index: 150; flex-direction: column; align-items: center; justify-content: center; gap: 32px; animation: fadeIn 0.25s ease; padding: 40px 20px; }
+.mobile-nav-overlay.open { display: flex; }
+.mobile-nav-link { color: ${TEXT2}; font-size: 22px; font-weight: 600; text-decoration: none; cursor: pointer; transition: color 0.2s; -webkit-tap-highlight-color: transparent; }
+.mobile-nav-link:hover, .mobile-nav-link:active { color: ${TEXT}; }
+.mobile-nav-btns { display: flex; flex-direction: column; gap: 12px; width: 100%; max-width: 300px; margin-top: 12px; }
+/* Password grid responsive */
+.pw-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 @keyframes pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.5; transform: scale(1.3); } }
 @keyframes fadeUp { from { opacity:0; transform: translateY(22px); } to { opacity:1; transform: translateY(0); } }
 @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
 @keyframes scaleIn { from { opacity:0; transform: scale(0.93); } to { opacity:1; transform: scale(1); } }
 @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+/* ── Tablet (≤900px) ── */
+@media (max-width: 900px) {
+  .features-grid { grid-template-columns: repeat(2, 1fr); }
+  .section-title { font-size: 32px; }
+  .hero-stats { gap: 32px; }
+  .features, .how-it-works, .testimonials { padding-left: 28px; padding-right: 28px; }
+  .cta-section { padding-left: 28px; padding-right: 28px; }
+  .navbar { padding: 16px 28px; }
+}
+
+/* ── Mobile (≤768px) ── */
+@media (max-width: 768px) {
+  .navbar { padding: 14px 18px; }
+  .nav-links { display: none; }
+  .nav-btns { display: none; }
+  .hamburger { display: flex; }
+  .hero { padding: 80px 18px 60px; }
+  .hero-subtitle { font-size: 16px; }
+  .hero-stats { gap: 20px; margin-top: 48px; }
+  .stat-num { font-size: 26px; }
+  .features { padding: 60px 18px; }
+  .features-grid { grid-template-columns: 1fr; gap: 16px; }
+  .how-it-works { padding: 60px 18px; }
+  .steps { grid-template-columns: 1fr; gap: 16px; margin-top: 36px; }
+  .testimonials { padding: 60px 18px; }
+  .testi-grid { grid-template-columns: 1fr; gap: 16px; margin-top: 36px; }
+  .cta-section { padding: 60px 18px; }
+  .cta-box { padding: 36px 22px; border-radius: 20px; }
+  .cta-title { font-size: 26px; }
+  .cta-sub { font-size: 15px; }
+  .footer { padding: 32px 18px; }
+  .section-title { font-size: 26px; letter-spacing: -0.5px; }
+  .section-sub { font-size: 15px; }
+  .section-heading { margin-bottom: 36px; }
+  .modal { padding: 28px 20px; border-radius: 20px; }
+  .modal-title { font-size: 22px; }
+  .btn-lg { padding: 14px 24px; font-size: 14px; }
+  .pw-grid { grid-template-columns: 1fr; }
+}
+
+/* ── Small phones (≤480px) ── */
+@media (max-width: 480px) {
+  .hero { padding: 70px 14px 50px; }
+  .hero-badge { font-size: 11px; padding: 6px 14px; }
+  .hero-stats { gap: 14px; }
+  .stat-num { font-size: 22px; }
+  .stat-label { font-size: 11px; }
+  .features { padding: 50px 14px; }
+  .how-it-works { padding: 50px 14px; }
+  .testimonials { padding: 50px 14px; }
+  .cta-section { padding: 50px 14px; }
+  .footer { padding: 28px 14px; }
+  .modal { padding: 24px 16px; }
+}
 `;
 
 const FEATURES = [
@@ -137,6 +204,7 @@ const TESTIMONIALS = [
 export default function LandingPage() {
   const router = useRouter();
   const [modal, setModal] = useState(null);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [form, setForm] = useState({ name: "", email: "", password: "", confirmPassword: "" });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -211,7 +279,23 @@ export default function LandingPage() {
             <button className="btn btn-secondary" onClick={() => { closeModal(); setModal("login"); }}>Sign In</button>
             <button className="btn btn-primary" onClick={() => { closeModal(); setModal("signup"); }}>Get Started Free</button>
           </div>
+          {/* Hamburger — mobile only */}
+          <button className="hamburger" onClick={() => setMobileMenuOpen(v => !v)} aria-label="Toggle menu">
+            <span /><span /><span />
+          </button>
         </nav>
+
+        {/* Mobile nav overlay */}
+        <div className={`mobile-nav-overlay${mobileMenuOpen ? " open" : ""}`}>
+          <button onClick={() => setMobileMenuOpen(false)} style={{ position: "absolute", top: 20, right: 20, background: "rgba(255,255,255,0.07)", border: "none", borderRadius: "50%", width: 38, height: 38, color: TEXT, cursor: "pointer", fontSize: 18, display: "flex", alignItems: "center", justifyContent: "center" }}>✕</button>
+          <span className="mobile-nav-link" onClick={() => setMobileMenuOpen(false)}>Features</span>
+          <span className="mobile-nav-link" onClick={() => setMobileMenuOpen(false)}>How It Works</span>
+          <span className="mobile-nav-link" onClick={() => setMobileMenuOpen(false)}>Reviews</span>
+          <div className="mobile-nav-btns">
+            <button className="btn btn-secondary btn-full" onClick={() => { setMobileMenuOpen(false); closeModal(); setModal("login"); }}>Sign In</button>
+            <button className="btn btn-primary btn-full" onClick={() => { setMobileMenuOpen(false); closeModal(); setModal("signup"); }}>Get Started Free</button>
+          </div>
+        </div>
 
         {/* Hero */}
         <section className="hero">
@@ -359,7 +443,7 @@ export default function LandingPage() {
                       <label className="input-label">EMAIL ADDRESS</label>
                       <input className="input" type="email" name="email" placeholder="your@email.com" value={form.email} onChange={handleChange} required />
                     </div>
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                    <div className="pw-grid">
                       <div className="input-group">
                         <label className="input-label">PASSWORD</label>
                         <input className="input" type="password" name="password" placeholder="Min 8 chars" value={form.password} onChange={handleChange} required />

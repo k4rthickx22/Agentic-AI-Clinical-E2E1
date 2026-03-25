@@ -33,7 +33,7 @@ export default function Dashboard() {
 
   return (
 
-    <div className="min-h-screen bg-gradient-to-br from-[#0f172a] via-[#1e3a8a] to-[#7c3aed] text-white">
+    <div className="min-h-screen bg-gradient-to-br from-[#0f172a] via-[#1e3a8a] to-[#7c3aed] text-white overflow-x-hidden">
 
       <Navbar />
 
@@ -41,18 +41,18 @@ export default function Dashboard() {
 
       <section
         id="home"
-        className="h-screen flex flex-col justify-center items-center text-center px-6"
+        className="min-h-screen flex flex-col justify-center items-center text-center px-4 sm:px-6 py-16"
       >
 
         <motion.h1
           initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-7xl font-bold mb-6"
+          className="text-3xl sm:text-5xl md:text-7xl font-bold mb-6 leading-tight"
         >
           Agentic AI Clinical System
         </motion.h1>
 
-        <p className="text-xl text-gray-300 max-w-2xl">
+        <p className="text-base sm:text-xl text-gray-300 max-w-2xl px-2">
           AI-powered medical diagnosis and treatment recommendations
           using multi-agent intelligence.
         </p>
@@ -63,35 +63,35 @@ export default function Dashboard() {
 
       <section
         id="diagnose"
-        className="max-w-6xl mx-auto grid md:grid-cols-2 gap-10 pb-32 px-8"
+        className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6 pb-20 px-4 sm:px-8"
       >
 
         {/* INPUT */}
 
-        <div className="bg-white/10 backdrop-blur-xl rounded-3xl p-10 border border-white/10 shadow-xl">
+        <div className="bg-white/10 backdrop-blur-xl rounded-3xl p-6 sm:p-10 border border-white/10 shadow-xl">
 
-          <h2 className="text-2xl font-semibold mb-6">
+          <h2 className="text-xl sm:text-2xl font-semibold mb-6">
             Patient Information
           </h2>
 
           <input
             placeholder="Age"
             type="number"
-            className="w-full p-4 rounded-xl bg-white/20 mb-4"
+            className="w-full p-4 rounded-xl bg-white/20 mb-4 text-white placeholder-white/50 outline-none"
             value={age}
             onChange={(e) => setAge(e.target.value)}
           />
 
           <textarea
             placeholder="Describe symptoms"
-            className="w-full p-4 rounded-xl bg-white/20 h-32"
+            className="w-full p-4 rounded-xl bg-white/20 h-32 text-white placeholder-white/50 outline-none resize-none"
             value={symptoms}
             onChange={(e) => setSymptoms(e.target.value)}
           />
 
           <button
             onClick={handleDiagnose}
-            className="mt-6 w-full py-3 rounded-xl bg-blue-500 hover:bg-blue-600 transition"
+            className="mt-6 w-full py-3 rounded-xl bg-blue-500 hover:bg-blue-600 transition font-semibold min-h-[48px]"
           >
             {loading ? "Analyzing..." : "Diagnose"}
           </button>
@@ -100,9 +100,9 @@ export default function Dashboard() {
 
         {/* RESULT */}
 
-        <div className="bg-white/10 backdrop-blur-xl rounded-3xl p-10 border border-white/10 shadow-xl">
+        <div className="bg-white/10 backdrop-blur-xl rounded-3xl p-6 sm:p-10 border border-white/10 shadow-xl">
 
-          <h2 className="text-2xl font-semibold mb-6">
+          <h2 className="text-xl sm:text-2xl font-semibold mb-6">
             Diagnosis Result
           </h2>
 
@@ -155,14 +155,14 @@ export default function Dashboard() {
 
       <section
         id="about"
-        className="max-w-5xl mx-auto text-center pb-32 px-6"
+        className="max-w-5xl mx-auto text-center pb-20 px-4 sm:px-6"
       >
 
-        <h2 className="text-4xl font-semibold mb-6">
+        <h2 className="text-3xl sm:text-4xl font-semibold mb-6">
           Powered by Agentic AI
         </h2>
 
-        <p className="text-gray-300 text-lg">
+        <p className="text-gray-300 text-base sm:text-lg">
           Our clinical decision system combines multiple AI agents
           including patient analysis, drug recommendation, risk evaluation,
           and severity detection to assist medical professionals.
@@ -172,4 +172,4 @@ export default function Dashboard() {
 
     </div>
   );
-}
+}

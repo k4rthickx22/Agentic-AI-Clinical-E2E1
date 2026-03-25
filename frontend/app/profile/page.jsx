@@ -175,7 +175,7 @@ export default function ProfilePage() {
           </div>
 
           {/* Stats row */}
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 14, marginBottom: 20, animation: "fadeUp 0.4s ease 0.05s both" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 14, marginBottom: 20, animation: "fadeUp 0.4s ease 0.05s both" }}>
             {[
               [`${activity.length}`, "Total Consultations", "🩺"],
               [joinDate, t(lang, "memberSince"), "📅"],
