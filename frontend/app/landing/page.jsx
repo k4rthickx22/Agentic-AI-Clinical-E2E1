@@ -178,21 +178,21 @@ body { background: #030811; color: ${TEXT}; font-family: 'Inter', -apple-system,
 `;
 
 const FEATURES = [
-  { icon: "🧠", title: "10-Agent AI Pipeline", desc: "Multi-stage clinical reasoning analyzes your symptoms through 10 specialized AI agents to provide accurate, contextual diagnoses.", grad: "linear-gradient(135deg,rgba(59,126,255,0.15),rgba(94,92,230,0.05))" },
-  { icon: "💊", title: "Personalized Medications", desc: "Get specific medication recommendations with dosages and duration based on your age, allergies, and pre-existing conditions.", grad: "linear-gradient(135deg,rgba(48,209,88,0.12),rgba(0,200,150,0.04))" },
-  { icon: "📋", title: "Full Treatment Plans", desc: "Receive step-by-step treatment plans following evidence-based clinical protocols for 14+ disease categories.", grad: "linear-gradient(135deg,rgba(255,214,10,0.12),rgba(255,159,10,0.04))" },
-  { icon: "🌿", title: "Lifestyle Guidance", desc: "Personalized diet, exercise, sleep, and stress management recommendations tailored to your diagnosis.", grad: "linear-gradient(135deg,rgba(48,209,88,0.1),rgba(0,150,100,0.04))" },
-  { icon: "💬", title: "AI Medical Chat", desc: "Chat with your AI doctor in English, Tamil, or Hindi. Ask anything — get clear, empathetic guidance instantly.", grad: "linear-gradient(135deg,rgba(175,82,222,0.14),rgba(100,60,255,0.04))" },
-  { icon: "🎙️", title: "Voice Diagnosis", desc: "Speak your symptoms naturally in English, Tamil, or Hindi. AI understands and auto-starts your diagnosis immediately.", grad: "linear-gradient(135deg,rgba(255,69,58,0.12),rgba(255,100,80,0.04))" },
-  { icon: "⚠️", title: "Risk Assessment", desc: "Real-time triage scoring identifies HIGH, MODERATE, or LOW risk situations and knows when to urgently recommend care.", grad: "linear-gradient(135deg,rgba(255,149,0,0.12),rgba(255,100,0,0.04))" },
-  { icon: "🛡️", title: "Drug Safety Checks", desc: "Automatic contraindication checks prevent dangerous drug interactions based on your allergies and medical conditions.", grad: "linear-gradient(135deg,rgba(59,126,255,0.12),rgba(0,180,255,0.04))" },
-  { icon: "📄", title: "Clinical Reports", desc: "Download professional, beautifully formatted PDF medical reports for every consultation you complete.", grad: "linear-gradient(135deg,rgba(94,92,230,0.14),rgba(60,80,255,0.04))" },
+  { icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#3b7eff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4.8 2.3A.3.3 0 1 0 5 2H4a2 2 0 0 0-2 2v5a6 6 0 0 0 6 6v0a6 6 0 0 0 6-6V4a2 2 0 0 0-2-2h-1a.2.2 0 1 0 .3.3"/><path d="M8 15v1a6 6 0 0 0 6 6v0a6 6 0 0 0 6-6v-4"/><circle cx="20" cy="10" r="2"/></svg>, title: "10-Agent AI Pipeline", desc: "Multi-stage clinical reasoning analyzes your symptoms through 10 specialized AI agents to provide accurate, contextual diagnoses.", grad: "linear-gradient(135deg,rgba(59,126,255,0.15),rgba(94,92,230,0.05))" },
+  { icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#30d158" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7Z"/><path d="m8.5 8.5 7 7"/></svg>, title: "Personalized Medications", desc: "Get specific medication recommendations with dosages and duration based on your age, allergies, and pre-existing conditions.", grad: "linear-gradient(135deg,rgba(48,209,88,0.12),rgba(0,200,150,0.04))" },
+  { icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ffd60a" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>, title: "Full Treatment Plans", desc: "Receive step-by-step treatment plans following evidence-based clinical protocols for 14+ disease categories.", grad: "linear-gradient(135deg,rgba(255,214,10,0.12),rgba(255,159,10,0.04))" },
+  { icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#30d158" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/></svg>, title: "Lifestyle Guidance", desc: "Personalized diet, exercise, sleep, and stress management recommendations tailored to your diagnosis.", grad: "linear-gradient(135deg,rgba(48,209,88,0.1),rgba(0,150,100,0.04))" },
+  { icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#bf5af2" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>, title: "AI Medical Chat", desc: "Chat with your AI doctor in English, Tamil, or Hindi. Ask anything — get clear, empathetic guidance instantly.", grad: "linear-gradient(135deg,rgba(175,82,222,0.14),rgba(100,60,255,0.04))" },
+  { icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ff453a" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>, title: "Voice Diagnosis", desc: "Speak your symptoms naturally in English, Tamil, or Hindi. AI understands and auto-starts your diagnosis immediately.", grad: "linear-gradient(135deg,rgba(255,69,58,0.12),rgba(255,100,80,0.04))" },
+  { icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ff9500" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>, title: "Risk Assessment", desc: "Real-time triage scoring identifies HIGH, MODERATE, or LOW risk situations and knows when to urgently recommend care.", grad: "linear-gradient(135deg,rgba(255,149,0,0.12),rgba(255,100,0,0.04))" },
+  { icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#3b7eff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>, title: "Drug Safety Checks", desc: "Automatic contraindication checks prevent dangerous drug interactions based on your allergies and medical conditions.", grad: "linear-gradient(135deg,rgba(59,126,255,0.12),rgba(0,180,255,0.04))" },
+  { icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#5e5ce6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>, title: "Clinical Reports", desc: "Download professional, beautifully formatted PDF medical reports for every consultation you complete.", grad: "linear-gradient(135deg,rgba(94,92,230,0.14),rgba(60,80,255,0.04))" },
 ];
 
 const STEPS = [
-  { num: "1", emoji: "🩺", title: "Share Your Symptoms", desc: "Type or speak your symptoms in English, Tamil, or Hindi. Include your age, allergies, and any existing conditions." },
-  { num: "2", emoji: "🧠", title: "AI Analyzes & Diagnoses", desc: "10 specialized AI agents work together to diagnose, assess risk, check drug safety, and build your treatment plan." },
-  { num: "3", emoji: "💊", title: "Get Your Full Plan", desc: "Review your diagnosis, medications, lifestyle recommendations, and download your clinical report." },
+  { num: "1", emoji: <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#3b7eff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4.8 2.3A.3.3 0 1 0 5 2H4a2 2 0 0 0-2 2v5a6 6 0 0 0 6 6v0a6 6 0 0 0 6-6V4a2 2 0 0 0-2-2h-1a.2.2 0 1 0 .3.3"/><path d="M8 15v1a6 6 0 0 0 6 6v0a6 6 0 0 0 6-6v-4"/><circle cx="20" cy="10" r="2"/></svg>, title: "Share Your Symptoms", desc: "Type or speak your symptoms in English, Tamil, or Hindi. Include your age, allergies, and any existing conditions." },
+  { num: "2", emoji: <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#30d158" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>, title: "AI Analyzes & Diagnoses", desc: "10 specialized AI agents work together to diagnose, assess risk, check drug safety, and build your treatment plan." },
+  { num: "3", emoji: <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#ffd60a" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7Z"/><path d="m8.5 8.5 7 7"/></svg>, title: "Get Your Full Plan", desc: "Review your diagnosis, medications, lifestyle recommendations, and download your clinical report." },
 ];
 
 const TESTIMONIALS = [
@@ -267,8 +267,10 @@ export default function LandingPage() {
         {/* Navbar */}
         <nav className="navbar">
           <div className="logo">
-            <div className="logo-icon">🩺</div>
-            MedAI <span style={{ color: ACCENT, marginLeft: 2 }}>Doctor</span>
+            <div className="logo-icon" style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4.8 2.3A.3.3 0 1 0 5 2H4a2 2 0 0 0-2 2v5a6 6 0 0 0 6 6v0a6 6 0 0 0 6-6V4a2 2 0 0 0-2-2h-1a.2.2 0 1 0 .3.3"/><path d="M8 15v1a6 6 0 0 0 6 6v0a6 6 0 0 0 6-6v-4"/><circle cx="20" cy="10" r="2"/></svg>
+            </div>
+            my<span style={{ color: ACCENT, marginLeft: 1 }}>Doctor</span>
           </div>
           <div className="nav-links">
             <span className="nav-link" onClick={() => {}}>Features</span>
@@ -312,7 +314,7 @@ export default function LandingPage() {
             Get instant, personalized medical guidance — diagnosis, medications, treatment plans, and lifestyle advice — in English, Tamil, or Hindi. No appointment needed.
           </p>
           <div className="hero-cta">
-            <button className="btn btn-primary btn-lg" onClick={() => { closeModal(); setModal("signup"); }}>🚀 Start Free Diagnosis</button>
+            <button className="btn btn-primary btn-lg" onClick={() => { closeModal(); setModal("signup"); }}>Get Started Free <svg style={{display:"inline",verticalAlign:"middle",marginLeft:4}} width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></button>
             <button className="btn btn-secondary btn-lg" onClick={() => router.push("/clinic")}>View Demo →</button>
           </div>
           <div className="hero-stats">
@@ -365,7 +367,7 @@ export default function LandingPage() {
         <section className="testimonials">
           <div className="section-heading">
             <div className="section-tag">Real Stories</div>
-            <div className="section-title">Patients Love MedAI</div>
+            <div className="section-title">Patients Love myDoctor</div>
             <div className="section-sub">Helping people in moments when a doctor isn't available</div>
           </div>
           <div className="testi-grid">

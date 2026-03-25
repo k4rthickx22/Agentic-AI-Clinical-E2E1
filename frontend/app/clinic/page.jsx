@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { diagnosePatient, fetchHistory, fetchAnalytics, sendChatMessage, downloadPdfReport, getDiagnosisExplanation, getStoredUser, logout } from "@/services/api";
+import { diagnosePatient, fetchHistory, fetchAnalytics, sendChatMessage, getDiagnosisExplanation, getStoredUser, logout } from "@/services/api";
 import { t, languages } from "@/lib/i18n";
 
 
@@ -691,36 +691,181 @@ export default function App() {
     await sendChatWithMsg(msg);
   };
 
+  // ── Comprehensive client-side PDF generation ──────────────────────
   const downloadReport = async () => {
     if (!result) return;
     try {
-      const d = result.treatment, t = result.triage, s = result.drug_safety;
-      const reportData = {
-        age: age,
-        gender: gender,
-        disease: d.predicted_disease,
-        symptoms: symptoms,
-        drug: d.recommended_drug,
-        dosage: d.dosage,
-        duration: d.duration,
-        lifestyle: d.lifestyle,
-        warnings: d.warnings,
-        triage: t.level
+      // Dynamic import to avoid SSR issues
+      const { default: jsPDF } = await import("jspdf");
+      const { default: autoTable } = await import("jspdf-autotable");
+
+      const doc = new jsPDF({ unit: "mm", format: "a4", orientation: "portrait" });
+      const W = doc.internal.pageSize.getWidth();
+      const d = result.treatment;
+      const tri = result.triage;
+      const ds = result.drug_safety;
+      const date = new Date().toLocaleString("en-IN", { dateStyle: "full", timeStyle: "short" });
+
+      // Header banner
+      doc.setFillColor(15, 30, 70);
+      doc.rect(0, 0, W, 36, "F");
+      doc.setFontSize(20); doc.setTextColor(255, 255, 255); doc.setFont("helvetica", "bold");
+      doc.text("myDoctor", 14, 14);
+      doc.setFontSize(9); doc.setFont("helvetica", "normal"); doc.setTextColor(180, 200, 255);
+      doc.text("AI-Powered Clinical Diagnosis Report", 14, 21);
+      doc.setFontSize(8); doc.setTextColor(140, 160, 220);
+      doc.text(date, 14, 28);
+      // Triage badge
+      const triColor = tri.level === "HIGH" ? [200, 40, 40] : tri.level === "MODERATE" ? [180, 140, 0] : [30, 160, 80];
+      doc.setFillColor(...triColor);
+      doc.roundedRect(W - 45, 8, 32, 12, 2, 2, "F");
+      doc.setFontSize(9); doc.setFont("helvetica", "bold"); doc.setTextColor(255, 255, 255);
+      doc.text(tri.level + " RISK", W - 29, 16, { align: "center" });
+
+      let y = 44;
+      const section = (title, color = [59, 126, 255]) => {
+        if (y > 260) { doc.addPage(); y = 16; }
+        doc.setFillColor(...color); doc.setTextColor(...color);
+        doc.setFont("helvetica", "bold"); doc.setFontSize(10);
+        doc.text(title.toUpperCase(), 14, y); y += 2;
+        doc.setDrawColor(...color); doc.setLineWidth(0.4);
+        doc.line(14, y, W - 14, y); y += 6;
+        doc.setTextColor(30, 30, 30);
       };
-      const blob = await downloadPdfReport(reportData);
-      const url = window.URL.createObjectURL(new Blob([blob]));
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `Clinical_Report_${Date.now()}.pdf`;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      window.URL.revokeObjectURL(url);
+      const row = (label, value, indent = 14) => {
+        if (y > 270) { doc.addPage(); y = 16; }
+        doc.setFont("helvetica", "bold"); doc.setFontSize(9); doc.setTextColor(80, 80, 120);
+        doc.text(label + ":", indent, y);
+        doc.setFont("helvetica", "normal"); doc.setTextColor(20, 20, 20);
+        const lines = doc.splitTextToSize(String(value || "N/A"), W - indent - 60);
+        doc.text(lines, indent + 55, y);
+        y += lines.length * 5.5 + 1;
+      };
+      const para = (text, indent = 14) => {
+        if (y > 270) { doc.addPage(); y = 16; }
+        doc.setFont("helvetica", "normal"); doc.setFontSize(9); doc.setTextColor(40, 40, 40);
+        const lines = doc.splitTextToSize(String(text || ""), W - indent - 14);
+        lines.forEach(l => { if (y > 270) { doc.addPage(); y = 16; } doc.text(l, indent, y); y += 5.5; });
+        y += 2;
+      };
+
+      // 1. Patient
+      section("Patient Information");
+      row("Patient Name", name || "Not provided");
+      row("Age", age ? age + " years" : "N/A");
+      row("Gender", gender);
+      row("Symptoms", symptoms);
+      if (conditions) row("Pre-existing Conditions", conditions);
+      if (allergies) row("Allergies", allergies);
+      y += 4;
+
+      // 2. Primary Diagnosis
+      section("Primary Diagnosis", [59, 126, 255]);
+      row("Disease", d.predicted_disease);
+      row("Triage Level", tri.level);
+      row("Triage Score", tri.score ? tri.score + "/100" : "N/A");
+      row("Recommendation", tri.recommendation);
+      y += 4;
+
+      // 3. Treatment Plan
+      section("Treatment Plan", [48, 160, 120]);
+      row("Recommended Drug", d.recommended_drug);
+      row("Dosage", d.dosage);
+      row("Duration", d.duration);
+      if (d.explanation) { para("Clinical Explanation: " + d.explanation); }
+      y += 4;
+
+      // 4. Step-by-step treatment
+      if (d.treatment_plan?.length > 0) {
+        section("Step-by-Step Treatment Plan", [80, 60, 200]);
+        d.treatment_plan.forEach((step, i) => { para(`${i + 1}. ${step}`); });
+        y += 4;
+      }
+
+      // 5. Lifestyle
+      if (d.lifestyle?.length > 0) {
+        section("Lifestyle Recommendations", [30, 160, 80]);
+        d.lifestyle.forEach((l, i) => para(`• ${l}`));
+        y += 4;
+      }
+
+      // 6. Drug Safety
+      section("Drug Safety Assessment", [180, 100, 20]);
+      row("Safety Level", ds?.safety_level);
+      row("Risk Score", ds?.risk_score ? ds.risk_score + "/100" : "N/A");
+      if (ds?.clinical_warnings?.length > 0) {
+        ds.clinical_warnings.forEach(w => para(`⚠ ${w}`));
+      } else { para("✓ No contraindications detected."); }
+      y += 4;
+
+      // 7. Warnings
+      if (d.warnings?.length > 0) {
+        section("Clinical Warnings", [200, 60, 60]);
+        d.warnings.forEach(w => para(`⚠ ${w}`));
+        y += 4;
+      }
+
+      // 8. Drug Interactions
+      if (result.drug_interactions?.length > 0) {
+        section("Drug Interactions", [180, 100, 40]);
+        result.drug_interactions.forEach(w => para(`• ${w}`));
+        y += 4;
+      }
+
+      // 9. When to seek care
+      if (d.when_to_seek_care) {
+        section("When to Seek Medical Care", [180, 140, 0]);
+        para(d.when_to_seek_care);
+        y += 4;
+      }
+
+      // 10. AI Doctor's Analysis
+      if (aiExplain) {
+        section("AI Doctor's Detailed Analysis", [94, 92, 230]);
+        if (aiExplain.summary) para(aiExplain.summary);
+        if (aiExplain.causes?.length > 0) {
+          y += 2;
+          doc.setFont("helvetica", "bold"); doc.setFontSize(9); doc.setTextColor(94, 92, 230);
+          doc.text("Likely Causes:", 14, y); y += 5;
+          aiExplain.causes.forEach((c, i) => para(`${i + 1}. ${c}`));
+        }
+        if (aiExplain.medicines?.length > 0) {
+          y += 2;
+          doc.setFont("helvetica", "bold"); doc.setFontSize(9); doc.setTextColor(59, 126, 255);
+          doc.text("Recommended Medicines:", 14, y); y += 5;
+          aiExplain.medicines.forEach(m => para(`• ${m.name} — ${m.purpose} (${m.timing})`));
+        }
+        if (aiExplain.when_to_seek_care) {
+          y += 2;
+          doc.setTextColor(180, 140, 0); doc.setFont("helvetica", "bold"); doc.setFontSize(9);
+          doc.text("When to seek care:", 14, y); y += 5;
+          para(aiExplain.when_to_seek_care);
+        }
+      }
+
+      // 11. Reasoning Trace
+      if (result.reasoning_trace?.length > 0) {
+        section("AI Reasoning Trace", [60, 80, 120]);
+        result.reasoning_trace.forEach((step, i) => para(`${i + 1}. ${step}`));
+        y += 4;
+      }
+
+      // Footer
+      const pages = doc.internal.getNumberOfPages();
+      for (let i = 1; i <= pages; i++) {
+        doc.setPage(i);
+        doc.setFontSize(7.5); doc.setTextColor(150, 150, 150); doc.setFont("helvetica", "italic");
+        doc.text("myDoctor AI Clinical Report — For medical decision support only. Always consult a qualified healthcare provider.", 14, 290);
+        doc.text(`Page ${i} of ${pages}`, W - 14, 290, { align: "right" });
+      }
+
+      doc.save(`myDoctor_Report_${Date.now()}.pdf`);
     } catch (e) {
       console.error("PDF generation failed:", e);
       alert("Failed to generate PDF report.");
     }
   };
+
 
   const filteredHistory = histFilter === "All" ? patientHistory : patientHistory.filter(p => p.triage === histFilter);
 
@@ -737,8 +882,10 @@ export default function App() {
         {/* Mobile top bar – CSS shows/hides via media query */}
         <div className="mobile-topbar">
           <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
-            <div style={{ width: 28, height: 28, borderRadius: 8, background: "linear-gradient(135deg,#3b7eff,#5e5ce6)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14 }}>🩺</div>
-            <div style={{ fontSize: 14, fontWeight: 700 }}>MedAI Doctor</div>
+              <div style={{ width: 30, height: 30, borderRadius: 8, background: "linear-gradient(135deg,#3b7eff,#5e5ce6)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4.8 2.3A.3.3 0 1 0 5 2H4a2 2 0 0 0-2 2v5a6 6 0 0 0 6 6v0a6 6 0 0 0 6-6V4a2 2 0 0 0-2-2h-1a.2.2 0 1 0 .3.3"/><path d="M8 15v1a6 6 0 0 0 6 6v0a6 6 0 0 0 6-6v-4"/><circle cx="20" cy="10" r="2"/></svg>
+              </div>
+              <div style={{ fontSize: 14, fontWeight: 800, letterSpacing: "-0.3px" }}>my<span style={{ color: "#3b7eff" }}>Doctor</span></div>
           </div>
           <button className="hamburger-btn" onClick={() => setSidebarOpen(v => !v)} aria-label="Open navigation">
             <span /><span /><span />
@@ -749,27 +896,30 @@ export default function App() {
         <nav className={`app-sidebar${sidebarOpen ? " open" : ""}`}>
           <button className="close-sidebar-btn" onClick={() => setSidebarOpen(false)}>✕ Close</button>
           <div style={{ padding: "6px 12px 18px", display: "flex", alignItems: "center", gap: 10 }}>
-            <div style={{ width: 33, height: 33, borderRadius: 9, background: "linear-gradient(135deg,#3b7eff,#5e5ce6)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16 }}>🩺</div>
+            <div style={{ width: 36, height: 36, borderRadius: 10, background: "linear-gradient(135deg,#3b7eff,#5e5ce6)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4.8 2.3A.3.3 0 1 0 5 2H4a2 2 0 0 0-2 2v5a6 6 0 0 0 6 6v0a6 6 0 0 0 6-6V4a2 2 0 0 0-2-2h-1a.2.2 0 1 0 .3.3"/><path d="M8 15v1a6 6 0 0 0 6 6v0a6 6 0 0 0 6-6v-4"/><circle cx="20" cy="10" r="2"/></svg>
+            </div>
             <div>
-              <div style={{ fontSize: 14, fontWeight: 700 }}>MedAI Doctor</div>
+              <div style={{ fontSize: 14, fontWeight: 800, letterSpacing: "-0.3px" }}>my<span style={{ color: ACCENT }}>Doctor</span></div>
               <div style={{ fontSize: 10, color: TEXT3 }}>Personal AI Health Assistant</div>
             </div>
           </div>
 
-          {[
-            ["diagnose","🩺", t(lang, "diagnose")],
-            ["chat","💬", t(lang, "chat")],
-            ["history","📁", t(lang, "history")],
-            ["analytics","📊", t(lang, "analytics")],
-          ].map(([id,icon,label]) => (
-            <button key={id} className={`slink ${tab===id?"active":""}`} onClick={() => setTab(id)}>
-              <span style={{ fontSize: 16 }}>{icon}</span>{label}
+          {([
+            ["diagnose", <svg key="d" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4.8 2.3A.3.3 0 1 0 5 2H4a2 2 0 0 0-2 2v5a6 6 0 0 0 6 6v0a6 6 0 0 0 6-6V4a2 2 0 0 0-2-2h-1a.2.2 0 1 0 .3.3"/><path d="M8 15v1a6 6 0 0 0 6 6v0a6 6 0 0 0 6-6v-4"/><circle cx="20" cy="10" r="2"/></svg>, t(lang, "diagnose")],
+            ["chat", <svg key="c" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>, t(lang, "chat")],
+            ["history", <svg key="h" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>, t(lang, "history")],
+            ["analytics", <svg key="a" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>, t(lang, "analytics")],
+          ] ).map(([id, icon, label]) => (
+            <button key={id} className={`slink ${tab===id?"active":""}`} onClick={() => { setTab(id); setSidebarOpen(false); }}>
+              <span style={{ display: "flex", alignItems: "center", flexShrink: 0 }}>{icon}</span>{label}
             </button>
           ))}
 
           {/* Profile nav */}
           <button className="slink" onClick={() => router.push("/profile")} style={{ marginTop: 4 }}>
-            <span style={{ fontSize: 16 }}>👤</span>{t(lang, "profile")}
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            {t(lang, "profile")}
           </button>
 
           {/* Language toggle */}
@@ -833,26 +983,26 @@ export default function App() {
           {tab === "diagnose" && (
             <div style={{ maxWidth: 1060, margin: "0 auto", animation: "fadeUp 0.4s ease" }}>
               <div style={{ marginBottom: 24 }}>
-                <h1 style={{ fontSize: 26, fontWeight: 700, letterSpacing: "-0.4px", marginBottom: 3 }}>Clinical Diagnosis</h1>
-                <p style={{ color: TEXT2, fontSize: 14 }}>AI-powered multi-agent medical decision support system</p>
+                <h1 style={{ fontSize: 26, fontWeight: 700, letterSpacing: "-0.4px", marginBottom: 3 }}>{t(lang, "diagnosisTitle")}</h1>
+                <p style={{ color: TEXT2, fontSize: 14 }}>{t(lang, "diagnosisSubtitle")}</p>
               </div>
 
               <div className="diagnose-cols" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 18 }}>
                 {/* Input panel */}
                 <div className="glass" style={{ padding: 24 }}>
-                  <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 18 }}>Patient Information</div>
+                  <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 18 }}>{t(lang, "patientInfo")}</div>
                   <div style={{ display: "flex", flexDirection: "column", gap: 13 }}>
                     <div className="patient-info-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10 }}>
                       <div>
-                        <label style={{ fontSize: 11, color: TEXT2, display: "block", marginBottom: 5, letterSpacing: "0.04em" }}>NAME</label>
-                        <input className="field" placeholder="e.g. John Doe" type="text" value={name} onChange={e => setName(e.target.value)} />
+                        <label style={{ fontSize: 11, color: TEXT2, display: "block", marginBottom: 5, letterSpacing: "0.04em" }}>{t(lang, "patientName")}</label>
+                        <input className="field" placeholder={t(lang, "patientNamePlaceholder")} type="text" value={name} onChange={e => setName(e.target.value)} />
                       </div>
                       <div>
-                        <label style={{ fontSize: 11, color: TEXT2, display: "block", marginBottom: 5, letterSpacing: "0.04em" }}>AGE</label>
-                        <input className="field" placeholder="e.g. 35" type="number" value={age} onChange={e => setAge(e.target.value)} />
+                        <label style={{ fontSize: 11, color: TEXT2, display: "block", marginBottom: 5, letterSpacing: "0.04em" }}>{t(lang, "age")}</label>
+                        <input className="field" placeholder={t(lang, "agePlaceholder")} type="number" value={age} onChange={e => setAge(e.target.value)} />
                       </div>
                       <div>
-                        <label style={{ fontSize: 11, color: TEXT2, display: "block", marginBottom: 5, letterSpacing: "0.04em" }}>GENDER</label>
+                        <label style={{ fontSize: 11, color: TEXT2, display: "block", marginBottom: 5, letterSpacing: "0.04em" }}>{t(lang, "gender")}</label>
                         <select className="field" value={gender} onChange={e => setGender(e.target.value)} style={{ cursor: "pointer" }}>
                           <option>Male</option><option>Female</option><option>Other</option>
                         </select>
@@ -860,9 +1010,9 @@ export default function App() {
                     </div>
 
                     <div>
-                      <label style={{ fontSize: 11, color: TEXT2, display: "block", marginBottom: 5, letterSpacing: "0.04em" }}>SYMPTOMS</label>
+                      <label style={{ fontSize: 11, color: TEXT2, display: "block", marginBottom: 5, letterSpacing: "0.04em" }}>{t(lang, "symptoms")}</label>
                       <div style={{ position: "relative" }}>
-                        <textarea className="field" rows={4} placeholder="Describe symptoms... e.g. high fever with severe headache and rash for 3 days"
+                        <textarea className="field" rows={4} placeholder={t(lang, "symptomsPlaceholder")}
                           value={symptoms} onChange={e => setSymptoms(e.target.value)}
                           style={{ resize: "none", paddingRight: 50 }} />
                         <button onClick={toggleListen} title={listening ? "Stop" : "Voice input"}
@@ -883,19 +1033,19 @@ export default function App() {
 
                     <div className="pair-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
                       <div>
-                        <label style={{ fontSize: 11, color: TEXT2, display: "block", marginBottom: 5, letterSpacing: "0.04em" }}>PRE-EXISTING CONDITIONS <span style={{ opacity: 0.4 }}>(optional)</span></label>
-                        <input className="field" placeholder="e.g. hypertension, kidney disease" value={conditions} onChange={e => setConditions(e.target.value)} />
+                        <label style={{ fontSize: 11, color: TEXT2, display: "block", marginBottom: 5, letterSpacing: "0.04em" }}>{t(lang, "conditions")} <span style={{ opacity: 0.4 }}>({lang === "ta" ? "விருப்பம்" : lang === "hi" ? "वैकल्पिक" : "optional"})</span></label>
+                        <input className="field" placeholder={t(lang, "conditionsPlaceholder")} value={conditions} onChange={e => setConditions(e.target.value)} />
                       </div>
                       <div>
-                        <label style={{ fontSize: 11, color: TEXT2, display: "block", marginBottom: 5, letterSpacing: "0.04em" }}>ALLERGIES <span style={{ opacity: 0.4 }}>(optional)</span></label>
-                        <input className="field" placeholder="e.g. penicillin, sulfa, peanuts" value={allergies} onChange={e => setAllergies(e.target.value)} />
+                        <label style={{ fontSize: 11, color: TEXT2, display: "block", marginBottom: 5, letterSpacing: "0.04em" }}>{t(lang, "allergies")} <span style={{ opacity: 0.4 }}>({lang === "ta" ? "விருப்பம்" : lang === "hi" ? "वैकल्पिक" : "optional"})</span></label>
+                        <input className="field" placeholder={t(lang, "allergiesPlaceholder")} value={allergies} onChange={e => setAllergies(e.target.value)} />
                       </div>
                     </div>
 
-                    <button className="btn btn-primary" onClick={diagnose} disabled={loading || !symptoms.trim()} style={{ marginTop: 2, height: 46, width: "100%" }}>
+                    <button className="btn btn-primary" onClick={diagnose} disabled={loading || !symptoms.trim()} style={{ marginTop: 2, height: 46, width: "100%", gap: 10 }}>
                       {loading
-                        ? <><div style={{ width: 15, height: 15, border: "2px solid rgba(255,255,255,0.3)", borderTopColor: "white", borderRadius: "50%", animation: "spin 0.7s linear infinite" }} /> Analyzing...</>
-                        : "🧠 Run AI Diagnosis"}
+                        ? <><div style={{ width: 15, height: 15, border: "2px solid rgba(255,255,255,0.3)", borderTopColor: "white", borderRadius: "50%", animation: "spin 0.7s linear infinite" }} /> {t(lang, "analyzing")}</>
+                        : <><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg> {t(lang, "runDiagnosis")}</>}
                     </button>
                   </div>
                 </div>
@@ -907,7 +1057,7 @@ export default function App() {
                       <div style={{ display: "flex", alignItems: "center", gap: 13 }}>
                         <div style={{ width: 30, height: 30, border: `2px solid rgba(59,126,255,0.25)`, borderTopColor: ACCENT, borderRadius: "50%", animation: "spin 0.7s linear infinite", flexShrink: 0 }} />
                         <div>
-                          <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 2 }}>Running AI Agents...</div>
+                          <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 2 }}>{t(lang, "runningAgents")}</div>
                           <div style={{ fontSize: 11.5, color: TEXT2 }}>Symptom extraction → Diagnosis → Drug matching → Risk</div>
                         </div>
                       </div>
@@ -915,6 +1065,24 @@ export default function App() {
                     </div>
                   )}
 
+
+                  {/* Rich medical empty state */}
+                  {!result && !loading && (<div className="glass" style={{ padding: 28, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", minHeight: 320, textAlign: "center", position: "relative", overflow: "hidden" }}>
+                    <div style={{ position: "absolute", top: 18, right: 22, opacity: 0.06 }}><svg width="90" height="90" viewBox="0 0 24 24" fill="none" stroke="#3b7eff" strokeWidth="1"><path d="M4.8 2.3A.3.3 0 1 0 5 2H4a2 2 0 0 0-2 2v5a6 6 0 0 0 6 6v0a6 6 0 0 0 6-6V4a2 2 0 0 0-2-2h-1a.2.2 0 1 0 .3.3"/><path d="M8 15v1a6 6 0 0 0 6 6v0a6 6 0 0 0 6-6v-4"/><circle cx="20" cy="10" r="2"/></svg></div>
+                    <div style={{ position: "absolute", bottom: 14, left: 16, opacity: 0.05 }}><svg width="78" height="78" viewBox="0 0 24 24" fill="none" stroke="#30d158" strokeWidth="1"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>
+                    <div style={{ width: 72, height: 72, borderRadius: "50%", background: "rgba(59,126,255,0.07)", border: "2px solid rgba(59,126,255,0.18)", display: "flex", alignItems: "center", justifyContent: "center", animation: "pulse 2.5s ease-in-out infinite", marginBottom: 20 }}>
+                      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#3b7eff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M4.8 2.3A.3.3 0 1 0 5 2H4a2 2 0 0 0-2 2v5a6 6 0 0 0 6 6v0a6 6 0 0 0 6-6V4a2 2 0 0 0-2-2h-1a.2.2 0 1 0 .3.3"/><path d="M8 15v1a6 6 0 0 0 6 6v0a6 6 0 0 0 6-6v-4"/><circle cx="20" cy="10" r="2"/></svg>
+                    </div>
+                    <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 6 }}>{t(lang, "enterPatientDetails")}</div>
+                    <div style={{ fontSize: 12.5, color: "rgba(242,242,247,0.55)", marginBottom: 24, maxWidth: 260 }}>{t(lang, "aiAgentsWillAnalyze")}</div>
+                    <div style={{ background: "rgba(59,126,255,0.06)", border: "1px solid rgba(59,126,255,0.14)", borderRadius: 14, padding: "14px 20px", maxWidth: 320, marginBottom: 20 }}>
+                      <div style={{ fontSize: 12, color: "rgba(242,242,247,0.6)", lineHeight: 1.7, fontStyle: "italic", marginBottom: 8 }}>"The good physician treats the disease; the great physician treats the patient who has the disease."</div>
+                      <div style={{ fontSize: 11, color: "#3b7eff", fontWeight: 600 }}>� William Osler, Father of Modern Medicine</div>
+                    </div>
+                    <div style={{ display: "flex", gap: 18, justifyContent: "center", flexWrap: "wrap" }}>
+                      {[["10 AI Agents","#30d158"],["Real-time Analysis","#ffd60a"],["3 Languages","#3b7eff"]].map(([l,c])=>(<div key={l} style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 11.5, color: "rgba(242,242,247,0.55)" }}><span style={{ width: 7, height: 7, borderRadius: "50%", background: c, display: "inline-block" }}/>{l}</div>))}
+                    </div>
+                  </div>)}
                   {result && !loading && <>
                     <div className="glass" style={{ padding: 20, animation: "slideIn 0.4s ease" }}>
                       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 10 }}>
@@ -1029,7 +1197,7 @@ export default function App() {
                     {/* Lifestyle */}
                     <div className="glass" style={{ padding: 20 }}>
                       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 13 }}>
-                        <div style={{ fontSize: 13, fontWeight: 600 }}>🌿 Lifestyle Recommendations</div>
+                        <div style={{ fontSize: 13, fontWeight: 600 }}><svg style={{display:"inline",verticalAlign:"middle",marginRight:6}} width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#30d158" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2a10 10 0 0 1 10 10c0 5.52-4.48 10-10 10"/><path d="M12 2C6.48 2 2 6.48 2 12"/><path d="M2 12s4-4 10-2"/><path d="M12 22s-4-8 0-12"/></svg>{t(lang, "lifestyle")}</div>
                         {result.treatment.lifestyle?.length > 0 && (
                           <TTSButton text={result.treatment.lifestyle.join(". ")} fieldId="lifestyle" />
                         )}
@@ -1047,7 +1215,7 @@ export default function App() {
                     </div>
                     {/* Drug Safety */}
                     <div className="glass" style={{ padding: 20 }}>
-                      <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 13 }}>🛡️ Drug Safety Assessment</div>
+                      <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 13 }}><svg style={{display:"inline",verticalAlign:"middle",marginRight:6}} width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#3b7eff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>{t(lang, "drugSafety")}</div>
                       <div style={{ display: "flex", justifyContent: "space-between", padding: "6px 0", borderBottom: `1px solid rgba(255,255,255,0.05)` }}>
                         <span style={{ fontSize: 13, color: TEXT2 }}>Safety Level</span>
                         <span style={{ fontSize: 12, fontWeight: 700, padding: "3px 10px", borderRadius: 12, background: result.drug_safety.safety_level==="SAFE"?"rgba(48,209,88,0.1)":result.drug_safety.safety_level==="UNSAFE"?"rgba(255,69,58,0.1)":"rgba(255,214,10,0.1)", color: result.drug_safety.safety_level==="SAFE"?SUCCESS:result.drug_safety.safety_level==="UNSAFE"?DANGER:WARNING }}>{result.drug_safety.safety_level}</span>
@@ -1057,7 +1225,7 @@ export default function App() {
                         <span style={{ fontSize: 13, fontWeight: 600 }}>{result.drug_safety.risk_score}/100</span>
                       </div>
                       {result.drug_safety.clinical_warnings?.length === 0
-                        ? <div style={{ marginTop: 8, fontSize: 12, color: SUCCESS, padding: "6px 10px", borderRadius: 8, background: "rgba(48,209,88,0.06)", border: "1px solid rgba(48,209,88,0.15)" }}>✅ No contraindications detected</div>
+                        ? <div style={{ marginTop: 8, fontSize: 12, color: SUCCESS, padding: "6px 10px", borderRadius: 8, background: "rgba(48,209,88,0.06)", border: "1px solid rgba(48,209,88,0.15)" }}><svg style={{display:"inline",verticalAlign:"middle",marginRight:5}} width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#30d158" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>{t(lang, "noContraindications")}</div>
                         : result.drug_safety.clinical_warnings.map((w,i) => <div key={i} style={{ marginTop: 6, fontSize: 12, color: WARNING, padding: "6px 10px", borderRadius: 8, background: "rgba(255,214,10,0.06)", border: "1px solid rgba(255,214,10,0.14)" }}>⚠️ {w}</div>)
                       }
                     </div>
@@ -1066,7 +1234,7 @@ export default function App() {
                   {/* When to seek care */}
                   {result.treatment.when_to_seek_care && (
                     <div className="glass" style={{ padding: 18, borderColor: "rgba(255,214,10,0.22)", background: "rgba(255,214,10,0.03)" }}>
-                      <div style={{ fontSize: 11, color: WARNING, fontWeight: 700, letterSpacing: "0.05em", marginBottom: 8 }}>🏥 WHEN TO SEEK MEDICAL CARE</div>
+                      <div style={{ fontSize: 11, color: WARNING, fontWeight: 700, letterSpacing: "0.05em", marginBottom: 8 }}><svg style={{display:"inline",verticalAlign:"middle",marginRight:6}} width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#ffd60a" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>{t(lang, "whenToSeekCare").toUpperCase()}</div>
                       <div style={{ fontSize: 13, color: TEXT2, lineHeight: 1.6 }}>{result.treatment.when_to_seek_care}</div>
                     </div>
                   )}
@@ -1074,7 +1242,7 @@ export default function App() {
                   {/* Drug Interactions */}
                   {result.drug_interactions?.length > 0 && (
                     <div className="glass" style={{ padding: 20, borderColor: "rgba(255,149,0,0.25)", background: "rgba(255,149,0,0.03)", animation: "slideIn 0.4s ease 0.25s both" }}>
-                      <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 12, color: "#ff9500" }}>💊 Drug Interaction Alerts ({result.drug_interactions.length})</div>
+                      <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 12, color: "#ff9500" }}><svg style={{display:"inline",verticalAlign:"middle",marginRight:6}} width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ff9500" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7Z"/><path d="m8.5 8.5 7 7"/></svg>{t(lang, "drugInteractions")} ({result.drug_interactions.length})</div>
                       {result.drug_interactions.map((w, i) => (
                         <div key={i} style={{ fontSize: 12.5, color: TEXT2, padding: "7px 10px", marginBottom: 6, borderRadius: 9, background: "rgba(255,149,0,0.07)", border: "1px solid rgba(255,149,0,0.18)", lineHeight: 1.55 }}>{w}</div>
                       ))}
@@ -1087,7 +1255,7 @@ export default function App() {
                       {/* Card Header */}
                       <div style={{ padding: "16px 20px 12px", borderBottom: "1px solid rgba(94,92,230,0.12)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                          <div style={{ width: 30, height: 30, borderRadius: 9, background: "linear-gradient(135deg,#5e5ce6,#3b7eff)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14 }}>🤖</div>
+                          <div style={{ width: 30, height: 30, borderRadius: 9, background: "linear-gradient(135deg,#5e5ce6,#3b7eff)", display: "flex", alignItems: "center", justifyContent: "center", display:"flex", alignItems:"center", justifyContent:"center" }}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><path d="M6.3 6.3A8 8 0 0 0 4 12"/><path d="M17.7 6.3A8 8 0 0 1 20 12"/><path d="M6.3 17.7A8 8 0 0 0 12 20"/><path d="M17.7 17.7A8 8 0 0 1 12 20"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2"/></svg></div>
                           <div>
                             <div style={{ fontSize: 13, fontWeight: 700, color: TEXT }}>AI Doctor's Detailed Analysis</div>
                             <div style={{ fontSize: 10.5, color: "rgba(94,92,230,0.8)", marginTop: 1 }}>Powered by Groq · llama-3.3-70b-versatile</div>
@@ -1111,7 +1279,7 @@ export default function App() {
                               onMouseEnter={e => e.currentTarget.style.background = "rgba(94,92,230,0.16)"}
                               onMouseLeave={e => e.currentTarget.style.background = "rgba(94,92,230,0.08)"}
                             >
-                              🔄 Regenerate
+                              <svg style={{display:"inline",verticalAlign:"middle",marginRight:5}} width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.24"/></svg> Regenerate
                             </button>
                           )}
                         </div>
@@ -1152,7 +1320,7 @@ export default function App() {
                           {/* Causes */}
                           {aiExplain.causes?.length > 0 && (
                             <div>
-                              <div style={{ fontSize: 10, color: "rgba(94,92,230,0.8)", fontWeight: 700, letterSpacing: "0.06em", marginBottom: 10 }}>🔬 LIKELY CAUSES</div>
+                              <div style={{ fontSize: 10, color: "rgba(94,92,230,0.8)", fontWeight: 700, letterSpacing: "0.06em", marginBottom: 10 }}><svg style={{display:"inline",verticalAlign:"middle",marginRight:5}} width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="rgba(94,92,230,0.8)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 18 1.5-7.5"/><path d="M3.5 14h13"/><path d="m14 6-3-3-3 3"/><path d="M14 18h5l-5-7H8l-2 3"/></svg>LIKELY CAUSES</div>
                               <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
                                 {aiExplain.causes.map((c, i) => (
                                   <div key={i} style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
@@ -1167,13 +1335,13 @@ export default function App() {
                           {/* Medicines */}
                           {aiExplain.medicines?.length > 0 && (
                             <div>
-                              <div style={{ fontSize: 10, color: "rgba(59,126,255,0.9)", fontWeight: 700, letterSpacing: "0.06em", marginBottom: 10 }}>💊 RECOMMENDED MEDICINES</div>
+                              <div style={{ fontSize: 10, color: "rgba(59,126,255,0.9)", fontWeight: 700, letterSpacing: "0.06em", marginBottom: 10 }}><svg style={{display:"inline",verticalAlign:"middle",marginRight:5}} width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="rgba(59,126,255,0.9)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7Z"/><path d="m8.5 8.5 7 7"/></svg>RECOMMENDED MEDICINES</div>
                               <div style={{ display: "flex", flexDirection: "column", gap: 9 }}>
                                 {aiExplain.medicines.map((med, i) => (
                                   <div key={i} style={{ padding: "11px 14px", borderRadius: 11, background: "rgba(59,126,255,0.05)", border: "1px solid rgba(59,126,255,0.12)" }}>
                                     <div style={{ fontSize: 13.5, fontWeight: 700, color: ACCENT, marginBottom: 3 }}>{med.name}</div>
                                     <div style={{ fontSize: 12.5, color: TEXT2, marginBottom: 2 }}>{med.purpose}</div>
-                                    <div style={{ fontSize: 11.5, color: TEXT3, fontStyle: "italic" }}>⏰ {med.timing}</div>
+                                    <div style={{ fontSize: 11.5, color: TEXT3, fontStyle: "italic" }}><svg style={{display:"inline",verticalAlign:"middle",marginRight:4}} width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="rgba(242,242,247,0.3)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>{med.timing}</div>
                                   </div>
                                 ))}
                               </div>
@@ -1183,7 +1351,7 @@ export default function App() {
                           {/* Lifestyle */}
                           {aiExplain.lifestyle?.length > 0 && (
                             <div>
-                              <div style={{ fontSize: 10, color: "rgba(48,209,88,0.9)", fontWeight: 700, letterSpacing: "0.06em", marginBottom: 10 }}>🌿 PERSONALISED LIFESTYLE TIPS</div>
+                              <div style={{ fontSize: 10, color: "rgba(48,209,88,0.9)", fontWeight: 700, letterSpacing: "0.06em", marginBottom: 10 }}><svg style={{display:"inline",verticalAlign:"middle",marginRight:5}} width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="rgba(48,209,88,0.9)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/></svg>PERSONALISED LIFESTYLE TIPS</div>
                               <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
                                 {aiExplain.lifestyle.map((tip, i) => (
                                   <div key={i} style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
@@ -1198,14 +1366,14 @@ export default function App() {
                           {/* When to seek care */}
                           {aiExplain.when_to_seek_care && (
                             <div style={{ padding: "12px 14px", borderRadius: 11, background: "rgba(255,214,10,0.04)", border: "1px solid rgba(255,214,10,0.2)" }}>
-                              <div style={{ fontSize: 10, color: WARNING, fontWeight: 700, letterSpacing: "0.06em", marginBottom: 7 }}>🏥 WHEN TO SEEK MEDICAL CARE</div>
+                              <div style={{ fontSize: 10, color: WARNING, fontWeight: 700, letterSpacing: "0.06em", marginBottom: 7 }}><svg style={{display:"inline",verticalAlign:"middle",marginRight:6}} width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#ffd60a" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>{t(lang, "whenToSeekCare").toUpperCase()}</div>
                               <p style={{ fontSize: 13, color: TEXT2, lineHeight: 1.6, margin: 0 }}>{aiExplain.when_to_seek_care}</p>
                             </div>
                           )}
 
                           {/* Disclaimer */}
                           <div style={{ paddingTop: 10, borderTop: "1px solid rgba(255,255,255,0.05)", fontSize: 11, color: TEXT3, fontStyle: "italic", lineHeight: 1.5 }}>
-                            ⚕️ {aiExplain.disclaimer || "This is AI medical guidance, not a substitute for professional clinical care. Always consult a qualified healthcare provider."}
+                            <svg style={{display:"inline",verticalAlign:"middle",marginRight:5}} width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="rgba(242,242,247,0.3)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>{aiExplain.disclaimer || "This is AI medical guidance, not a substitute for professional clinical care. Always consult a qualified healthcare provider."}
                           </div>
                         </div>
                       )}
@@ -1220,7 +1388,7 @@ export default function App() {
                         onClick={() => setTraceOpen(o => !o)}
                         style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 20px", background: "transparent", border: "none", cursor: "pointer", fontFamily: "inherit" }}
                       >
-                        <span style={{ fontSize: 13, fontWeight: 600, color: TEXT }}>🧠 How did AI decide this?</span>
+                        <span style={{ fontSize: 13, fontWeight: 600, color: TEXT }}><svg style={{display:"inline",verticalAlign:"middle",marginRight:6}} width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><path d="M6.3 6.3A8 8 0 0 0 4 12"/><path d="M17.7 6.3A8 8 0 0 1 20 12"/><path d="M6.3 17.7A8 8 0 0 0 12 20"/><path d="M17.7 17.7A8 8 0 0 1 12 20"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2"/></svg>{t(lang, "reasoningTrace")}</span>
                         <span style={{ fontSize: 18, color: TEXT3, transition: "transform 0.2s", transform: traceOpen ? "rotate(180deg)" : "rotate(0deg)" }}>⌄</span>
                       </button>
                       {traceOpen && (
@@ -1245,8 +1413,8 @@ export default function App() {
           {tab === "chat" && (
             <div style={{ maxWidth: 720, margin: "0 auto", display: "flex", flexDirection: "column", height: "calc(100vh - 56px)", animation: "fadeUp 0.4s ease" }}>
               <div style={{ marginBottom: 16 }}>
-                <h1 style={{ fontSize: 26, fontWeight: 700, letterSpacing: "-0.4px", marginBottom: 3 }}>🩺 AI Medical Chat</h1>
-                <p style={{ color: TEXT2, fontSize: 14 }}>Clinical knowledge assistant — powered by medical AI · speaking <span style={{ color: ACCENT, fontWeight: 600 }}>{languages.find(l => l.code === lang)?.full || "English"}</span></p>
+                <h1 style={{ fontSize: 26, fontWeight: 700, letterSpacing: "-0.4px", marginBottom: 3, display:"flex", alignItems:"center", gap: 10 }}><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#3b7eff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4.8 2.3A.3.3 0 1 0 5 2H4a2 2 0 0 0-2 2v5a6 6 0 0 0 6 6v0a6 6 0 0 0 6-6V4a2 2 0 0 0-2-2h-1a.2.2 0 1 0 .3.3"/><path d="M8 15v1a6 6 0 0 0 6 6v0a6 6 0 0 0 6-6v-4"/><circle cx="20" cy="10" r="2"/></svg>{t(lang, "chatTitle")}</h1>
+                <p style={{ color: TEXT2, fontSize: 14 }}>{t(lang, "chatSubtitle")} · speaking <span style={{ color: ACCENT, fontWeight: 600 }}>{languages.find(l => l.code === lang)?.full || "English"}</span></p>
               </div>
 
               {/* Messages */}
@@ -1254,7 +1422,7 @@ export default function App() {
                 {messages.map((m, i) => (
                   <div key={i} className={m.role === "user" ? "chat-user" : "chat-ai"}>
                     {m.role === "ai" && (
-                      <div style={{ width: 32, height: 32, borderRadius: 10, background: "linear-gradient(135deg,#3b7eff,#5e5ce6)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, flexShrink: 0, marginBottom: 2 }}>🧠</div>
+                      <div style={{ width: 32, height: 32, borderRadius: 10, background: "linear-gradient(135deg,#3b7eff,#5e5ce6)", display: "flex", alignItems: "center", justifyContent: "center", display:"flex", alignItems:"center", justifyContent:"center", flexShrink: 0, marginBottom: 2 }}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4.8 2.3A.3.3 0 1 0 5 2H4a2 2 0 0 0-2 2v5a6 6 0 0 0 6 6v0a6 6 0 0 0 6-6V4a2 2 0 0 0-2-2h-1a.2.2 0 1 0 .3.3"/><path d="M8 15v1a6 6 0 0 0 6 6v0a6 6 0 0 0 6-6v-4"/><circle cx="20" cy="10" r="2"/></svg></div>
                     )}
                     <div style={{ display: "flex", flexDirection: "column", gap: 4, maxWidth: m.role === "ai" ? "78%" : "72%" }}>
                       <div className={m.role === "user" ? "bubble-user" : "bubble-ai"}>
@@ -1274,7 +1442,7 @@ export default function App() {
                 ))}
                 {chatLoading && (
                   <div className="chat-ai">
-                    <div style={{ width: 32, height: 32, borderRadius: 10, background: "linear-gradient(135deg,#3b7eff,#5e5ce6)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, flexShrink: 0 }}>🧠</div>
+                    <div style={{ width: 32, height: 32, borderRadius: 10, background: "linear-gradient(135deg,#3b7eff,#5e5ce6)", display: "flex", alignItems: "center", justifyContent: "center", display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4.8 2.3A.3.3 0 1 0 5 2H4a2 2 0 0 0-2 2v5a6 6 0 0 0 6 6v0a6 6 0 0 0 6-6V4a2 2 0 0 0-2-2h-1a.2.2 0 1 0 .3.3"/><path d="M8 15v1a6 6 0 0 0 6 6v0a6 6 0 0 0 6-6v-4"/><circle cx="20" cy="10" r="2"/></svg></div>
                     <div className="bubble-ai" style={{ display: "flex", alignItems: "center", gap: 6 }}>
                       <Dots /> <span style={{ fontSize: 12, color: TEXT3 }}>Thinking...</span>
                     </div>
@@ -1293,7 +1461,7 @@ export default function App() {
                 <button onClick={toggleChatListen}
                   style={{ width: 46, height: 46, borderRadius: 12, border: `1px solid ${chatListening ? "rgba(255,69,58,0.5)" : BORDER}`, background: chatListening ? "rgba(255,69,58,0.12)" : SURFACE, color: chatListening ? "#ff453a" : TEXT2, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "all 0.2s", animation: chatListening ? "pulse 1s ease infinite" : "none" }}
                   title={`Voice input (${languages.find(l => l.code === lang)?.full})`}>
-                  {chatListening ? "🔴" : "🎙️"}
+                  {chatListening ? "◼" : (<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>)}
                 </button>
                 <button className="btn btn-primary" onClick={sendChat} disabled={!chatInput.trim() || chatLoading}
                   style={{ width: 46, height: 46, padding: 0, borderRadius: 12, flexShrink: 0 }}>
@@ -1303,7 +1471,7 @@ export default function App() {
 
               {/* Quick prompts */}
               <div style={{ display: "flex", flexWrap: "wrap", gap: 7, marginTop: 9 }}>
-                {["Dengue fever treatment","Diabetes lifestyle tips","Chest pain causes","COVID symptoms","Stress & mental health","Hypertension diet"].map(q => (
+                {[...(lang==="ta"?["காய்ச்சல் சிகிச்சை","நீரிழிவு வாழ்க்கை முறை","மார்பு வலி காரணங்கள்","COVID அறிகுறிகள்","மன அழுத்தம்","உயர் இரத்த அழுத்த உணவு"]:lang==="hi"?["बुखार का इलाज","मधुमेह जीवनशैली","सीने में दर्द के कारण","COVID लक्षण","तनाव और मानसिक स्वास्थ्य","उच्च रक्तचाप आहार"]:["Dengue fever treatment","Diabetes lifestyle tips","Chest pain causes","COVID symptoms","Stress & mental health","Hypertension diet"])].map(q => (
                   <button key={q} className="btn btn-ghost" style={{ fontSize: 11.5, padding: "5px 12px", borderRadius: 20 }} onClick={() => { setChatInput(q); }}>{q}</button>
                 ))}
               </div>
@@ -1314,13 +1482,13 @@ export default function App() {
           {tab === "history" && (
             <div style={{ maxWidth: 900, margin: "0 auto", animation: "fadeUp 0.4s ease" }}>
               <div style={{ marginBottom: 22 }}>
-                <h1 style={{ fontSize: 26, fontWeight: 700, letterSpacing: "-0.4px", marginBottom: 3 }}>📁 My Health Records</h1>
+                <h1 style={{ fontSize: 26, fontWeight: 700, letterSpacing: "-0.4px", marginBottom: 3, display:"flex", alignItems:"center", gap: 10 }}><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#3b7eff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>{t(lang, "historyTitle")}</h1>
                 <p style={{ color: TEXT2, fontSize: 14 }}>Your personal consultation history — private and secure</p>
               </div>
 
               {!currentUser ? (
                 <div className="glass" style={{ padding: 48, textAlign: "center" }}>
-                  <div style={{ fontSize: 44, marginBottom: 16 }}>🔒</div>
+                  <div style={{ display:"flex", justifyContent:"center", marginBottom: 16, opacity:0.4 }}><svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#3b7eff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div>
                   <div style={{ fontSize: 17, fontWeight: 700, marginBottom: 8 }}>Sign in to view your records</div>
                   <div style={{ fontSize: 14, color: TEXT2, marginBottom: 22 }}>Your consultation history is private and only visible when you're logged in.</div>
                   <button className="btn btn-primary" onClick={() => router.push("/landing")}>Sign In</button>
@@ -1340,7 +1508,7 @@ export default function App() {
                       {filteredHistory.map((p, i) => (
                         <div key={p.id} className="histrow" onClick={() => setSelHistory(selHistory?.id===p.id ? null : p)} style={{ animation: `fadeUp 0.3s ease ${i*0.05}s both` }}>
                           <div style={{ width: 40, height: 40, borderRadius: 12, background: p.triage==="HIGH" ? "rgba(255,69,58,0.12)" : p.triage==="MODERATE" ? "rgba(255,214,10,0.12)" : "rgba(48,209,88,0.1)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, flexShrink: 0 }}>
-                            {p.triage==="HIGH"?"🚨":p.triage==="MODERATE"?"⚠️":"✅"}
+                            {p.triage==="HIGH"?<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ff453a" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>:p.triage==="MODERATE"?<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ffd60a" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>:<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#30d158" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>}
                           </div>
                           <div style={{ flex: 1, minWidth: 0 }}>
                             <div style={{ fontSize: 14.5, fontWeight: 700, marginBottom: 2 }}>{p.disease}</div>
@@ -1348,7 +1516,7 @@ export default function App() {
                             <div style={{ fontSize: 12, color: TEXT3, marginTop: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.symptoms?.slice(0,60)}{p.symptoms?.length > 60 ? "..." : ""}</div>
                           </div>
                           <div style={{ textAlign: "right", flexShrink: 0 }}>
-                            <div style={{ fontSize: 12.5, fontWeight: 600, color: ACCENT, marginBottom: 4 }}>💊 {p.drug?.slice(0,18)}{p.drug?.length > 18 ? "..." : ""}</div>
+                            <div style={{ fontSize: 12.5, fontWeight: 600, color: ACCENT, marginBottom: 4 }}><svg style={{display:"inline",verticalAlign:"middle",marginRight:4}} width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#3b7eff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7Z"/><path d="m8.5 8.5 7 7"/></svg>{p.drug?.slice(0,18)}{p.drug?.length > 18 ? "..." : ""}</div>
                             <TriageBadge level={p.triage} />
                           </div>
                         </div>
