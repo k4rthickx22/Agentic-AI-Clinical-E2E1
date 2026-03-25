@@ -94,6 +94,23 @@ export const sendChatMessage = async (
   return response.data;
 };
 
+export const getDiagnosisExplanation = async (
+  disease: string,
+  symptoms: string,
+  age: number = 30,
+  gender: string = "unknown",
+  conditions: string = "none",
+  allergies: string = "none",
+  language: string = "en"
+) => {
+  const response = await axios.post(
+    `${API_URL}/diagnose/explain`,
+    { disease, symptoms, age, gender, conditions, allergies, language },
+    { headers: authHeaders() }
+  );
+  return response.data;
+};
+
 export const downloadPdfReport = async (reportData: any) => {
   const response = await axios.post(`${API_URL}/generate_pdf`, reportData, {
     responseType: "blob",

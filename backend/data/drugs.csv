@@ -1,21 +1,51 @@
-drug_name,disease,dosage,min_age,max_age,allergy,side_effect_severity,effectiveness_score
-Metformin,Diabetes,500mg,18,80,None,2,9
-Insulin,Diabetes,variable,10,90,None,3,10
-Glimepiride,Diabetes,2mg,18,75,Sulfa,4,8
-Amoxicillin,Bacterial Infection,500mg,5,65,Penicillin,4,8
-Azithromycin,Bacterial Infection,250mg,10,70,None,3,9
-Paracetamol,Viral Fever,500mg,1,90,None,1,8
-Ibuprofen,Viral Fever,400mg,10,65,None,2,7
-Losartan,Hypertension,50mg,30,85,None,3,9
-Amlodipine,Hypertension,5mg,25,80,None,2,8
-Omeprazole,Gastritis,20mg,18,80,None,2,9
-Pantoprazole,Gastritis,40mg,18,75,None,3,8
-Sumatriptan,Migraine,50mg,18,65,None,3,9
-Cetirizine,Common Cold,10mg,5,70,None,1,8
-Levocetirizine,Common Cold,5mg,6,65,None,1,8
-Salbutamol,Asthma,2mg,5,80,None,3,9
-Budesonide,Asthma,200mcg,6,75,None,4,8
-Azithromycin,Pneumonia,500mg,10,80,None,3,9
-Levofloxacin,Pneumonia,500mg,18,75,None,4,8
-Iron Supplements,Anemia,100mg,5,90,None,2,9
-Ferrous Sulfate,Anemia,325mg,5,85,None,3,8
+drug_name,disease,dosage,min_age,max_age,allergy,side_effect_severity,effectiveness_score,severity_level,cause_keywords,alternative_drug
+Metformin,Diabetes Type 2,500mg twice daily,18,80,None,2,9,MODERATE,insulin resistance high blood sugar glucose metabolism,Glipizide
+Insulin Glargine,Diabetes Type 1,variable units subcutaneous,1,90,None,3,10,HIGH,autoimmune insulin deficiency ketoacidosis,NPH Insulin
+Glimepiride,Diabetes Type 2,2mg once daily,18,75,Sulfa,4,8,MODERATE,sulfonylurea blood sugar lowering pancreatic stimulation,Sitagliptin
+Metformin,Prediabetes,500mg once daily,18,75,None,1,8,LOW,impaired fasting glucose borderline high sugar lifestyle,Acarbose
+Amoxicillin,Bacterial Infection,500mg three times daily,5,65,Penicillin,4,8,MODERATE,bacterial sepsis strep staph infection fever,Cephalexin
+Azithromycin,Bacterial Infection,250mg once daily,10,70,None,3,9,MODERATE,atypical bacteria mycoplasma chlamydia respiratory,Doxycycline
+Paracetamol,Viral Fever,500mg every 6 hours,1,90,None,1,8,LOW,virus influenza rhinovirus fever inflammation,Ibuprofen
+Ibuprofen,Viral Fever,400mg every 8 hours,10,65,NSAID allergy,2,7,LOW,viral inflammation fever pain body ache,Naproxen
+Paracetamol,Bacterial Fever,500mg every 6 hours,1,90,None,1,8,MODERATE,bacteria high fever chills rigors,Ibuprofen
+Amoxicillin-Clavulanate,Bacterial Fever,625mg twice daily,10,70,Penicillin,3,9,MODERATE,bacterial superinfection strep pneumococcal,Azithromycin
+Chloroquine,Malaria,500mg weekly suppressive,5,75,None,3,8,HIGH,Plasmodium falciparum vivax mosquito bite fever chills,Artemether-Lumefantrine
+Artemether-Lumefantrine,Malaria,80mg-480mg twice daily 3 days,5,80,None,3,10,HIGH,falciparum malaria artemisinin combination therapy,Quinine Sulfate
+Ciprofloxacin,Typhoid Fever,500mg twice daily 7-14 days,12,75,Quinolone,3,9,HIGH,Salmonella typhi contaminated food water enteric fever,Azithromycin
+Azithromycin,Typhoid Fever,500mg once daily 7 days,10,80,None,2,9,HIGH,typhoid salmonella enteric fever resistant strains,Ceftriaxone
+Paracetamol,Dengue Fever,500mg every 6 hours,1,90,None,1,10,HIGH,dengue virus Aedes mosquito hemorrhagic fever thrombocytopenia,ORS hydration
+Cetirizine,Common Cold,10mg once daily,5,70,None,1,8,LOW,rhinovirus nasal congestion sneezing allergy histamine,Loratadine
+Levocetirizine,Common Cold,5mg once daily,6,65,None,1,8,LOW,cold rhinitis sneezing nasal discharge,Fexofenadine
+Oseltamivir,Influenza,75mg twice daily 5 days,13,75,None,2,9,MODERATE,influenza A B flu virus antiviral neuraminidase,Zanamivir
+Paracetamol,Influenza,500mg every 6 hours,5,80,None,1,8,MODERATE,flu fever body ache myalgia systemic,Ibuprofen
+Amoxicillin,Bronchitis,500mg three times daily,10,70,Penicillin,3,7,MODERATE,bacterial bronchitis productive cough purulent sputum,Azithromycin
+Dextromethorphan,Bronchitis,30mg every 6-8 hours,10,70,None,1,7,LOW,dry cough irritant bronchial inflammation viral upper respiratory,Guaifenesin
+Guaifenesin,Bronchitis,400mg every 4 hours,10,70,None,1,8,LOW,mucus expectorant productive wet cough,Bromhexine
+Losartan,Hypertension,50mg once daily,30,85,None,3,9,MODERATE,essential hypertension renin angiotensin cardiovascular,Telmisartan
+Amlodipine,Hypertension,5mg once daily,25,80,None,2,8,MODERATE,high blood pressure calcium channel blocker peripheral resistance,Nifedipine
+Omeprazole,Gastritis,20mg once daily,18,80,None,2,9,LOW,H pylori gastric acid peptic ulcer GERD,Pantoprazole
+Pantoprazole,Gastritis,40mg once daily,18,75,None,3,8,LOW,acid reflux GERD peptic ulcer,Esomeprazole
+Sumatriptan,Migraine,50mg at onset,18,65,Triptan allergy,3,9,HIGH,migraine trigeminal nerve serotonin cortical spreading depression,Rizatriptan
+Topiramate,Migraine,25mg twice daily preventive,18,65,None,4,8,HIGH,migraine prevention chronic episodic neurological,Propranolol
+Ibuprofen,Tension Headache,400mg every 6 hours,12,70,NSAID allergy,2,8,LOW,muscle tension stress cervicogenic scalp tenderness,Paracetamol
+Aspirin,Tension Headache,500mg every 6 hours,18,70,Aspirin allergy,2,7,LOW,tension type headache scalp neck muscle contraction,Naproxen
+Verapamil,Cluster Headache,80mg three times daily,18,70,None,3,8,HIGH,cluster headache trigeminal autonomic autonomic symptoms,Lithium Carbonate
+Oxygen therapy,Cluster Headache,100% O2 15 L/min 15 minutes,18,75,None,1,9,HIGH,cluster attack acute abortive treatment vasoconstriction,Sumatriptan injection
+Amoxicillin,Sinus Headache,500mg three times daily 7 days,10,70,Penicillin,3,8,MODERATE,sinusitis bacterial nasal sinus pressure facial pain,Augmentin
+Xylometazoline,Sinus Headache,0.1% nasal drops twice daily,12,70,None,2,7,MODERATE,nasal decongestant sinus drainage,Oxymetazoline
+Nitrofurantoin,UTI,100mg twice daily 5 days,18,65,None,2,9,MODERATE,E coli urinary bacteria gram negative cystitis,Trimethoprim
+Ciprofloxacin,UTI,500mg twice daily 3 days,12,75,Quinolone,2,8,MODERATE,urinary tract infection bacterial dysuria frequency,Norfloxacin
+Azithromycin,Pneumonia,500mg once daily,10,80,None,3,9,HIGH,community acquired pneumonia atypical pathogens,Levofloxacin
+Levofloxacin,Pneumonia,500mg once daily,18,75,None,4,8,HIGH,pneumonia gram positive gram negative respiratory pathogens,Moxifloxacin
+Iron Supplements,Anemia,100mg elemental iron daily,5,90,None,2,9,LOW,iron deficiency low hemoglobin ferritin depletion,Ferrous Fumarate
+Ferrous Sulfate,Anemia,325mg twice daily,5,85,None,3,8,LOW,iron deficiency anemia absorption supplementation,Iron Gluconate
+Salbutamol,Asthma,2 puffs 100mcg inhaled,5,80,None,3,9,MODERATE,bronchospasm beta2 agonist bronchodilator airway constriction,Terbutaline
+Budesonide,Asthma,200mcg inhaled twice daily,6,75,None,4,8,MODERATE,airway inflammation eosinophilic corticosteroid controller,Fluticasone
+Paracetamol,COVID-19,500mg every 6 hours,12,85,None,1,7,MODERATE,SARS-CoV-2 coronavirus fever systemic inflammation,Ibuprofen
+Remdesivir,COVID-19,200mg IV day 1 then 100mg,18,75,None,3,8,HIGH,severe COVID-19 antiviral RNA polymerase inhibitor hospitalized,Dexamethasone
+Levothyroxine,Hypothyroidism,50-100mcg once daily morning,18,85,None,2,9,MODERATE,thyroid hormone deficiency TSH elevated fatigue weight gain,Liothyronine
+Methimazole,Hyperthyroidism,10-30mg daily,18,80,None,3,8,MODERATE,Graves disease toxic goiter thyroid hormone excess TSH low,Propylthiouracil
+Cetirizine,Skin Allergy,10mg once daily,5,75,None,1,9,LOW,allergic reaction histamine urticaria contact dermatitis,Loratadine
+Hydrocortisone cream,Skin Allergy,apply twice daily topically,5,80,Steroid allergy,2,8,LOW,skin inflammation eczema rash pruritus local corticosteroid,Betamethasone cream
+Oral Rehydration Salts,Gastroenteritis,200ml after each loose stool,1,90,None,1,9,LOW,viral gastroenteritis dehydration vomiting diarrhea electrolyte,Zinc supplement
+Metronidazole,Gastroenteritis,400mg three times daily,12,75,None,3,8,MODERATE,bacterial gastroenteritis Giardia amoeba parasitic infection,Tinidazole

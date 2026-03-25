@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { diagnosePatient, fetchHistory, fetchAnalytics, sendChatMessage, downloadPdfReport, getStoredUser, logout } from "@/services/api";
+import { diagnosePatient, fetchHistory, fetchAnalytics, sendChatMessage, downloadPdfReport, getDiagnosisExplanation, getStoredUser, logout } from "@/services/api";
 import { t, languages } from "@/lib/i18n";
 
 
@@ -216,6 +216,8 @@ export default function App() {
   const [loading, setLoading] = useState(false);
   const [listening, setListening] = useState(false);
   const [chatListening, setChatListening] = useState(false);
+  const [aiExplain, setAiExplain] = useState(null);
+  const [explainLoading, setExplainLoading] = useState(false);
   
   const [patientHistory, setPatientHistory] = useState([]);
   const [analyticsData, setAnalyticsData] = useState(null);
@@ -293,11 +295,48 @@ export default function App() {
       fetchHistory().then(setPatientHistory).catch(console.error);
       fetchAnalytics().then(setAnalyticsData).catch(console.error);
 
+      // Auto-trigger AI Doctor's Analysis
+      const disease = normalized.treatment.predicted_disease;
+      if (disease && disease !== "Unknown") {
+        setAiExplain(null);
+        setExplainLoading(true);
+        getDiagnosisExplanation(
+          disease,
+          symptoms,
+          Number(age) || 30,
+          gender,
+          conditions || "none",
+          allergies || "none",
+          lang
+        ).then(exp => {
+          setAiExplain(exp);
+          setExplainLoading(false);
+        }).catch(err => {
+          console.error("Explain API error:", err);
+          setExplainLoading(false);
+        });
+      }
+
     } catch (error) {
       console.error(error);
       alert("Backend connection failed. Check if FastAPI server is running.");
     }
     setLoading(false);
+  };
+
+  const regenerateExplain = () => {
+    if (!result) return;
+    const disease = result.treatment.predicted_disease;
+    if (!disease || disease === "Unknown") return;
+    setAiExplain(null);
+    setExplainLoading(true);
+    getDiagnosisExplanation(
+      disease, symptoms, Number(age) || 30, gender,
+      conditions || "none", allergies || "none", lang
+    ).then(exp => {
+      setAiExplain(exp);
+      setExplainLoading(false);
+    }).catch(() => setExplainLoading(false));
   };
 
 
@@ -785,6 +824,124 @@ export default function App() {
                       {result.drug_interactions.map((w, i) => (
                         <div key={i} style={{ fontSize: 12.5, color: TEXT2, padding: "7px 10px", marginBottom: 6, borderRadius: 9, background: "rgba(255,149,0,0.07)", border: "1px solid rgba(255,149,0,0.18)", lineHeight: 1.55 }}>{w}</div>
                       ))}
+                    </div>
+                  )}
+
+                  {/* ── AI Doctor's Detailed Analysis Card ─── */}
+                  {(explainLoading || aiExplain) && (
+                    <div className="glass" style={{ padding: 0, overflow: "hidden", border: "1px solid rgba(94,92,230,0.3)", background: "rgba(94,92,230,0.04)", animation: "fadeUp 0.5s ease" }}>
+                      {/* Card Header */}
+                      <div style={{ padding: "16px 20px 12px", borderBottom: "1px solid rgba(94,92,230,0.12)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                          <div style={{ width: 30, height: 30, borderRadius: 9, background: "linear-gradient(135deg,#5e5ce6,#3b7eff)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14 }}>🤖</div>
+                          <div>
+                            <div style={{ fontSize: 13, fontWeight: 700, color: TEXT }}>AI Doctor's Detailed Analysis</div>
+                            <div style={{ fontSize: 10.5, color: "rgba(94,92,230,0.8)", marginTop: 1 }}>Powered by Groq · llama-3.3-70b-versatile</div>
+                          </div>
+                        </div>
+                        {!explainLoading && (
+                          <button onClick={regenerateExplain}
+                            style={{ padding: "6px 13px", borderRadius: 9, border: "1px solid rgba(94,92,230,0.3)", background: "rgba(94,92,230,0.08)", color: "#8b8be8", fontSize: 11.5, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", display: "flex", alignItems: "center", gap: 5, transition: "all 0.2s" }}
+                            onMouseEnter={e => e.currentTarget.style.background = "rgba(94,92,230,0.16)"}
+                            onMouseLeave={e => e.currentTarget.style.background = "rgba(94,92,230,0.08)"}
+                          >
+                            🔄 Regenerate
+                          </button>
+                        )}
+                      </div>
+
+                      {/* Loading Skeleton */}
+                      {explainLoading && (
+                        <div style={{ padding: 20 }}>
+                          <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 18 }}>
+                            <div style={{ width: 20, height: 20, border: "2px solid rgba(94,92,230,0.25)", borderTopColor: "#5e5ce6", borderRadius: "50%", animation: "spin 0.7s linear infinite", flexShrink: 0 }} />
+                            <span style={{ fontSize: 12.5, color: "rgba(94,92,230,0.7)" }}>Dr. MedAI is analysing your symptoms...</span>
+                          </div>
+                          {[80, 60, 90, 55, 72].map((w, i) => (
+                            <div key={i} className="skeleton" style={{ height: 11, width: `${w}%`, marginBottom: 10, borderRadius: 6 }} />
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Rendered Analysis */}
+                      {!explainLoading && aiExplain && (
+                        <div style={{ padding: 20, display: "flex", flexDirection: "column", gap: 18 }}>
+
+                          {/* Severity badge + Summary */}
+                          <div style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
+                            {aiExplain.severity && (
+                              <span style={{
+                                flexShrink: 0, padding: "4px 11px", borderRadius: 20, fontSize: 10.5, fontWeight: 700, letterSpacing: "0.04em",
+                                background: aiExplain.severity === "severe" ? "rgba(255,69,58,0.1)" : aiExplain.severity === "moderate" ? "rgba(255,214,10,0.1)" : "rgba(48,209,88,0.1)",
+                                color: aiExplain.severity === "severe" ? DANGER : aiExplain.severity === "moderate" ? WARNING : SUCCESS,
+                                border: `1px solid ${aiExplain.severity === "severe" ? "rgba(255,69,58,0.25)" : aiExplain.severity === "moderate" ? "rgba(255,214,10,0.25)" : "rgba(48,209,88,0.25)"}`
+                              }}>
+                                {aiExplain.severity?.toUpperCase()}
+                              </span>
+                            )}
+                            <p style={{ fontSize: 13.5, color: TEXT, lineHeight: 1.7, margin: 0 }}>{aiExplain.summary}</p>
+                          </div>
+
+                          {/* Causes */}
+                          {aiExplain.causes?.length > 0 && (
+                            <div>
+                              <div style={{ fontSize: 10, color: "rgba(94,92,230,0.8)", fontWeight: 700, letterSpacing: "0.06em", marginBottom: 10 }}>🔬 LIKELY CAUSES</div>
+                              <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
+                                {aiExplain.causes.map((c, i) => (
+                                  <div key={i} style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
+                                    <div style={{ width: 18, height: 18, borderRadius: "50%", background: "rgba(94,92,230,0.12)", border: "1px solid rgba(94,92,230,0.25)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 9, fontWeight: 700, color: "#8b8be8", flexShrink: 0, marginTop: 1 }}>{i + 1}</div>
+                                    <span style={{ fontSize: 13, color: TEXT2, lineHeight: 1.55 }}>{c}</span>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Medicines */}
+                          {aiExplain.medicines?.length > 0 && (
+                            <div>
+                              <div style={{ fontSize: 10, color: "rgba(59,126,255,0.9)", fontWeight: 700, letterSpacing: "0.06em", marginBottom: 10 }}>💊 RECOMMENDED MEDICINES</div>
+                              <div style={{ display: "flex", flexDirection: "column", gap: 9 }}>
+                                {aiExplain.medicines.map((med, i) => (
+                                  <div key={i} style={{ padding: "11px 14px", borderRadius: 11, background: "rgba(59,126,255,0.05)", border: "1px solid rgba(59,126,255,0.12)" }}>
+                                    <div style={{ fontSize: 13.5, fontWeight: 700, color: ACCENT, marginBottom: 3 }}>{med.name}</div>
+                                    <div style={{ fontSize: 12.5, color: TEXT2, marginBottom: 2 }}>{med.purpose}</div>
+                                    <div style={{ fontSize: 11.5, color: TEXT3, fontStyle: "italic" }}>⏰ {med.timing}</div>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Lifestyle */}
+                          {aiExplain.lifestyle?.length > 0 && (
+                            <div>
+                              <div style={{ fontSize: 10, color: "rgba(48,209,88,0.9)", fontWeight: 700, letterSpacing: "0.06em", marginBottom: 10 }}>🌿 PERSONALISED LIFESTYLE TIPS</div>
+                              <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
+                                {aiExplain.lifestyle.map((tip, i) => (
+                                  <div key={i} style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
+                                    <div style={{ width: 18, height: 18, borderRadius: "50%", background: "rgba(48,209,88,0.1)", border: "1px solid rgba(48,209,88,0.2)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 9, color: SUCCESS, flexShrink: 0, marginTop: 1 }}>✓</div>
+                                    <span style={{ fontSize: 13, color: TEXT2, lineHeight: 1.55 }}>{tip}</span>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* When to seek care */}
+                          {aiExplain.when_to_seek_care && (
+                            <div style={{ padding: "12px 14px", borderRadius: 11, background: "rgba(255,214,10,0.04)", border: "1px solid rgba(255,214,10,0.2)" }}>
+                              <div style={{ fontSize: 10, color: WARNING, fontWeight: 700, letterSpacing: "0.06em", marginBottom: 7 }}>🏥 WHEN TO SEEK MEDICAL CARE</div>
+                              <p style={{ fontSize: 13, color: TEXT2, lineHeight: 1.6, margin: 0 }}>{aiExplain.when_to_seek_care}</p>
+                            </div>
+                          )}
+
+                          {/* Disclaimer */}
+                          <div style={{ paddingTop: 10, borderTop: "1px solid rgba(255,255,255,0.05)", fontSize: 11, color: TEXT3, fontStyle: "italic", lineHeight: 1.5 }}>
+                            ⚕️ {aiExplain.disclaimer || "This is AI medical guidance, not a substitute for professional clinical care. Always consult a qualified healthcare provider."}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   )}
 

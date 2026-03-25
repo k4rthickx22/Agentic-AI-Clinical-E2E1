@@ -1,63 +1,52 @@
 symptoms,disease
-hyperglycemia frequent urination excessive thirst,Diabetes
-polyuria polydipsia unexplained weight loss,Diabetes
-elevated blood glucose fatigue blurred vision,Diabetes
-high fasting glucose persistent thirst,Diabetes
-insulin resistance elevated sugar levels,Diabetes
-glycemic imbalance increased hunger fatigue,Diabetes
-type 2 diabetes high sugar symptoms,Diabetes
-blood sugar spike dizziness fatigue,Diabetes
-chronic hyperglycemia polyuria,Diabetes
-high hba1c glucose imbalance,Diabetes
-persistent thirst hyperglycemia weakness,Diabetes
-frequent urination elevated glucose,Diabetes
-glucose intolerance fatigue,Diabetes
-elevated plasma glucose thirst,Diabetes
-metabolic disorder high sugar,Diabetes
-insulin deficiency hyperglycemia,Diabetes
-glucose level above normal,Diabetes
-diabetic symptoms frequent urination,Diabetes
-glycemic disorder fatigue,Diabetes
-high blood sugar dehydration,Diabetes
-chronic thirst polyuria,Diabetes
-insulin imbalance hyperglycemia,Diabetes
-elevated sugar concentration blood,Diabetes
-excessive urination glucose imbalance,Diabetes
-persistent hyperglycemia fatigue,Diabetes
-glucose metabolism disorder,Diabetes
-high sugar vision disturbance,Diabetes
-diabetes mellitus type 2 symptoms,Diabetes
-glycemic instability weakness,Diabetes
-high plasma glucose levels,Diabetes
-frequent urination sugar elevation,Diabetes
-elevated glycemic index fatigue,Diabetes
-insulin resistance symptoms,Diabetes
-chronic glucose elevation,Diabetes
-hyperglycemia dizziness fatigue,Diabetes
-persistent sugar imbalance,Diabetes
-blood glucose disorder symptoms,Diabetes
-polyphagia polyuria polydipsia,Diabetes
-elevated glucose reading fatigue,Diabetes
-glucose imbalance thirst fatigue,Diabetes
-high sugar metabolic dysfunction,Diabetes
-fasting glucose above normal,Diabetes
-persistent glycemic disorder,Diabetes
-insulin production deficiency,Diabetes
-blood sugar instability fatigue,Diabetes
-chronic hyperglycemia symptoms,Diabetes
-diabetic glucose imbalance,Diabetes
-elevated sugar metabolism disorder,Diabetes
-glycemic disorder thirst weakness,Diabetes
-type 2 diabetes hyperglycemia,Diabetes
-abnormal glucose tolerance test,Diabetes
-frequent urination dehydration high sugar,Diabetes
-hyperglycemia metabolic symptoms,Diabetes
-high glucose fatigue dizziness,Diabetes
-persistent elevated sugar levels,Diabetes
-glucose dysregulation symptoms,Diabetes
-diabetic metabolic imbalance,Diabetes
-glycemic elevation thirst fatigue,Diabetes
-blood sugar dysregulation weakness,Diabetes
+hyperglycemia frequent urination excessive thirst,Diabetes Type 2
+polyuria polydipsia unexplained weight loss,Diabetes Type 2
+elevated blood glucose fatigue blurred vision,Diabetes Type 2
+high fasting glucose persistent thirst,Diabetes Type 2
+insulin resistance elevated sugar levels,Diabetes Type 2
+glycemic imbalance increased hunger fatigue,Diabetes Type 2
+type 2 diabetes high sugar symptoms,Diabetes Type 2
+blood sugar spike dizziness fatigue,Diabetes Type 2
+chronic hyperglycemia polyuria,Diabetes Type 2
+high hba1c glucose imbalance,Diabetes Type 2
+persistent thirst hyperglycemia weakness,Diabetes Type 2
+frequent urination elevated glucose,Diabetes Type 2
+glucose intolerance fatigue,Diabetes Type 2
+elevated plasma glucose thirst,Diabetes Type 2
+metabolic disorder high sugar,Diabetes Type 2
+insulin deficiency hyperglycemia,Diabetes Type 2
+glucose level above normal,Diabetes Type 2
+diabetic symptoms frequent urination,Diabetes Type 2
+glycemic disorder fatigue,Diabetes Type 2
+high blood sugar dehydration,Diabetes Type 2
+frequent urination excessive thirst fatigue,Diabetes Type 2
+high blood sugar thirst urination,Diabetes Type 2
+frequent urination hunger fatigue,Diabetes Type 2
+excessive thirst weakness high sugar,Diabetes Type 2
+blurred vision fatigue high sugar,Diabetes Type 2
+
+sudden onset frequent urination juvenile diabetes,Diabetes Type 1
+autoimmune diabetes ketoacidosis juvenile,Diabetes Type 1
+type 1 diabetes insulin dependent child,Diabetes Type 1
+childhood diabetes polyuria polydipsia weight loss,Diabetes Type 1
+diabetic ketoacidosis fruity breath vomiting,Diabetes Type 1
+absolute insulin deficiency autoimmune destruction,Diabetes Type 1
+type 1 sudden weight loss extreme thirst,Diabetes Type 1
+ketones in urine nausea abdominal pain diabetes,Diabetes Type 1
+juvenile onset diabetes high sugar rapid,Diabetes Type 1
+c-peptide low autoimmune markers diabetes,Diabetes Type 1
+insulin pump dependent glucose instability,Diabetes Type 1
+type 1 hyperglycemia frequent hypoglycemia,Diabetes Type 1
+young patient uncontrolled blood sugar ketosis,Diabetes Type 1
+autoimmune pancreatic beta cell destruction,Diabetes Type 1
+rapid onset polyuria polydipsia child adolescent,Diabetes Type 1
+
+borderline glucose impaired fasting prediabetes,Prediabetes
+slightly elevated blood sugar lifestyle risk,Prediabetes
+impaired glucose tolerance mild symptoms,Prediabetes
+prediabetic state high normal fasting glucose,Prediabetes
+borderline hba1c 5.7 to 6.4 overweight,Prediabetes
+insulin resistance no symptoms mild fatigue,Prediabetes
 
 elevated blood pressure persistent headache,Hypertension
 systolic pressure above normal dizziness,Hypertension
@@ -66,179 +55,40 @@ stage 1 hypertension chest discomfort,Hypertension
 high arterial pressure fatigue,Hypertension
 bp elevation nosebleed headache,Hypertension
 chronic hypertension lightheadedness,Hypertension
-increased vascular pressure dizziness,Hypertension
-persistent high bp anxiety,Hypertension
-hypertensive episode chest tightness,Hypertension
-arterial pressure elevation weakness,Hypertension
-high systolic reading fatigue,Hypertension
 uncontrolled blood pressure headache,Hypertension
-pressure imbalance dizziness fatigue,Hypertension
 hypertensive crisis headache nausea,Hypertension
-vascular resistance increase symptoms,Hypertension
-elevated bp blurred eyesight,Hypertension
-chronic arterial hypertension fatigue,Hypertension
-persistent bp spike headache,Hypertension
-pressure elevation chest discomfort,Hypertension
-stage 2 hypertension dizziness,Hypertension
-hypertensive disorder vision changes,Hypertension
-arterial stiffness high pressure,Hypertension
-blood pressure instability headache,Hypertension
 sustained hypertension fatigue,Hypertension
-elevated systolic diastolic pressure,Hypertension
-hypertensive symptoms chest pressure,Hypertension
-arterial pressure surge dizziness,Hypertension
-vascular hypertension symptoms,Hypertension
-high bp persistent headache,Hypertension
-increased systolic value fatigue,Hypertension
-blood pressure above 140 90,Hypertension
-hypertensive vascular disorder,Hypertension
-arterial hypertension dizziness nausea,Hypertension
-bp abnormality headache fatigue,Hypertension
-vascular strain high pressure,Hypertension
-hypertension induced headache,Hypertension
-elevated bp cardiovascular stress,Hypertension
-pressure elevation vascular symptoms,Hypertension
-arterial dysfunction high bp,Hypertension
-persistent hypertensive readings,Hypertension
-blood pressure dysregulation symptoms,Hypertension
-elevated arterial pressure fatigue,Hypertension
-hypertensive vascular stiffness,Hypertension
-uncontrolled hypertension dizziness,Hypertension
-arterial pressure increase headache,Hypertension
-hypertension with vision disturbance,Hypertension
-sustained high bp symptoms,Hypertension
-pressure spike cardiovascular stress,Hypertension
-hypertensive fatigue dizziness,Hypertension
-chronic high blood pressure,Hypertension
-arterial tension elevation,Hypertension
-hypertension related headache,Hypertension
-persistent bp elevation fatigue,Hypertension
-vascular pressure overload,Hypertension
-elevated diastolic reading symptoms,Hypertension
-hypertensive state dizziness,Hypertension
-arterial hypertension chest discomfort,Hypertension
-high bp cardiovascular strain,Hypertension
-pressure imbalance vascular symptoms,Hypertension
+high blood pressure headache dizziness,Hypertension
+bp high headache chest pressure,Hypertension
+high bp dizziness fatigue,Hypertension
+blood pressure high headache nausea,Hypertension
+persistent high bp headache,Hypertension
 
 productive cough purulent sputum chest pain,Pneumonia
 lung infection alveolar inflammation,Pneumonia
-pneumonic consolidation chest crackles,Pneumonia
 high fever productive cough,Pneumonia
-chest radiograph infiltrates,Pneumonia
 lower respiratory tract infection,Pneumonia
-alveolar fluid accumulation cough,Pneumonia
-bacterial pneumonia chest discomfort,Pneumonia
-pleuritic chest pain productive cough,Pneumonia
-lung inflammation fever sputum,Pneumonia
-crackles on auscultation chest infection,Pneumonia
 community acquired pneumonia symptoms,Pneumonia
-lobar pneumonia high fever,Pneumonia
-bronchopneumonia productive cough,Pneumonia
-pulmonary infection dyspnea,Pneumonia
 fever chills lung consolidation,Pneumonia
 shortness of breath productive sputum,Pneumonia
-pneumonic infiltration chest xray,Pneumonia
-respiratory infection chest crackles,Pneumonia
 bacterial lung infection fever,Pneumonia
-severe cough green sputum,Pneumonia
-alveolar infection breathing difficulty,Pneumonia
-pneumonia with pleural pain,Pneumonia
-lung consolidation fever cough,Pneumonia
-acute lower respiratory infection,Pneumonia
-productive cough chest tightness,Pneumonia
-infected alveoli dyspnea,Pneumonia
-pneumonia inflammation lungs,Pneumonia
-fever with productive sputum,Pneumonia
-crackling sounds lung exam,Pneumonia
-pulmonary consolidation symptoms,Pneumonia
-dyspnea lung infection,Pneumonia
-bacterial chest infection sputum,Pneumonia
-pleuritic pain lung inflammation,Pneumonia
-pneumonic chest infiltrates,Pneumonia
-productive sputum respiratory infection,Pneumonia
-lung opacity xray finding,Pneumonia
-fever cough alveolar infection,Pneumonia
-pneumonia dyspnea crackles,Pneumonia
-infected lung tissue inflammation,Pneumonia
-high temperature productive cough,Pneumonia
-alveolar inflammation chest pain,Pneumonia
-bacterial pulmonary infection,Pneumonia
-lung crackles fever,Pneumonia
-respiratory distress pneumonia,Pneumonia
-chest xray opacity consolidation,Pneumonia
-pneumonia pleural irritation,Pneumonia
-lung infection purulent sputum,Pneumonia
-dyspnea fever lung consolidation,Pneumonia
-productive cough bacterial infection,Pneumonia
-lower lobe pneumonia symptoms,Pneumonia
-crackles fever sputum,Pneumonia
-pulmonary infection chest pain,Pneumonia
-lobar consolidation cough,Pneumonia
-infective lung disease symptoms,Pneumonia
-respiratory infection purulent sputum,Pneumonia
-alveolar consolidation dyspnea,Pneumonia
-pneumonic inflammation chest tightness,Pneumonia
-fever sputum lung infection,Pneumonia
+cough fever chest pain,Pneumonia
+high fever cough breathing difficulty,Pneumonia
+fever cough shortness of breath,Pneumonia
+severe cough fever chest infection,Pneumonia
 
 bronchospasm wheezing airway constriction,Asthma
 reversible airway obstruction dyspnea,Asthma
 episodic wheeze chest tightness,Asthma
 allergic asthma bronchial inflammation,Asthma
 shortness of breath wheeze attack,Asthma
-bronchial hyperresponsiveness symptoms,Asthma
-asthmatic episode triggered by dust,Asthma
-airway narrowing expiratory wheeze,Asthma
-chest tightness bronchospasm,Asthma
 exercise induced asthma dyspnea,Asthma
 nighttime wheezing bronchial irritation,Asthma
-bronchial constriction breathing difficulty,Asthma
-asthma flare airway inflammation,Asthma
-recurrent wheezing short breath,Asthma
-bronchial asthma chronic symptoms,Asthma
-expiratory airflow limitation,Asthma
-asthma triggered by allergens,Asthma
-wheeze chest constriction episode,Asthma
-airway hyperreactivity dyspnea,Asthma
-asthmatic cough wheeze,Asthma
-bronchospastic disorder symptoms,Asthma
-tight chest expiratory wheeze,Asthma
-asthma exacerbation dyspnea,Asthma
-allergic bronchitis asthma symptoms,Asthma
-airway inflammation wheezing,Asthma
-bronchial obstruction reversible,Asthma
-asthma symptoms triggered by pollen,Asthma
-episodic dyspnea wheezing,Asthma
-bronchoconstriction short breath,Asthma
-asthma airway narrowing,Asthma
-chronic wheeze bronchial asthma,Asthma
-airflow obstruction reversible asthma,Asthma
-asthma induced chest tightness,Asthma
-bronchial irritation wheeze,Asthma
-allergy induced asthma attack,Asthma
-expiratory wheeze airway narrowing,Asthma
-asthma flare dust exposure,Asthma
-bronchial spasm dyspnea,Asthma
-reversible bronchial obstruction,Asthma
-asthmatic breathing difficulty episode,Asthma
 tight chest wheeze attack,Asthma
-airway constriction dyspnea,Asthma
-asthma triggered by cold air,Asthma
-bronchial hyperreactive state,Asthma
-asthma attack wheeze dyspnea,Asthma
-airway narrowing inflammation,Asthma
-bronchospasm chest tightness,Asthma
-episodic asthma flare,Asthma
-allergic airway inflammation symptoms,Asthma
-expiratory airflow limitation wheeze,Asthma
-asthma exacerbation chest tightness,Asthma
-bronchial constriction attack,Asthma
-asthmatic dyspnea wheezing,Asthma
-airway reactivity short breath,Asthma
-asthma chronic inflammatory airway,Asthma
-bronchospastic episode symptoms,Asthma
-allergen triggered wheezing,Asthma
-reversible airway narrowing dyspnea,Asthma
-asthma bronchial inflammation attack,Asthma
+shortness of breath wheezing cough,Asthma
+breathing problem wheezing chest tightness,Asthma
+wheezing breathing difficulty cough,Asthma
+asthma attack breathing problem,Asthma
 
 low hemoglobin fatigue pallor,Anemia
 iron deficiency reduced rbc count,Anemia
@@ -246,118 +96,37 @@ anemic patient weakness dizziness,Anemia
 decreased hematocrit fatigue,Anemia
 pale conjunctiva low hemoglobin,Anemia
 microcytic anemia iron deficiency,Anemia
-reduced oxygen carrying capacity fatigue,Anemia
-chronic anemia weakness,Anemia
-low serum ferritin tiredness,Anemia
-hemoglobin below normal dizziness,Anemia
-anemia related pallor fatigue,Anemia
-iron deficiency anemia symptoms,Anemia
-macrocytic anemia low b12,Anemia
-low red blood cell count fatigue,Anemia
-anemia induced weakness dizziness,Anemia
-hematologic deficiency fatigue pallor,Anemia
-reduced hemoglobin concentration,Anemia
-iron depletion symptoms weakness,Anemia
-anemic fatigue pale skin,Anemia
-low oxygen transport fatigue,Anemia
-hematocrit reduction dizziness,Anemia
-iron deficiency tiredness pallor,Anemia
-anemia chronic blood loss symptoms,Anemia
-rbc deficiency weakness fatigue,Anemia
-hypochromic anemia pallor,Anemia
-low hemoglobin lightheadedness,Anemia
-iron deficiency hemoglobin drop,Anemia
-anemia oxygen deficit fatigue,Anemia
-reduced erythrocyte count symptoms,Anemia
-hematology disorder low hemoglobin,Anemia
-iron deficiency chronic fatigue,Anemia
-anemic pallor dizziness,Anemia
-low rbc concentration weakness,Anemia
-reduced hematologic values fatigue,Anemia
-hemoglobin deficiency weakness,Anemia
-iron depletion anemia fatigue,Anemia
-chronic anemia pale appearance,Anemia
-low blood hemoglobin fatigue,Anemia
-anemia weakness low iron,Anemia
-oxygen transport deficiency dizziness,Anemia
-iron deficiency reduced stamina,Anemia
-anemic state fatigue pallor,Anemia
-low erythrocyte level symptoms,Anemia
-reduced hemoglobin oxygen fatigue,Anemia
-iron deficiency chronic weakness,Anemia
-anemia hematologic imbalance,Anemia
-low ferritin fatigue pallor,Anemia
-anemic dizziness weakness,Anemia
-hematologic anemia disorder symptoms,Anemia
-iron deficiency low rbc,Anemia
-oxygen carrying deficit fatigue,Anemia
-anemia low hematocrit symptoms,Anemia
-reduced hemoglobin tiredness,Anemia
-iron deficiency pallor weakness,Anemia
-anemia induced fatigue dizziness,Anemia
-erythrocyte deficiency symptoms,Anemia
-hematologic fatigue pale skin,Anemia
-low iron hemoglobin reduction,Anemia
-chronic hemoglobin deficiency fatigue,Anemia
+fatigue pale skin dizziness,Anemia
+weakness pale skin tiredness,Anemia
+low energy dizziness pale face,Anemia
+dizziness fatigue low hemoglobin,Anemia
 
 low grade fever fatigue body ache,Viral Fever
 mild fever sore throat weakness,Viral Fever
 viral infection mild temperature,Viral Fever
 fever with fatigue cough,Viral Fever
-low temperature viral illness,Viral Fever
 body ache mild fever,Viral Fever
 viral syndrome fatigue headache,Viral Fever
-low grade temperature sore throat,Viral Fever
-viral fever mild chills,Viral Fever
-fever fatigue nasal congestion,Viral Fever
-acute viral fever weakness,Viral Fever
-mild fever joint discomfort,Viral Fever
 viral febrile illness symptoms,Viral Fever
-low grade fever malaise,Viral Fever
-viral fever sore throat fatigue,Viral Fever
-fever with mild cough weakness,Viral Fever
-viral infection body ache fatigue,Viral Fever
-mild febrile illness headache,Viral Fever
-viral fever general weakness,Viral Fever
-low temperature fatigue malaise,Viral Fever
-viral syndrome mild fever,Viral Fever
-acute viral illness fatigue,Viral Fever
-fever throat irritation weakness,Viral Fever
-mild fever chills viral,Viral Fever
-viral fever headache body ache,Viral Fever
-low grade temperature weakness,Viral Fever
-viral febrile condition fatigue,Viral Fever
-mild fever respiratory symptoms,Viral Fever
-viral fever light headache,Viral Fever
-low fever fatigue weakness,Viral Fever
-viral illness mild temperature,Viral Fever
-fever fatigue viral infection,Viral Fever
-mild body ache fever viral,Viral Fever
-viral syndrome chills fatigue,Viral Fever
-low temperature viral symptoms,Viral Fever
-viral fever throat discomfort,Viral Fever
-mild febrile viral illness,Viral Fever
-acute viral temperature rise,Viral Fever
-viral fever fatigue chills,Viral Fever
-low grade fever mild headache,Viral Fever
-viral infection febrile symptoms,Viral Fever
-fever malaise viral origin,Viral Fever
-mild viral fever weakness,Viral Fever
-viral syndrome headache fatigue,Viral Fever
-fever cough viral illness,Viral Fever
-low temperature malaise,Viral Fever
-viral febrile disorder fatigue,Viral Fever
-mild viral infection fever,Viral Fever
-fever fatigue viral syndrome,Viral Fever
-acute viral fever symptoms,Viral Fever
-low grade viral temperature,Viral Fever
-viral illness fatigue headache,Viral Fever
-mild fever sore throat viral,Viral Fever
-viral febrile episode fatigue,Viral Fever
-fever weakness viral infection,Viral Fever
-mild temperature rise viral,Viral Fever
-viral fever systemic weakness,Viral Fever
-low grade febrile viral illness,Viral Fever
+fever headache body pain,Viral Fever
+fever sore throat cough,Viral Fever
+mild fever fatigue weakness,Viral Fever
+
+high fever chills rigors bacterial,Bacterial Fever
+sudden onset high fever shaking chills,Bacterial Fever
+bacterial infection high temperature sweating,Bacterial Fever
+fever with localised infection source,Bacterial Fever
+high grade fever rigors positive blood culture,Bacterial Fever
+bacterial sepsis high fever tachycardia,Bacterial Fever
+fever above 102 with chills sweating bacterial,Bacterial Fever
+lobar pneumonia type fever productive cough,Bacterial Fever
+step wise fever bacterial source headache,Bacterial Fever
+bacterial febrile illness elevated wbc,Bacterial Fever
+high fever with purulent discharge bacteria,Bacterial Fever
+fever rigors myalgia bacterial infection source,Bacterial Fever
+high fever chills rigors responds antibiotics,Bacterial Fever
+bacterial toxin mediated fever high white cell,Bacterial Fever
+febrile illness bacterial cause chills sweating,Bacterial Fever
 
 high fever severe myalgia retro orbital pain,Dengue Fever
 sudden high temperature platelet drop,Dengue Fever
@@ -367,115 +136,48 @@ retro orbital headache high fever,Dengue Fever
 platelet count decrease bleeding gums,Dengue Fever
 dengue viral fever severe body pain,Dengue Fever
 hemorrhagic rash thrombocytopenia,Dengue Fever
-high grade fever severe muscle pain,Dengue Fever
+high grade fever severe muscle pain dengue,Dengue Fever
 dengue fever with petechiae,Dengue Fever
-platelet reduction high fever,Dengue Fever
-severe myalgia dengue infection,Dengue Fever
-retro orbital pain thrombocytopenia,Dengue Fever
-dengue hemorrhagic symptoms fever,Dengue Fever
-high fever rash joint pain,Dengue Fever
-low platelet count severe fever,Dengue Fever
-dengue viral infection bleeding tendency,Dengue Fever
-intense headache retro orbital pain,Dengue Fever
-platelet drop rash high temperature,Dengue Fever
-dengue fever thrombocytopenia fatigue,Dengue Fever
-acute dengue infection symptoms,Dengue Fever
-high grade fever severe arthralgia,Dengue Fever
-skin rash platelet reduction,Dengue Fever
-dengue hemorrhagic fever signs,Dengue Fever
-muscle pain platelet drop fever,Dengue Fever
-retro orbital headache thrombocytopenia,Dengue Fever
-high fever intense myalgia,Dengue Fever
-dengue infection rash petechiae,Dengue Fever
-severe dengue joint pain,Dengue Fever
-platelet deficiency high fever,Dengue Fever
-hemorrhagic dengue symptoms,Dengue Fever
-dengue fever severe weakness,Dengue Fever
-platelet drop bleeding manifestation,Dengue Fever
-retro orbital pain high grade fever,Dengue Fever
-dengue viral illness rash,Dengue Fever
-thrombocytopenia severe myalgia,Dengue Fever
-high temperature rash platelet drop,Dengue Fever
-dengue infection hemorrhagic signs,Dengue Fever
-joint pain rash severe fever,Dengue Fever
-platelet decrease fatigue fever,Dengue Fever
-dengue febrile illness thrombocytopenia,Dengue Fever
-retro orbital pain muscle ache,Dengue Fever
-acute dengue fever symptoms,Dengue Fever
-high grade temperature rash,Dengue Fever
-platelet reduction bleeding gums,Dengue Fever
-severe body ache dengue infection,Dengue Fever
-rash petechiae high fever,Dengue Fever
-dengue virus infection symptoms,Dengue Fever
-intense fever thrombocytopenia,Dengue Fever
-severe arthralgia platelet drop,Dengue Fever
-dengue febrile condition rash,Dengue Fever
-high fever hemorrhagic tendency,Dengue Fever
-muscle pain retro orbital headache,Dengue Fever
-platelet drop severe fatigue,Dengue Fever
-acute dengue viral fever,Dengue Fever
-rash severe myalgia fever,Dengue Fever
-dengue infection platelet reduction,Dengue Fever
-high grade dengue symptoms,Dengue Fever
+platelet reduction high fever dengue,Dengue Fever
+high fever severe body pain rash,Dengue Fever
+high fever headache joint pain dengue,Dengue Fever
+fever rash severe weakness dengue,Dengue Fever
+fever body pain rash headache dengue,Dengue Fever
 
-high fever severe myalgia retro orbital pain,Dengue Fever
-sudden high temperature platelet drop,Dengue Fever
-dengue infection thrombocytopenia rash,Dengue Fever
-intense joint pain skin rash fever,Dengue Fever
-retro orbital headache high fever,Dengue Fever
-platelet count decrease bleeding gums,Dengue Fever
-dengue viral fever severe body pain,Dengue Fever
-hemorrhagic rash thrombocytopenia,Dengue Fever
-high grade fever severe muscle pain,Dengue Fever
-dengue fever with petechiae,Dengue Fever
-platelet reduction high fever,Dengue Fever
-severe myalgia dengue infection,Dengue Fever
-retro orbital pain thrombocytopenia,Dengue Fever
-dengue hemorrhagic symptoms fever,Dengue Fever
-high fever rash joint pain,Dengue Fever
-low platelet count severe fever,Dengue Fever
-dengue viral infection bleeding tendency,Dengue Fever
-intense headache retro orbital pain,Dengue Fever
-platelet drop rash high temperature,Dengue Fever
-dengue fever thrombocytopenia fatigue,Dengue Fever
-acute dengue infection symptoms,Dengue Fever
-high grade fever severe arthralgia,Dengue Fever
-skin rash platelet reduction,Dengue Fever
-dengue hemorrhagic fever signs,Dengue Fever
-muscle pain platelet drop fever,Dengue Fever
-retro orbital headache thrombocytopenia,Dengue Fever
-high fever intense myalgia,Dengue Fever
-dengue infection rash petechiae,Dengue Fever
-severe dengue joint pain,Dengue Fever
-platelet deficiency high fever,Dengue Fever
-hemorrhagic dengue symptoms,Dengue Fever
-dengue fever severe weakness,Dengue Fever
-platelet drop bleeding manifestation,Dengue Fever
-retro orbital pain high grade fever,Dengue Fever
-dengue viral illness rash,Dengue Fever
-thrombocytopenia severe myalgia,Dengue Fever
-high temperature rash platelet drop,Dengue Fever
-dengue infection hemorrhagic signs,Dengue Fever
-joint pain rash severe fever,Dengue Fever
-platelet decrease fatigue fever,Dengue Fever
-dengue febrile illness thrombocytopenia,Dengue Fever
-retro orbital pain muscle ache,Dengue Fever
-acute dengue fever symptoms,Dengue Fever
-high grade temperature rash,Dengue Fever
-platelet reduction bleeding gums,Dengue Fever
-severe body ache dengue infection,Dengue Fever
-rash petechiae high fever,Dengue Fever
-dengue virus infection symptoms,Dengue Fever
-intense fever thrombocytopenia,Dengue Fever
-severe arthralgia platelet drop,Dengue Fever
-dengue febrile condition rash,Dengue Fever
-high fever hemorrhagic tendency,Dengue Fever
-muscle pain retro orbital headache,Dengue Fever
-platelet drop severe fatigue,Dengue Fever
-acute dengue viral fever,Dengue Fever
-rash severe myalgia fever,Dengue Fever
-dengue infection platelet reduction,Dengue Fever
-high grade dengue symptoms,Dengue Fever
+stepwise progressive fever week,Typhoid Fever
+enteric fever headache abdomen pain week,Typhoid Fever
+salmonella typhi contaminated water food,Typhoid Fever
+prolonged fever rose spots constipation typhoid,Typhoid Fever
+high fever with relative bradycardia typhoid,Typhoid Fever
+typhoid abdominal tenderness splenomegaly,Typhoid Fever
+sustained fever 2 weeks headache weakness,Typhoid Fever
+enteric fever rose spots hepatosplenomegaly,Typhoid Fever
+typhoid encephalopathy severe confusion,Typhoid Fever
+progressive fever third week intestinal hemorrhage,Typhoid Fever
+typhoid febrile illness food water contamination,Typhoid Fever
+stepladder fever headache weakness abdominal,Typhoid Fever
+contaminated food high fever rose spots,Typhoid Fever
+sustained fever anorexia weakness typhoid,Typhoid Fever
+enteric fever constipation hepatomegaly typhoid,Typhoid Fever
+typhoid rose spots bradycardia relative,Typhoid Fever
+high fever week 1 to 3 salmonella typhi,Typhoid Fever
+typhoid fever confused state third week,Typhoid Fever
+
+cyclic fever chills sweating malaria,Malaria
+paroxysmal fever rigor sweat pattern malaria,Malaria
+plasmodium falciparum cerebral malaria severe,Malaria
+mosquito bite cyclic fever rigors malaria,Malaria
+tertian quartan fever chills rigor malaria,Malaria
+malaria high fever every 48 hours,Malaria
+falciparum malaria severe anaemia jaundice,Malaria
+vivax malaria relapsing fever splenomegaly,Malaria
+malaria fever rapid lysis sweating phase,Malaria
+malaria positive smear high fever chilis,Malaria
+malaria fever headache body pain rigor,Malaria
+travel history mosquito fever rigors chills malaria,Malaria
+malaria thrombocytopenia anemia jaundice,Malaria
+cyclic rigors high fever sweating malaria,Malaria
+periodic febrile illness malaria parasite,Malaria
 
 runny nose nasal congestion sneezing,Common Cold
 sore throat mild cough nasal discharge,Common Cold
@@ -483,96 +185,181 @@ blocked nose sneezing mild headache,Common Cold
 watery eyes nasal congestion fatigue,Common Cold
 mild cough sore throat runny nose,Common Cold
 nasal discharge mild fever sneezing,Common Cold
-common cold symptoms mild fatigue,Common Cold
 cold with sneezing throat irritation,Common Cold
 runny nose low grade fever cough,Common Cold
-nasal congestion mild body ache,Common Cold
-cold symptoms sneezing watery eyes,Common Cold
-mild sore throat nasal blockage,Common Cold
-blocked nose sneezing fatigue,Common Cold
-runny nose throat irritation cough,Common Cold
-common cold mild headache sneezing,Common Cold
-nasal congestion cough mild fever,Common Cold
-watery nasal discharge sneezing,Common Cold
-cold symptoms mild sore throat,Common Cold
-runny nose sneezing nasal congestion,Common Cold
-mild cough throat discomfort,Common Cold
-common cold fatigue nasal symptoms,Common Cold
-sneezing runny nose mild cough,Common Cold
-nasal congestion watery discharge,Common Cold
-cold symptoms throat irritation fatigue,Common Cold
-blocked nose mild cough headache,Common Cold
-sore throat sneezing runny nose,Common Cold
-nasal discharge mild weakness,Common Cold
-common cold nasal blockage cough,Common Cold
-mild sneezing watery eyes fatigue,Common Cold
-runny nose congestion sore throat,Common Cold
-cold symptoms mild body ache,Common Cold
-nasal irritation sneezing mild fever,Common Cold
-blocked nose throat discomfort,Common Cold
-common cold nasal congestion fatigue,Common Cold
-runny nose mild cough headache,Common Cold
-sneezing watery discharge throat irritation,Common Cold
-mild cold symptoms nasal congestion,Common Cold
-sore throat nasal blockage fatigue,Common Cold
-cold with runny nose mild fever,Common Cold
-nasal congestion sneezing throat pain,Common Cold
-watery eyes sneezing mild cold,Common Cold
-runny nose fatigue mild cough,Common Cold
-cold symptoms mild throat pain,Common Cold
-nasal discharge sneezing headache,Common Cold
-blocked nose runny nose cough,Common Cold
-mild sneezing sore throat congestion,Common Cold
-common cold nasal irritation fatigue,Common Cold
-runny nose sneezing mild weakness,Common Cold
-nasal congestion sore throat cough,Common Cold
-mild cold nasal blockage fatigue,Common Cold
-
-symptoms,disease
-fever headache body pain,Viral Fever
-fever sore throat cough,Viral Fever
-mild fever fatigue weakness,Viral Fever
-body ache mild fever headache,Viral Fever
-fever chills weakness,Viral Fever
-
 runny nose sneezing sore throat,Common Cold
 blocked nose sneezing cough,Common Cold
 runny nose mild fever sneezing,Common Cold
-nasal congestion sore throat cough,Common Cold
+nasal congestion sore throat cough cold,Common Cold
 cold with sneezing runny nose,Common Cold
 
-high fever severe body pain rash,Dengue Fever
-high fever headache joint pain,Dengue Fever
-fever rash severe weakness,Dengue Fever
-high fever muscle pain nausea,Dengue Fever
-fever body pain rash headache,Dengue Fever
+high fever abrupt onset flu myalgia,Influenza
+systemic influenza fever chills body ache,Influenza
+influenza a b fever headache myalgia fatigue,Influenza
+flu abrupt fever rigor severe malaise,Influenza
+influenza severe body pain prostration,Influenza
+flu high grade fever dry cough,Influenza
+influenza virus infection systemic symptoms,Influenza
+abrupt onset fever 39 40 myalgia flu,Influenza
+influenza fatigue severe body pain headache,Influenza
+flu season high fever cough muscle pain,Influenza
+influenza a seasonal epidemic high fever,Influenza
+flu body pain severe weakness fever,Influenza
+influenza high fever sudden onset prostration,Influenza
+flu virus fever shivering headache fatigue,Influenza
+seasonal flu chills myalgia cough sore throat,Influenza
+influenza fever muscle aches prostration malaise,Influenza
+flu fever sore throat headache fatigue,Influenza
+high fever sudden onset chills body ache flu,Influenza
+influenza severe cough chest discomfort fever,Influenza
+flu rapid onset high fever 38 40 degrees,Influenza
 
-cough fever chest pain,Pneumonia
-high fever cough breathing difficulty,Pneumonia
-cough chest tightness fever,Pneumonia
-fever cough shortness of breath,Pneumonia
-severe cough fever chest infection,Pneumonia
+chronic productive cough bronchial mucus,Bronchitis
+wet cough morning mucus chronic bronchitis,Bronchitis
+bronchitis productive cough low grade fever,Bronchitis
+persistent chest cough purulent sputum,Bronchitis
+smokers cough chronic bronchitis phlegm,Bronchitis
+acute bronchitis viral infection cough,Bronchitis
+bronchial infection wet cough wheeze,Bronchitis
+chronic cough green yellow sputum bronchitis,Bronchitis
+bronchitis chest tightness productive cough fatigue,Bronchitis
+morning cough phlegm bronchitis smoker,Bronchitis
+acute bronchitis post viral cough 3 weeks,Bronchitis
+bronchitis fever wet cough chest discomfort,Bronchitis
+secondary bacterial bronchitis purulent sputum,Bronchitis
+productive cough exacerbation bronchitis COPD,Bronchitis
+chronic obstructive bronchitis cough sputum wheeze,Bronchitis
 
-shortness of breath wheezing cough,Asthma
-breathing problem wheezing chest tightness,Asthma
-wheezing breathing difficulty cough,Asthma
-asthma attack breathing problem,Asthma
-tight chest wheezing cough,Asthma
+throbbing one sided headache nausea light sensitivity,Migraine
+migraine aura visual disturbance throbbing,Migraine
+unilateral pulsating headache photophobia phonophobia,Migraine
+migraine with aura scintillating scotoma,Migraine
+severe migraine nausea vomiting unable to function,Migraine
+hemiplegic migraine weakness one side headache,Migraine
+chronic migraine more than 15 days per month,Migraine
+migraine without aura throbbing incapacitating,Migraine
+migraine triggered by menstruation hormonal,Migraine
+migraine triggered stress weather change,Migraine
+pulsating headache worse with activity light sound,Migraine
+severe one sided headache vomiting nausea migraine,Migraine
+migraine with prodrome yawning fatigue before headache,Migraine
+migraine attack with nausea phonophobia photophobia,Migraine
+throbbing headache behind eye nausea migraine,Migraine
 
-fatigue pale skin dizziness,Anemia
-weakness pale skin tiredness,Anemia
-low energy dizziness pale face,Anemia
-tiredness weakness pale skin,Anemia
-dizziness fatigue low hemoglobin,Anemia
+bilateral band like head pressure tension headache,Tension Headache
+bilateral tight squeezing headache scalp tenderness,Tension Headache
+stress headache bilateral pressure dull ache,Tension Headache
+tension type headache muscle contraction scalp,Tension Headache
+chronic daily headache tension type bilateral,Tension Headache
+headache from stress neck muscle tightness,Tension Headache
+bilateral dull headache no nausea no aura tension,Tension Headache
+tension headache mild to moderate bilateral pressing,Tension Headache
+headache both sides forehead neck stiffness stress,Tension Headache
+tension headache worsens with stress poor posture,Tension Headache
+pressure type headache both sides mild tension,Tension Headache
+daily headache bilateral pressing non pulsating,Tension Headache
+tension headache no vomiting bilateral mild,Tension Headache
+scalp tenderness neck pain bilateral headache tension,Tension Headache
+headache from screen work stress neck tension,Tension Headache
 
-frequent urination excessive thirst fatigue,Diabetes
-high blood sugar thirst urination,Diabetes
-frequent urination hunger fatigue,Diabetes
-excessive thirst weakness high sugar,Diabetes
-blurred vision fatigue high sugar,Diabetes
+severe one sided headache eye tearing redness cluster,Cluster Headache
+excruciating orbital headache one side cluster,Cluster Headache
+cluster headache ptosis lacrimation rhinorrhea,Cluster Headache
+cluster attack severe eye pain autonomic features,Cluster Headache
+seasonal cluster headache nocturnal wake from sleep,Cluster Headache
+cluster headache trigeminal autonomic cephalgia,Cluster Headache
+repeated short severe one sided headache cluster,Cluster Headache
+cluster headache restlessness agitation eye watering,Cluster Headache
+clockwork cluster headache alcohol triggered,Cluster Headache
+severe eye socket pain lacrimation nostril congestion,Cluster Headache
+episodic cluster headache unilateral severe,Cluster Headache
+periorbital cluster attack autonomic nasal,Cluster Headache
 
-high blood pressure headache dizziness,Hypertension
-bp high headache chest pressure,Hypertension
-high bp dizziness fatigue,Hypertension
-blood pressure high headache nausea,Hypertension
-persistent high bp headache,Hypertension
+facial pain nasal congestion sinusitis headache,Sinus Headache
+sinus pressure forehead cheeks pain blocked nose,Sinus Headache
+sinusitis facial pain frontal sinus pressure headache,Sinus Headache
+maxillary sinus headache cheek tenderness blocked,Sinus Headache
+sinus headache worse bending forward nasal,Sinus Headache
+sinusitis headache post nasal drip facial pain,Sinus Headache
+frontal sinusitis headache nasal discharge pain,Sinus Headache
+allergic sinusitis facial headache nasal block,Sinus Headache
+chronic sinusitis headache loss of smell nasal,Sinus Headache
+sinus pressure headache nasal congestion purulent,Sinus Headache
+sinus headache fever nasal discharge purulent,Sinus Headache
+sinusitis pain cheekbone forehead eye socket,Sinus Headache
+
+burning urination frequency urgency UTI,UTI
+painful urination cloudy urine odour UTI,UTI
+urinary frequency urgency suprapubic pain UTI,UTI
+cystitis burning micturition UTI women,UTI
+urinary tract infection bacteria dysuria frequency,UTI
+recurrent UTI burning urination women,UTI
+lower UTI cystitis bacteria E coli dysuria,UTI
+burning sensation urination blood in urine UTI,UTI
+frequent urination burning cloudy urine UTI,UTI
+urinary infection lower tract fever chills UTI,UTI
+dysuria urinary frequency nocturia UTI,UTI
+UTI burning urination incomplete emptying bladder,UTI
+urinary frequency burning suprapubic discomfort,UTI
+bacterial cystitis dysuria haematuria fever,UTI
+recurrent urinary tract infection bacteria frequency,UTI
+
+fever dry cough loss of smell taste COVID,COVID-19
+COVID-19 fever breathlessness oxygen drop,COVID-19
+coronavirus fatigue fever body ache dry cough,COVID-19
+covid loss of taste anosmia fever fatigue,COVID-19
+sars cov 2 high fever breathing difficulty,COVID-19
+covid 19 cytokine storm ICU severe,COVID-19
+post covid fatigue brain fog long covid,COVID-19
+covid mild fever sore throat dry cough,COVID-19
+coronavirus anosmia ageusia myalgia fever,COVID-19
+covid 19 bilateral pneumonia oxygen desaturation,COVID-19
+covid headache fatigue body ache fever cough,COVID-19
+coronavirus dry cough breathlessness oxygen 94,COVID-19
+covid omicron mild sore throat fatigue cough,COVID-19
+post covid breathlessness fatigue long haul,COVID-19
+covid-19 positive fever cough bilateral infiltrates,COVID-19
+
+unexplained weight gain fatigue cold intolerance hypothyroid,Hypothyroidism
+low thyroid function fatigue constipation weight gain,Hypothyroidism
+hypothyroidism dry skin hair loss bradycardia,Hypothyroidism
+elevated TSH low T4 fatigue cold intolerance,Hypothyroidism
+underactive thyroid weight gain depression slow,Hypothyroidism
+hashimoto thyroiditis hypothyroid antibody,Hypothyroidism
+hypothyroid myxedema constipation dry skin fatigue,Hypothyroidism
+fatigue cold intolerance weight gain puffy face,Hypothyroidism
+low T4 elevated TSH fatigue bradycardia,Hypothyroidism
+hypothyroidism memory impairment slow HR weight gain,Hypothyroidism
+
+anxiety weight loss palpitations hyperthyroid,Hyperthyroidism
+elevated T4 low TSH tremor sweating hyperthyroid,Hyperthyroidism
+graves disease exophthalmos thyroid hormone excess,Hyperthyroidism
+hyperthyroidism weight loss heat intolerance tachycardia,Hyperthyroidism
+overactive thyroid palpitations anxiety tremor,Hyperthyroidism
+toxic goitre thyroid hormone excess sweating,Hyperthyroidism
+hyperthyroid tremors palpitations anxiety weight loss,Hyperthyroidism
+heat intolerance sweating palpitations insomnia thyroid,Hyperthyroidism
+
+skin rash itching urticaria hives allergy,Skin Allergy
+contact dermatitis red itchy rash skin,Skin Allergy
+allergic skin reaction redness pruritus,Skin Allergy
+urticaria hives wheals itching skin,Skin Allergy
+eczema atopic dermatitis dry itchy skin,Skin Allergy
+skin allergy food drug contact reaction,Skin Allergy
+maculopapular rash allergy antihistamine,Skin Allergy
+pruritus urticaria angioedema allergy,Skin Allergy
+allergic dermatitis contact rash itching,Skin Allergy
+drug rash maculopapular pruritic allergy,Skin Allergy
+
+diarrhea vomiting nausea stomach cramps gastroenteritis,Gastroenteritis
+acute gastroenteritis vomiting watery diarrhea,Gastroenteritis
+stomach flu vomiting diarrhea dehydration,Gastroenteritis
+gastroenteritis viral nausea vomiting diarrhea,Gastroenteritis
+watery diarrhea vomiting stomach pain 24 hours,Gastroenteritis
+food poisoning vomiting diarrhea nausea,Gastroenteritis
+norovirus gastroenteritis vomiting diarrhea,Gastroenteritis
+acute diarrhea stomach cramps nausea vomiting,Gastroenteritis
+travel diarrhea bacterial gastroenteritis vomiting,Gastroenteritis
+viral gastro vomiting diarrhea electrolyte loss,Gastroenteritis
+gastroenteritis fever diarrhea vomiting stomach pain,Gastroenteritis
+dehydration from vomiting diarrhea stomach,Gastroenteritis

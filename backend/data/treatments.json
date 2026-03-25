@@ -14,6 +14,21 @@
     ],
     "when_to_seek_care": "If fever exceeds 103°F, lasts more than 5 days, or you develop difficulty breathing — seek medical attention immediately."
   },
+  "Bacterial Fever": {
+    "drug": "Amoxicillin-Clavulanate 625mg + Paracetamol 500mg",
+    "dosage": "Amoxicillin-Clavulanate 625mg twice daily | Paracetamol 500mg every 6 hours",
+    "duration": "5–7 days (complete full antibiotic course)",
+    "explanation": "Bacterial fever requires targeted antibiotic therapy. Amoxicillin-Clavulanate covers a broad spectrum of gram-positive and gram-negative organisms. Always complete the full course.",
+    "lifestyle": [
+      "Complete the full antibiotic course even if fever subsides in 2–3 days",
+      "Drink 8–10 glasses of water daily to prevent dehydration",
+      "Eat high-protein food to support immune recovery",
+      "Monitor temperature every 4 hours — if above 104°F go to hospital",
+      "Rest completely and avoid physical exertion",
+      "Avoid self-medicating with additional antibiotics"
+    ],
+    "when_to_seek_care": "Seek emergency if fever exceeds 104°F, you develop confusion, rapid breathing, or cold/clammy skin — these indicate sepsis."
+  },
   "Normal Fever": {
     "drug": "Paracetamol 500mg",
     "dosage": "500mg every 6 hours as needed (max 4g/day)",
@@ -33,7 +48,7 @@
     "drug": "Paracetamol 500mg + Cetirizine 10mg",
     "dosage": "Paracetamol every 6 hours | Cetirizine once daily at bedtime",
     "duration": "3–5 days",
-    "explanation": "Paracetamol manages fever and body ache. Cetirizine (antihistamine) relieves runny nose and sneezing.",
+    "explanation": "Paracetamol manages fever and body ache. Cetirizine (antihistamine) relieves runny nose and sneezing. Steam inhalation helps decongest airways.",
     "lifestyle": [
       "Steam inhalation twice daily (add eucalyptus oil if available)",
       "Drink warm fluids — herbal tea, warm water with honey and ginger",
@@ -44,20 +59,81 @@
     ],
     "when_to_seek_care": "Seek care if symptoms worsen after 7 days, high fever develops, or you experience sinus pain or earache."
   },
+  "Influenza": {
+    "drug": "Oseltamivir (Tamiflu) 75mg + Paracetamol 500mg",
+    "dosage": "Oseltamivir 75mg twice daily for 5 days | Paracetamol 500mg every 6 hours",
+    "duration": "5–7 days",
+    "explanation": "Oseltamivir is an antiviral that reduces flu duration and severity when started within 48 hours of symptom onset. Paracetamol manages fever and body ache. NSAIDs may be used for pain relief.",
+    "lifestyle": [
+      "Isolate yourself to prevent spreading flu to others",
+      "Drink warm fluids generously — soups, herbal teas, ORS",
+      "Complete bed rest for at least 3–5 days",
+      "Monitor temperature every 6 hours",
+      "Use mask if going out — flu spreads via droplets",
+      "Annual flu vaccination recommended for prevention"
+    ],
+    "when_to_seek_care": "Seek emergency if breathing difficulty develops, chest pain, confusion, or you cannot keep fluids down — especially in elderly, young children, or immunocompromised."
+  },
+  "Bronchitis": {
+    "drug": "Amoxicillin 500mg + Guaifenesin 400mg + Salbutamol inhaler",
+    "dosage": "Amoxicillin 500mg 3x daily (if bacterial) | Guaifenesin 400mg every 4 hours | Salbutamol 2 puffs PRN",
+    "duration": "7–10 days",
+    "explanation": "Bronchitis involves inflammation of the bronchial tubes. Guaifenesin helps loosen mucus. Antibiotics are used only if sputum is purulent (green/yellow). Salbutamol relieves wheeze.",
+    "lifestyle": [
+      "Steam inhalation with menthol/eucalyptus 3 times daily",
+      "Drink 2–3 litres of warm fluids daily to thin mucus",
+      "Avoid smoking and passive smoke exposure completely",
+      "Elevate head while sleeping to ease breathing",
+      "Use humidifier in room if available",
+      "Avoid exposure to dust, pollution, cold air — wear a mask"
+    ],
+    "when_to_seek_care": "Seek care if cough lasts more than 3 weeks, sputum is blood-tinged, breathing worsens, or you develop high fever > 103°F."
+  },
   "Dengue Fever": {
     "drug": "Paracetamol 500mg (NSAIDs strictly avoided)",
     "dosage": "500mg every 6 hours — NEVER use Ibuprofen or Aspirin",
     "duration": "5–7 days with strict medical monitoring",
-    "explanation": "Dengue is a viral hemorrhagic fever. Paracetamol controls fever. NSAIDs like Ibuprofen increase bleeding risk and are contraindicated.",
+    "explanation": "Dengue is a viral hemorrhagic fever spread by Aedes mosquitoes. Paracetamol controls fever. NSAIDs like Ibuprofen increase bleeding risk and are strictly contraindicated. Platelet monitoring is essential.",
     "lifestyle": [
       "Drink oral rehydration solution (ORS) every 2–3 hours",
       "Complete bed rest — no physical exertion",
       "Eat soft foods — soups, khichdi, fruit juice",
       "Monitor platelet count daily (hospital/clinic)",
       "Sleep under mosquito nets and use repellent",
-      "Seek immediate care if gums bleed or rash appears"
+      "Seek immediate care if gums bleed or rash appears",
+      "Papaya leaf juice may help support platelet recovery"
     ],
-    "when_to_seek_care": "EMERGENCY: Go to hospital immediately if you have bleeding gums, petechiae (red spots on skin), severe abdominal pain, or vomiting blood."
+    "when_to_seek_care": "EMERGENCY: Go to hospital immediately if you have bleeding gums, petechiae (red spots on skin), severe abdominal pain, vomiting blood, or platelet count < 50,000."
+  },
+  "Typhoid Fever": {
+    "drug": "Ciprofloxacin 500mg or Azithromycin 500mg",
+    "dosage": "Ciprofloxacin 500mg twice daily for 7–14 days OR Azithromycin 500mg once daily for 7 days",
+    "duration": "7–14 days (full course mandatory)",
+    "explanation": "Typhoid is caused by Salmonella Typhi via contaminated food/water. Ciprofloxacin or Azithromycin are first-line antibiotics. Supportive hydration and rest are critical. Drug resistance is rising — culture before treating if possible.",
+    "lifestyle": [
+      "Drink only boiled or purified water",
+      "Eat freshly cooked food — avoid raw vegetables and street food",
+      "Complete full antibiotic course even if feeling better",
+      "Wash hands thoroughly before eating and after toilet",
+      "Sponge bath if very high fever (above 104°F)",
+      "Recheck stools/blood culture after treatment completion"
+    ],
+    "when_to_seek_care": "Seek emergency for intestinal perforation signs: sudden severe abdominal pain, rigid abdomen, high fever with confusion or collapse."
+  },
+  "Malaria": {
+    "drug": "Artemether-Lumefantrine 80/480mg (Coartem) — first line",
+    "dosage": "4 tablets at 0, 8, 24, 36, 48, 60 hours (weight-based) — take with fatty food for absorption",
+    "duration": "3-day course (6 doses total)",
+    "explanation": "Malaria is caused by Plasmodium parasites (falciparum most dangerous) via Anopheles mosquito bite. Artemisinin-based combination therapy (ACT) is the gold standard. Severe malaria requires IV Artesunate. Chloroquine for Vivax where sensitive.",
+    "lifestyle": [
+      "Complete the full malaria treatment course without interruption",
+      "Drink ORS and fluids generously to prevent dehydration",
+      "Use insecticide-treated bed nets every night",
+      "Use Permethrin-treated clothing and DEET repellent outdoors",
+      "Eliminate stagnant water sources around your home",
+      "Monitor blood smear after treatment to confirm clearance"
+    ],
+    "when_to_seek_care": "EMERGENCY: Severe malaria — cerebral malaria, seizures, altered consciousness, respiratory distress, jaundice, haemoglobinuria (black water fever) — requires IV treatment in ICU."
   },
   "Pneumonia": {
     "drug": "Azithromycin 500mg (antibiotic)",
@@ -78,105 +154,255 @@
     "drug": "Salbutamol Inhaler 100mcg (bronchodilator)",
     "dosage": "2 puffs every 4–6 hours as needed; Budesonide 200mcg inhaler twice daily for control",
     "duration": "Ongoing management — consult pulmonologist for long-term plan",
-    "explanation": "Salbutamol (reliever inhaler) opens airways during an attack. Budesonide (controller) reduces airway inflammation daily.",
+    "explanation": "Salbutamol (SABA) relieves acute bronchospasm immediately. Budesonide (ICS) reduces ongoing airway inflammation. Avoid known triggers. Never use inhaler without spacer if possible.",
     "lifestyle": [
-      "Identify and avoid personal triggers (dust, pollen, smoke, pets)",
-      "Keep windows closed during high pollen seasons",
-      "Use air purifier at home if possible",
-      "Practice breathing exercises (diaphragmatic breathing) daily",
-      "Never smoke or allow smoking near you",
-      "Carry your reliever inhaler at all times"
+      "Identify and avoid asthma triggers (dust, pollen, cold air, smoke)",
+      "Use inhaler with spacer for maximum effectiveness",
+      "Keep rescue inhaler available at all times",
+      "Monitor peak flow daily if prescribed a peak flow meter",
+      "Exercise in warm environments; avoid cold air exercise",
+      "Create an Asthma Action Plan with your doctor"
     ],
-    "when_to_seek_care": "Call emergency services if inhaler provides no relief, breathing is very fast and labored, or lips/fingertips turn blue."
+    "when_to_seek_care": "Call emergency if: severe breathlessness unable to speak in full sentences, blue lips/fingernails, rescue inhaler provides no relief — this is a life-threatening attack."
   },
   "Anemia": {
-    "drug": "Iron Supplements (Ferrous Sulfate 325mg) + Folic Acid 5mg",
-    "dosage": "Ferrous Sulfate 325mg twice daily with Vitamin C | Folic Acid 5mg once daily",
-    "duration": "3–6 months (until hemoglobin normalizes)",
-    "explanation": "Iron supplements replenish iron stores. Vitamin C enhances absorption. Folic acid supports red blood cell production.",
+    "drug": "Ferrous Sulfate 325mg + Folic Acid 5mg",
+    "dosage": "Ferrous Sulfate 325mg twice daily with vitamin C | Folic Acid 5mg once daily",
+    "duration": "3–6 months (until iron stores replenish — monitor Hb monthly)",
+    "explanation": "Iron deficiency anemia requires iron supplementation with vitamin C to enhance absorption. Folic acid treats megaloblastic anemia. Dietary iron from red meat, spinach, lentils supports recovery.",
     "lifestyle": [
-      "Eat iron-rich foods — spinach, lentils, red meat, beans, tofu",
-      "Take iron tablets with citrus juice (Vitamin C boosts absorption)",
-      "Avoid tea/coffee 1 hour before and after iron tablets",
-      "Cook in iron cookware when possible",
-      "Get adequate sleep — 7–8 hours per night",
-      "Light exercise like walking improves oxygen circulation"
+      "Eat iron-rich foods: red meat, spinach, dates, lentils, beans",
+      "Take iron tablet with orange juice (vitamin C doubles absorption)",
+      "Avoid drinking tea/coffee within 1 hour of iron tablet",
+      "Avoid calcium supplements and antacids at the same time as iron",
+      "Cook in iron vessels to add dietary iron",
+      "Deworm if living in endemic areas (pinworm/hookworm cause iron loss)"
     ],
-    "when_to_seek_care": "Seek care if dizziness is severe, heart palpitations occur, or hemoglobin is below 8g/dL — may need IV iron or transfusion."
-  },
-  "Diabetes": {
-    "drug": "Metformin 500mg (Type 2) / Insulin (as directed by doctor)",
-    "dosage": "Metformin 500mg twice daily with meals (initial dose)",
-    "duration": "Lifelong management with regular monitoring",
-    "explanation": "Metformin reduces liver glucose production and improves insulin sensitivity. Dose adjusted by doctor based on HbA1c levels.",
-    "lifestyle": [
-      "Follow a low-glycemic diet — reduce white rice, sugar, refined carbs",
-      "Walk 30 minutes daily — exercise lowers blood sugar naturally",
-      "Monitor blood glucose levels morning and evening",
-      "Avoid sugary drinks, sweets, and processed foods",
-      "Eat small frequent meals every 3–4 hours",
-      "Check feet daily for wounds (diabetes reduces healing)"
-    ],
-    "when_to_seek_care": "Seek care if blood sugar exceeds 300 mg/dL, you feel confused/drowsy, or experience chest pain or difficulty breathing."
+    "when_to_seek_care": "Seek care if haemoglobin < 7 g/dL, you experience chest pain, fainting spells, or do not respond to oral iron supplementation after 4 weeks."
   },
   "Hypertension": {
     "drug": "Amlodipine 5mg (calcium channel blocker)",
-    "dosage": "5mg once daily (morning)",
-    "duration": "Lifelong management — never stop without doctor's advice",
-    "explanation": "Amlodipine relaxes blood vessels and reduces blood pressure. May be combined with Losartan 50mg based on severity.",
+    "dosage": "5mg once daily in the morning — dose may be titrated to 10mg",
+    "duration": "Lifelong management with regular BP monitoring",
+    "explanation": "Amlodipine reduces peripheral vascular resistance and lowers blood pressure. Losartan/Telmisartan (ARBs) are alternatives. Lifestyle changes are equally critical. Regular BP monitoring is essential.",
     "lifestyle": [
-      "Reduce salt intake to less than 5g per day (avoid pickles, papad)",
-      "Eat a DASH diet — fruits, vegetables, whole grains, low-fat dairy",
-      "Exercise moderately — 30 min brisk walking 5 days/week",
-      "Quit smoking and limit alcohol completely",
-      "Manage stress — meditation, yoga, or deep breathing daily",
-      "Monitor blood pressure at home twice daily"
+      "Reduce salt intake to < 5g/day — avoid pickles, chips, processed food",
+      "DASH diet: fruits, vegetables, whole grains, low-fat dairy",
+      "Exercise 30 minutes of brisk walking daily",
+      "Quit smoking and limit alcohol strictly",
+      "Manage stress — meditation, yoga, 7–8 hours sleep",
+      "Monitor BP at home twice daily"
     ],
-    "when_to_seek_care": "Seek emergency if BP exceeds 180/120 mmHg, you have sudden severe headache, chest pain, or vision loss."
+    "when_to_seek_care": "Seek emergency if BP > 180/120 mmHg (hypertensive crisis), severe headache, blurred vision, chest pain, or neurological symptoms develop."
   },
   "Gastritis": {
-    "drug": "Omeprazole 20mg (proton pump inhibitor)",
-    "dosage": "20mg once daily before breakfast",
-    "duration": "4–8 weeks",
-    "explanation": "Omeprazole reduces stomach acid production, allowing the gastric lining to heal.",
+    "drug": "Omeprazole 20mg + Antacid",
+    "dosage": "Omeprazole 20mg once daily before breakfast | Antacid (Gelusil) after meals as needed",
+    "duration": "4–8 weeks (H. pylori — triple therapy 14 days if tested positive)",
+    "explanation": "Gastritis involves inflammation of the stomach lining, often due to H. pylori, NSAIDs, or stress. Omeprazole (PPI) reduces acid production. H. pylori requires triple therapy (PPI + Amoxicillin + Clarithromycin).",
     "lifestyle": [
-      "Eat small meals every 3–4 hours — avoid skipping meals",
-      "Avoid spicy, oily, and acidic foods",
-      "Limit coffee, tea, and carbonated drinks",
-      "Do not take painkillers (NSAIDs) on empty stomach",
-      "Eat slowly and chew food well",
-      "Sleep with head slightly elevated if you experience reflux"
+      "Avoid NSAIDs (Ibuprofen, Aspirin) — switch to Paracetamol",
+      "Eat small, frequent meals — avoid long gaps",
+      "Avoid spicy, oily, acidic food and carbonated drinks",
+      "Do not eat within 2 hours of sleeping — elevate head of bed",
+      "Quit smoking and alcohol — both worsen gastritis",
+      "Reduce stress — it significantly increases acid production"
     ],
-    "when_to_seek_care": "Seek care if you vomit blood, pass black stools, or have severe stomach pain that doesn't resolve."
+    "when_to_seek_care": "Seek care for black tarry stools, vomiting blood, weight loss, or persistent pain unresponsive to antacids — these suggest bleeding ulcer."
   },
   "Migraine": {
-    "drug": "Sumatriptan 50mg (acute migraine) + Paracetamol 1g",
-    "dosage": "Sumatriptan 50mg at onset of migraine | Paracetamol 1g as needed",
-    "duration": "Per episode (preventive therapy if >4 episodes/month)",
-    "explanation": "Sumatriptan is a triptan that selectively constricts dilated blood vessels causing migraine pain.",
+    "drug": "Sumatriptan 50mg (acute attack) + Topiramate 25mg (prevention)",
+    "dosage": "Sumatriptan 50mg at headache onset (max 200mg/day) | Topiramate 25mg twice daily preventive",
+    "duration": "Sumatriptan: as needed (max 2x per week) | Topiramate: 6–12 months preventive",
+    "explanation": "Sumatriptan is a serotonin receptor agonist that aborts migraine by causing vasoconstriction and blocking trigeminal pain. Topiramate prevents chronic migraines. Avoid triptans if cardiac risk. Identify and avoid personal triggers.",
     "lifestyle": [
-      "Maintain a headache diary to identify triggers (stress, food, sleep)",
-      "Sleep at consistent times — avoid over-sleeping on weekends",
-      "Stay hydrated — dehydration is a major trigger",
-      "Avoid migraine triggers: alcohol, aged cheese, strong perfumes",
-      "Manage stress with regular meditation or relaxation techniques",
-      "Rest in a dark, quiet room during a migraine attack"
+      "Maintain a migraine diary — identify personal triggers (foods, stress, sleep)",
+      "Avoid common triggers: red wine, aged cheese, MSG, skipping meals",
+      "Maintain regular sleep schedule — same wake time daily",
+      "Apply cold compress and rest in dark, quiet room during attack",
+      "Practice regular aerobic exercise — reduces migraine frequency by 50%",
+      "Manage stress with yoga, meditation, or cognitive behavioural therapy"
     ],
-    "when_to_seek_care": "Seek emergency if migraine is the 'worst headache of your life', accompanied by fever/neck stiffness, or loss of vision/speech."
+    "when_to_seek_care": "Seek emergency for 'thunderclap' worst headache of life (may indicate subarachnoid hemorrhage), headache with fever+stiff neck (meningitis), new neurological deficits, or headache after head injury."
   },
-  "Bacterial Infection": {
-    "drug": "Amoxicillin 500mg (or Azithromycin 250mg if penicillin allergy)",
-    "dosage": "Amoxicillin 500mg three times daily | Azithromycin 250mg once daily",
-    "duration": "5–7 days (complete full course)",
-    "explanation": "Amoxicillin is a broad-spectrum antibiotic effective for most bacterial infections. Never stop early.",
+  "Tension Headache": {
+    "drug": "Ibuprofen 400mg or Paracetamol 500mg",
+    "dosage": "Ibuprofen 400mg every 6–8 hours with food | Paracetamol 500mg every 6 hours",
+    "duration": "1–3 days (limit analgesic use to < 15 days/month to avoid medication overuse headache)",
+    "explanation": "Tension headaches are caused by muscle contraction in scalp, neck, and shoulders — often triggered by stress, poor posture, or screen time. NSAIDs and Paracetamol provide relief. If > 15 days/month, amitriptyline prophylaxis is indicated.",
     "lifestyle": [
-      "Complete the full antibiotic course even if you feel better",
-      "Rest adequately — 8+ hours of sleep",
-      "Stay hydrated — drink 8–10 glasses of water",
-      "Eat probiotic foods (curd/yogurt) to maintain gut health",
-      "Practice good hand hygiene to prevent spread",
-      "Avoid sharing utensils or personal items"
+      "Take regular breaks from screen work — 20-20-20 rule (every 20 min, look 20ft away for 20 sec)",
+      "Improve posture — ergonomic chair and monitor at eye level",
+      "Regular neck and shoulder stretching exercises",
+      "Apply warm compress to neck and temple area",
+      "Practice relaxation techniques — deep breathing, progressive muscle relaxation",
+      "Ensure 7–8 hours of regular sleep nightly"
     ],
-    "when_to_seek_care": "Seek care if fever persists after 48 hours of antibiotics, or if symptoms worsen significantly."
+    "when_to_seek_care": "Seek care if headaches occur daily, worsen progressively, change in character, are accompanied by vision changes, or do not respond to standard analgesics."
+  },
+  "Cluster Headache": {
+    "drug": "High-flow Oxygen 100% + Sumatriptan 6mg subcutaneous",
+    "dosage": "O2 15 L/min via non-rebreather mask for 15 minutes | Sumatriptan 6mg SC injection (fastest onset)",
+    "duration": "Acute attacks 15–30 min | Verapamil 80mg 3x daily for cluster prevention during active period",
+    "explanation": "Cluster headaches are the most severe primary headache disorder — excruciating periorbital pain with autonomic features (tearing, congestion, ptosis). Oxygen and SC Sumatriptan are most effective acute treatments. Verapamil prevents cluster bouts.",
+    "lifestyle": [
+      "Completely avoid alcohol during a cluster period — it is the most consistent trigger",
+      "Maintain strict regular sleep patterns — sleep deprivation triggers attacks",
+      "Avoid bright light and strong smells during cluster period",
+      "Do not smoke — nicotine is a major cluster trigger",
+      "Keep emergency Sumatriptan injection/nasal spray on hand at all times",
+      "Inform workplace/family about condition — attacks are incapacitating"
+    ],
+    "when_to_seek_care": "All cluster headache patients should see a neurologist. Seek emergency if new neurological symptoms accompany headache — secondary causes must be excluded by imaging."
+  },
+  "Sinus Headache": {
+    "drug": "Amoxicillin 500mg + Xylometazoline nasal spray 0.1%",
+    "dosage": "Amoxicillin 500mg 3x daily for 7 days | Xylometazoline 2 drops each nostril twice daily (max 5 days)",
+    "duration": "7–10 days antibiotic course",
+    "explanation": "Bacterial sinusitis causes facial pain, blocked nose, and purulent nasal discharge. Amoxicillin treats bacterial infection. Nasal decongestants provide symptomatic relief. Saline irrigation helps clear sinuses.",
+    "lifestyle": [
+      "Saline nasal irrigation (Neti pot) twice daily — improves drainage",
+      "Steam inhalation for 10 minutes 3x daily with menthol",
+      "Elevate head while sleeping to improve sinus drainage",
+      "Stay well hydrated to thin mucus",
+      "Use cool mist humidifier in bedroom",
+      "Identify and treat underlying allergies if recurrent sinusitis"
+    ],
+    "when_to_seek_care": "Seek care for vision changes, swollen eye/cheek, high fever, severe headache worsening daily — these suggest orbital or intracranial complications."
+  },
+  "UTI": {
+    "drug": "Nitrofurantoin 100mg or Trimethoprim 200mg",
+    "dosage": "Nitrofurantoin 100mg twice daily for 5 days | Trimethoprim 200mg twice daily for 3 days",
+    "duration": "3–7 days (uncomplicated UTI) | 10–14 days for complicated UTI",
+    "explanation": "UTI in women is most commonly caused by E. coli from the perineal region. Nitrofurantoin concentrates in urine and is effective for uncomplicated cystitis. Ciprofloxacin for complicated or recurrent UTI. Culture and sensitivity testing is recommended.",
+    "lifestyle": [
+      "Drink 2–3 litres of water daily to flush bacteria from urinary tract",
+      "Urinate immediately after sexual intercourse",
+      "Wipe front to back after toilet use (prevents E. coli spread)",
+      "Wear cotton underwear and loose-fitting clothes",
+      "Avoid bubble baths, feminine hygiene sprays, and irritants",
+      "Cranberry juice/supplements may reduce recurrence risk"
+    ],
+    "when_to_seek_care": "Seek care for flank pain (kidney involvement/pyelonephritis), fever > 101°F, shaking chills, nausea/vomiting with UTI — these indicate ascending infection requiring IV antibiotics."
+  },
+  "COVID-19": {
+    "drug": "Paracetamol 500mg + Vitamin C 1000mg + Zinc 50mg",
+    "dosage": "Paracetamol 500mg every 6 hours | Vitamin C 1000mg daily | Zinc 50mg daily | Pulse oximetry monitoring",
+    "duration": "10–14 days isolation | Severe: Remdesivir + Dexamethasone (hospital)",
+    "explanation": "Mild COVID-19 is managed with symptomatic treatment, rest, and isolation. Monitor oxygen saturation (SpO2) twice daily — if < 94% seek emergency. Severe cases require Remdesivir (antiviral) and Dexamethasone (reduces cytokine storm). Vaccination prevents severe disease.",
+    "lifestyle": [
+      "Isolate from household members — wear N95/surgical mask indoors",
+      "Monitor SpO2 twice daily with pulse oximeter — alert if < 94%",
+      "Prone position (sleep on stomach) if SpO2 borderline — improves oxygenation",
+      "Eat nutritious food — high protein, vitamin C rich fruits",
+      "Stay well hydrated — 2–3 L fluids per day",
+      "Complete 10-day isolation even if symptoms resolve — you remain infectious"
+    ],
+    "when_to_seek_care": "EMERGENCY: SpO2 < 93%, severe breathlessness, unable to complete sentences, confusion, chest pain, or lips turning blue — call emergency services immediately."
+  },
+  "Hypothyroidism": {
+    "drug": "Levothyroxine (L-T4) 50–100mcg",
+    "dosage": "Start 25–50mcg once daily on empty stomach (30 min before breakfast) — titrate by TSH levels every 6–8 weeks",
+    "duration": "Lifelong daily medication with 6-monthly TSH monitoring",
+    "explanation": "Hypothyroidism (underactive thyroid) requires lifelong levothyroxine replacement. The dose is adjusted based on TSH levels to maintain normal thyroid function. Hashimoto's thyroiditis is the most common cause.",
+    "lifestyle": [
+      "Take levothyroxine FIRST THING in morning — 30 min before any food or drink",
+      "Do NOT take with calcium, iron, or antacids — space 4 hours apart",
+      "Regular TSH monitoring every 6 months once stable",
+      "Eat selenium-rich foods (Brazil nuts, tuna) — supports thyroid",
+      "Regular exercise — hypothyroidism causes weight gain and sluggishness",
+      "Track symptoms: fatigue, cold intolerance, constipation — report changes"
+    ],
+    "when_to_seek_care": "Seek emergency for myxedema coma — extreme hypothyroid state with confusion, hypothermia, and loss of consciousness. Seek care for chest pain, heart palpitations during treatment."
+  },
+  "Hyperthyroidism": {
+    "drug": "Methimazole 10–30mg or Propylthiouracil + Propranolol 40mg",
+    "dosage": "Methimazole 10–30mg daily (divided doses) | Propranolol 40mg twice daily for symptom control",
+    "duration": "12–18 months antithyroid therapy — with 3-monthly TFT monitoring",
+    "explanation": "Hyperthyroidism (overactive thyroid — most commonly Graves disease) is treated with antithyroid drugs (Methimazole/PTU) to block thyroid hormone synthesis. Propranolol controls palpitations and tremors. Radioiodine or surgery for definitive treatment.",
+    "lifestyle": [
+      "Avoid iodine-rich foods (seaweed, iodized salt excess) — worsens hyperthyroidism",
+      "Do NOT use stimulants — caffeine, energy drinks exacerbate palpitations",
+      "Rest — hyperthyroidism causes catabolism and weight loss",
+      "Eat calorie-dense food to compensate for high metabolic rate",
+      "Use sunglasses if Graves ophthalmopathy (eye involvement)",
+      "Regular TFT (T3/T4/TSH) monitoring every 3 months"
+    ],
+    "when_to_seek_care": "Emergency for thyroid storm — extreme high fever, confusion, rapid heart rate > 140, vomiting — this is life-threatening and requires ICU care."
+  },
+  "Skin Allergy": {
+    "drug": "Cetirizine 10mg + Hydrocortisone cream 1%",
+    "dosage": "Cetirizine 10mg once daily at bedtime | Hydrocortisone cream thin layer 2x daily (max 7 days on face)",
+    "duration": "5–7 days acute | Identify and avoid trigger for long-term management",
+    "explanation": "Skin allergies (urticaria, contact dermatitis, eczema) are triggered by allergens activating mast cells and releasing histamine. Cetirizine blocks histamine. Topical corticosteroids reduce local inflammation. Identifying and avoiding the trigger is key.",
+    "lifestyle": [
+      "Identify and eliminate contact allergen — soaps, nickel, latex, detergents",
+      "Use hypoallergenic, fragrance-free skincare products",
+      "Moisturize skin 2–3 times daily with fragrance-free emollient",
+      "Avoid hot water baths — use lukewarm water only",
+      "Wear loose cotton clothing — avoid synthetic fabric contact",
+      "Keep a symptom diary to identify foods or substances causing reactions"
+    ],
+    "when_to_seek_care": "Seek emergency for anaphylaxis — swelling of lips/tongue/throat, difficulty breathing, dizziness with rash — administer Epinephrine (EpiPen) and call emergency services immediately."
+  },
+  "Gastroenteritis": {
+    "drug": "Oral Rehydration Salts (ORS) + Zinc 20mg + Ondansetron 4mg",
+    "dosage": "ORS 200ml after each loose stool | Zinc 20mg daily for 10–14 days | Ondansetron 4mg 3x daily for vomiting",
+    "duration": "3–5 days (viral) | 5–7 days (bacterial — with Ciprofloxacin)",
+    "explanation": "Gastroenteritis involves inflammation of stomach and intestines causing vomiting and diarrhea. Rehydration with ORS is the cornerstone of treatment. Zinc reduces severity and duration. Ondansetron controls vomiting. Antibiotics only for bacterial/parasitic causes.",
+    "lifestyle": [
+      "Drink ORS continuously in small sips — don't wait for thirst",
+      "BRAT diet initially: Bananas, Rice, Applesauce, Toast — easy on stomach",
+      "Introduce yoghourt/probiotics after 24 hours to restore gut flora",
+      "Avoid dairy, spicy, fatty food until full recovery",
+      "Wash hands thoroughly after every toilet visit",
+      "Isolate from family especially infants/elderly — highly contagious"
+    ],
+    "when_to_seek_care": "Seek emergency for signs of severe dehydration: dry mouth, no urination for 8 hours, sunken eyes, extreme weakness — IV fluids needed. Blood in stools requires immediate evaluation."
+  },
+  "Diabetes Type 2": {
+    "drug": "Metformin 500mg (first-line)",
+    "dosage": "500mg twice daily with meals — titrate to 1000mg twice daily over 4 weeks",
+    "duration": "Lifelong with HbA1c monitoring every 3 months",
+    "explanation": "Type 2 diabetes is the most common form — insulin resistance and progressive beta-cell dysfunction. Metformin reduces hepatic glucose output and improves insulin sensitivity. Lifestyle changes are equally critical. Add SGLT2 inhibitor or GLP-1 agonist if needed.",
+    "lifestyle": [
+      "Reduce refined carbohydrates (white rice, sugar, maida) — switch to whole grains",
+      "Exercise 150 minutes per week — walking, cycling, swimming",
+      "Monitor blood sugar before and 2 hours after meals",
+      "Target HbA1c < 7% — test every 3 months",
+      "Lose 5–10% body weight if overweight — dramatically improves glucose control",
+      "Annual eye, kidney, and foot examinations — prevent diabetic complications"
+    ],
+    "when_to_seek_care": "Seek emergency for hypoglycemia (sugar < 70 mg/dL) — confusion, shaking, sweating. Also emergency for DKA — vomiting, fruity breath, extreme weakness, Kussmaul respiration."
+  },
+  "Diabetes Type 1": {
+    "drug": "Insulin Glargine (basal) + Insulin Lispro (bolus)",
+    "dosage": "Glargine 10–20 units once at bedtime | Lispro 5–10 units before each meal (dose individualised)",
+    "duration": "Lifelong insulin therapy — dose adjusted by blood glucose readings",
+    "explanation": "Type 1 diabetes is an autoimmune condition causing absolute insulin deficiency. Insulin is the only treatment. Basal-bolus regimen mimics natural insulin secretion. Continuous glucose monitoring (CGM) improves outcomes. DKA is the life-threatening emergency.",
+    "lifestyle": [
+      "Monitor blood glucose 4–8 times daily (before meals, bedtime, overnight)",
+      "Always carry fast-acting glucose (glucose tablets, juice) for hypoglycemia",
+      "Rotate injection sites to prevent lipodystrophy",
+      "Maintain consistent meal timing and carbohydrate counting",
+      "Wear medical alert bracelet/ID indicating Type 1 Diabetes",
+      "Join a structured diabetes education program (DSMES)"
+    ],
+    "when_to_seek_care": "Emergency for DKA — fruity breath, extreme thirst, confusion, abdominal pain, vomiting, blood sugar > 250 with ketones in urine. Also emergency for blood sugar < 50 mg/dL with altered consciousness."
+  },
+  "Prediabetes": {
+    "drug": "Metformin 500mg (if high risk) + Lifestyle as primary treatment",
+    "dosage": "Metformin 500mg once daily (high-risk individuals); Lifestyle alone for most",
+    "duration": "Indefinite lifestyle modification — retest HbA1c every 6 months",
+    "explanation": "Prediabetes (HbA1c 5.7–6.4% or fasting glucose 100–125 mg/dL) can often be reversed or delayed with intensive lifestyle intervention. Metformin reduces progression by 31% in high-risk individuals. Weight loss of 7% is the primary target.",
+    "lifestyle": [
+      "Lose 7% of body weight — the most effective intervention to prevent diabetes",
+      "Exercise 150 minutes per week (brisk walking, cycling)",
+      "Replace refined carbs with whole grains, vegetables, legumes",
+      "Eliminate sugary beverages — switch to water, green tea",
+      "Sleep 7–8 hours — sleep deprivation worsens insulin resistance",
+      "Dietary Program: Mediterranean or low-glycaemic index diet"
+    ],
+    "when_to_seek_care": "Follow up with doctor every 6 months to monitor HbA1c. If HbA1c rises above 6.5%, progression to Type 2 diabetes has occurred."
   }
 }

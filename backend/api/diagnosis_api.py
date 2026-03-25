@@ -141,6 +141,109 @@ def chat(request: ChatRequest):
         return {"reply": "I apologize — my AI inference engine is temporarily unavailable. Please try again in a moment."}
 
 
+class ExplainRequest(BaseModel):
+    disease: str
+    symptoms: str
+    age: int = 30
+    gender: str = "unknown"
+    conditions: str = "none"
+    allergies: str = "none"
+    language: str = "en"
+
+
+EXPLAIN_SYSTEM_PROMPT = """You are Dr. MedAI — an expert AI physician providing personalised medical analysis.
+
+Given a patient's diagnosis and symptoms, provide a comprehensive, structured medical explanation.
+Respond STRICTLY in this JSON format (no markdown blocks, pure JSON):
+{
+  "summary": "2-3 sentence plain-language summary of the condition and why these symptoms match",
+  "causes": ["cause 1", "cause 2", "cause 3"],
+  "medicines": [
+    {"name": "Drug Name + dose", "purpose": "what it does", "timing": "how to take it"},
+    {"name": "Drug Name + dose", "purpose": "what it does", "timing": "how to take it"}
+  ],
+  "lifestyle": ["tip 1", "tip 2", "tip 3", "tip 4"],
+  "when_to_seek_care": "Clear, specific emergency warning signs",
+  "severity": "mild|moderate|severe",
+  "disclaimer": "This is AI medical guidance, not a substitute for professional clinical care."
+}
+
+Be specific with drug names, doses, and durations. Tailor all advice to the patient's age, gender, and pre-existing conditions. Always mention contraindications relevant to the patient."""
+
+
+@router.post("/diagnose/explain")
+def diagnose_explain(request: ExplainRequest):
+    if not groq_client:
+        return {
+            "summary": "AI explanation unavailable — GROQ_API_KEY not configured.",
+            "causes": ["Unable to connect to AI service"],
+            "medicines": [],
+            "lifestyle": [],
+            "when_to_seek_care": "Consult your physician.",
+            "severity": "unknown",
+            "disclaimer": "Configure GROQ_API_KEY in backend/.env to enable AI analysis."
+        }
+
+    lang_hints = {
+        "ta": "RESPOND ENTIRELY IN TAMIL SCRIPT (தமிழ்). All JSON values in Tamil.",
+        "hi": "RESPOND ENTIRELY IN HINDI SCRIPT (हिंदी). All JSON values in Hindi.",
+        "en": ""
+    }
+    lang_hint = lang_hints.get(request.language, "")
+
+    patient_context = f"""
+Patient Details:
+- Diagnosis: {request.disease}
+- Reported Symptoms: {request.symptoms}
+- Age: {request.age} years
+- Gender: {request.gender}
+- Pre-existing Conditions: {request.conditions}
+- Known Allergies: {request.allergies}
+""".strip()
+
+    user_message = f"""{lang_hint}
+
+{patient_context}
+
+Provide a comprehensive, personalised medical explanation for this patient's diagnosis of {request.disease}.
+Consider their age, gender, and pre-existing conditions when recommending medicines and lifestyle changes.
+If they have allergies, ensure no contraindicated medicines are recommended.
+Return ONLY valid JSON, no markdown, no code blocks."""
+
+    try:
+        response = groq_client.chat.completions.create(
+            model="llama-3.3-70b-versatile",
+            messages=[
+                {"role": "system", "content": EXPLAIN_SYSTEM_PROMPT},
+                {"role": "user", "content": user_message}
+            ],
+            max_tokens=1500,
+            temperature=0.4,
+            response_format={"type": "json_object"}
+        )
+        import json
+        raw = response.choices[0].message.content
+        try:
+            parsed = json.loads(raw)
+        except Exception:
+            # Extract JSON if wrapped in markdown
+            import re
+            match = re.search(r'\{.*\}', raw, re.DOTALL)
+            parsed = json.loads(match.group()) if match else {"summary": raw, "causes": [], "medicines": [], "lifestyle": [], "when_to_seek_care": "", "severity": "unknown", "disclaimer": ""}
+        return parsed
+    except Exception as e:
+        print(f"Groq Explain API Error: {e}")
+        return {
+            "summary": f"AI analysis temporarily unavailable. Your diagnosis is {request.disease}. Please consult with a healthcare provider for detailed guidance.",
+            "causes": ["AI inference engine temporarily offline"],
+            "medicines": [],
+            "lifestyle": ["Please consult with your healthcare provider"],
+            "when_to_seek_care": "Visit your doctor for personalized advice.",
+            "severity": "unknown",
+            "disclaimer": "This is AI guidance, not a substitute for professional medical care."
+        }
+
+
 from utils.pdf_generator import generate_pdf
 from fastapi.responses import FileResponse
 import tempfile
