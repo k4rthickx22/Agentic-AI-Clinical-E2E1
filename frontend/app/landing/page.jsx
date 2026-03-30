@@ -275,7 +275,13 @@ export default function LandingPage() {
     }
   };
 
-  const closeModal = () => { setError(""); setSuccess(""); setForm({ name: "", email: "", password: "", confirmPassword: "" }); };
+  const closeModal = () => {
+    setModal(null);
+    setError("");
+    setSuccess("");
+    setForm({ name: "", email: "", password: "", confirmPassword: "" });
+    setForgotForm({ email: "", newPassword: "", confirmNewPassword: "" });
+  };
 
   return (
     <>

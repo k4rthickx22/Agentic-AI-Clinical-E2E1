@@ -483,9 +483,10 @@ function AppInner() {
   // ── Voice recognition – shared lang codes ───────────────────
   const LANG_CODES = { en: "en-US", ta: "ta-IN", hi: "hi-IN" };
 
-  // ── Diagnosis voice ──────────────────────────────────────────
-  // Tamil uses non-continuous mode (restart-on-end) for mobile compatibility.
-  // Other languages use continuous mode with 2.5 s silence auto-stop.
+  // ── Diagnosis voice ─────────────────────────────────────────
+  // En/Hi: continuous mode, silence-timer auto-stop, transcript from e.results only.
+  // Tamil: non-continuous restart loop. tamilBase stores confirmed text across sessions;
+  //        each session only uses e.results from THAT session (no cross-session duplication).
   const toggleListen = () => {
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SR) { alert("Voice recognition not supported. Please use Chrome or Edge."); return; }
@@ -498,36 +499,48 @@ function AppInner() {
     }
     diagTranscriptRef.current = "";
     const isTamil = lang === "ta";
-    let shouldRestart = true; // used for Tamil restart loop
+    let shouldRestart = true;
+    let tamilBase = "";  // confirmed text from completed Tamil sessions
 
     const startRec = () => {
       const rec = new SR();
-      rec.continuous = !isTamil; // Tamil: non-continuous (mobile fix)
+      rec.continuous = !isTamil;
       rec.interimResults = true;
       rec.maxAlternatives = 1;
       rec.lang = LANG_CODES[lang] || "en-US";
+
       rec.onresult = e => {
-        let full = "";
+        // Build ONLY this session's transcript from e.results
+        let sessionText = "";
         for (let i = 0; i < e.results.length; i++) {
-          full += e.results[i][0].transcript + (e.results[i].isFinal ? " " : "");
+          sessionText += e.results[i][0].transcript;
         }
-        const combined = (diagTranscriptRef.current + " " + full).trim();
-        diagTranscriptRef.current = combined;
-        setSymptoms(combined);
-        if (!isTamil) {
+        sessionText = sessionText.trim();
+
+        if (isTamil) {
+          // Tamil: display = confirmed base + current session words
+          const display = (tamilBase + " " + sessionText).trim();
+          setSymptoms(display);
+          diagTranscriptRef.current = display;
+        } else {
+          // Continuous (en/hi): e.results accumulates the whole session — use directly
+          setSymptoms(sessionText);
+          diagTranscriptRef.current = sessionText;
+          // Silence timer: 3.5 s of quiet auto-stops
           if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
-          silenceTimerRef.current = setTimeout(() => { recRef.current?.stop(); }, 2500);
+          silenceTimerRef.current = setTimeout(() => { recRef.current?.stop(); }, 3500);
         }
       };
+
       rec.onend = () => {
         if (isTamil) {
-          // Tamil: restart unless user clicked stop
+          // Lock in what we have so far as the new base
+          tamilBase = diagTranscriptRef.current;
           if (shouldRestart && recRef.current !== null) {
-            try { const r2 = startRec(); recRef.current = r2; } catch(_) {}
+            try { const r2 = startRec(); recRef.current = r2; } catch (_) {}
           } else {
             setListening(false);
-            const captured = diagTranscriptRef.current.trim();
-            if (captured) { setSymptoms(captured); setTimeout(() => diagnose(captured), 300); }
+            if (tamilBase) { setSymptoms(tamilBase); setTimeout(() => diagnose(tamilBase), 300); }
           }
         } else {
           if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
@@ -536,10 +549,10 @@ function AppInner() {
           if (captured) { setSymptoms(captured); setTimeout(() => diagnose(captured), 300); }
         }
       };
+
       rec.onerror = (e) => {
         if (e.error === "no-speech" && isTamil && shouldRestart && recRef.current !== null) {
-          // Restart on no-speech for Tamil
-          try { const r2 = startRec(); recRef.current = r2; } catch(_) {}
+          try { const r2 = startRec(); recRef.current = r2; } catch (_) {}
           return;
         }
         if (e.error !== "no-speech") {
@@ -558,7 +571,7 @@ function AppInner() {
     setListening(true);
   };
 
-  // ── Chat voice: non-continuous restart for Tamil, silence-stop for others ──
+  // ── Chat voice: identical architecture to diagnosis voice ────────────────
   const toggleChatListen = () => {
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SR) { alert("Voice recognition not supported. Please use Chrome or Edge."); return; }
@@ -572,6 +585,7 @@ function AppInner() {
     chatTranscriptRef.current = "";
     const isTamil = lang === "ta";
     let shouldRestartChat = true;
+    let tamilChatBase = "";
 
     const startChatRec = () => {
       const rec = new SR();
@@ -579,27 +593,34 @@ function AppInner() {
       rec.interimResults = true;
       rec.maxAlternatives = 1;
       rec.lang = LANG_CODES[lang] || "en-US";
+
       rec.onresult = e => {
-        let full = "";
+        let sessionText = "";
         for (let i = 0; i < e.results.length; i++) {
-          full += e.results[i][0].transcript + (e.results[i].isFinal ? " " : "");
+          sessionText += e.results[i][0].transcript;
         }
-        const combined = (chatTranscriptRef.current + " " + full).trim();
-        chatTranscriptRef.current = combined;
-        setChatInput(combined);
-        if (!isTamil) {
+        sessionText = sessionText.trim();
+
+        if (isTamil) {
+          const display = (tamilChatBase + " " + sessionText).trim();
+          setChatInput(display);
+          chatTranscriptRef.current = display;
+        } else {
+          setChatInput(sessionText);
+          chatTranscriptRef.current = sessionText;
           if (chatSilenceTimerRef.current) clearTimeout(chatSilenceTimerRef.current);
-          chatSilenceTimerRef.current = setTimeout(() => { chatRecRef.current?.stop(); }, 2500);
+          chatSilenceTimerRef.current = setTimeout(() => { chatRecRef.current?.stop(); }, 3500);
         }
       };
+
       rec.onend = () => {
         if (isTamil) {
+          tamilChatBase = chatTranscriptRef.current;
           if (shouldRestartChat && chatRecRef.current !== null) {
-            try { const r2 = startChatRec(); chatRecRef.current = r2; } catch(_) {}
+            try { const r2 = startChatRec(); chatRecRef.current = r2; } catch (_) {}
           } else {
             setChatListening(false);
-            const captured = chatTranscriptRef.current.trim();
-            if (captured) { setChatInput(""); chatTranscriptRef.current = ""; setTimeout(() => sendChatWithMsg(captured), 200); }
+            if (tamilChatBase) { setChatInput(""); chatTranscriptRef.current = ""; setTimeout(() => sendChatWithMsg(tamilChatBase), 200); }
           }
         } else {
           if (chatSilenceTimerRef.current) clearTimeout(chatSilenceTimerRef.current);
@@ -608,9 +629,10 @@ function AppInner() {
           if (captured) { setChatInput(""); chatTranscriptRef.current = ""; setTimeout(() => sendChatWithMsg(captured), 200); }
         }
       };
+
       rec.onerror = (e) => {
         if (e.error === "no-speech" && isTamil && shouldRestartChat && chatRecRef.current !== null) {
-          try { const r2 = startChatRec(); chatRecRef.current = r2; } catch(_) {}
+          try { const r2 = startChatRec(); chatRecRef.current = r2; } catch (_) {}
           return;
         }
         if (e.error !== "no-speech") {
