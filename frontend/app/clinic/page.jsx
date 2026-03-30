@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { diagnosePatient, fetchHistory, fetchAnalytics, sendChatMessage, getDiagnosisExplanation, getStoredUser, logout } from "@/services/api";
+import { diagnosePatient, fetchHistory, fetchAnalytics, clearHistory, sendChatMessage, getDiagnosisExplanation, getStoredUser, logout } from "@/services/api";
 import { t, languages } from "@/lib/i18n";
 
 
@@ -18,6 +18,18 @@ const TEXT = "#f2f2f7";
 const TEXT2 = "rgba(242,242,247,0.55)";
 const TEXT3 = "rgba(242,242,247,0.3)";
 
+// Fix Windows-1252 mojibake in dosage/duration strings from backend
+// e.g. "3â€"5 days" becomes "3–5 days"
+const cleanText = (s) => {
+  if (!s || typeof s !== "string") return s;
+  return s
+    .replace(/â€"/g, "\u2013")
+    .replace(/â€"/g, "\u2014")
+    .replace(/â€™/g, "\u2019")
+    .replace(/â€œ/g, "\u201C")
+    .replace(/(\u00e2\u0080\u0093)/g, "\u2013")
+    .replace(/(\u00e2\u0080\u0094)/g, "\u2014");
+};
 
 
 const injectCSS = `
@@ -234,7 +246,7 @@ function AppInner() {
   const [tab, setTabState] = useState("diagnose");
   const [isMobile, setIsMobile] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [lang, setLangState] = useState("en");
+  const [lang, setLangState] = useState("en"); // always start as English
   const [currentUser, setCurrentUser] = useState(null);
   const [traceOpen, setTraceOpen] = useState(false);
   const [backendOnline, setBackendOnline] = useState(null);
@@ -262,12 +274,13 @@ function AppInner() {
     const urlLang = searchParams.get("lang");
     if (urlTab && VALID_TABS.includes(urlTab)) setTabState(urlTab);
     if (urlLang && VALID_LANGS.includes(urlLang)) {
+      // Only restore language from URL param (user explicitly chose it)
       setLangState(urlLang);
       localStorage.setItem("lang", urlLang);
     } else {
-      // Fallback: read from localStorage, then default to 'en'
-      const saved = localStorage.getItem("lang");
-      if (saved && VALID_LANGS.includes(saved)) setLangState(saved);
+      // Only restore from localStorage if it was set in THIS session (not stale from previous)
+      // Default is always 'en' — only override if URL param says otherwise
+      localStorage.setItem("lang", "en");
     }
     setCurrentUser(getStoredUser());
     const checkMobile = () => setIsMobile(window.innerWidth < 768);
@@ -296,6 +309,7 @@ function AppInner() {
 
   const [patientHistory, setPatientHistory] = useState([]);
   const [analyticsData, setAnalyticsData] = useState(null);
+  const [clearingHistory, setClearingHistory] = useState(false);
 
   const [messages, setMessages] = useState([
     { role: "ai", content: "Hello! I'm your AI Medical Assistant 🩺\n\nI can help you with:\n• **Disease information** and symptoms\n• **Medication** guidance and dosages\n• **Lifestyle** recommendations\n• **Emergency** triage advice\n\nWhat would you like to know today?" }
@@ -1658,12 +1672,34 @@ function AppInner() {
               ) : (
                 <>
                   <div className="glass" style={{ overflow: "hidden", marginBottom: 16 }}>
-                    <div style={{ padding: "14px 18px", borderBottom: `1px solid ${BORDER}`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <div style={{ padding: "14px 18px", borderBottom: `1px solid ${BORDER}`, display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 8 }}>
                       <span style={{ fontSize: 13.5, fontWeight: 600 }}>{filteredHistory.length} Consultation{filteredHistory.length !== 1 ? "s" : ""}</span>
-                      <div style={{ display: "flex", gap: 5 }}>
-                        {["All","HIGH","MODERATE","LOW"].map(f => (
-                          <button key={f} className={`ntab ${histFilter===f?"on":""}`} onClick={() => setHistFilter(f)}>{f}</button>
-                        ))}
+                      <div style={{ display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap" }}>
+                        <div style={{ display: "flex", gap: 5 }}>
+                          {["All","HIGH","MODERATE","LOW"].map(f => (
+                            <button key={f} className={`ntab ${histFilter===f?"on":""}`} onClick={() => setHistFilter(f)}>{f}</button>
+                          ))}
+                        </div>
+                        {patientHistory.length > 0 && (
+                          <button
+                            onClick={async () => {
+                              if (!confirm("Clear all your consultation history? This cannot be undone.")) return;
+                              setClearingHistory(true);
+                              try {
+                                await clearHistory();
+                                setPatientHistory([]);
+                                setSelHistory(null);
+                                fetchAnalytics().then(setAnalyticsData).catch(console.error);
+                              } catch (e) { alert("Failed to clear history. Please try again."); }
+                              finally { setClearingHistory(false); }
+                            }}
+                            disabled={clearingHistory}
+                            style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "5px 12px", borderRadius: 8, border: "1px solid rgba(255,69,58,0.3)", background: "rgba(255,69,58,0.07)", color: "rgba(255,69,58,0.85)", fontSize: 12, fontWeight: 600, cursor: clearingHistory ? "not-allowed" : "pointer", fontFamily: "inherit", transition: "all 0.2s", opacity: clearingHistory ? 0.6 : 1 }}
+                          >
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+                            {clearingHistory ? "Clearing..." : "Clear History"}
+                          </button>
+                        )}
                       </div>
                     </div>
                     <div style={{ padding: "8px 10px" }}>
@@ -1707,7 +1743,7 @@ function AppInner() {
                         </div>
                       </div>
                       <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 11, marginBottom: 14 }}>
-                        {[["💊 Medication", selHistory.drug],["📏 Dosage", selHistory.dosage],["⏱️ Duration", selHistory.duration]].map(([l,v],i) => (
+                        {[["💊 Medication", cleanText(selHistory.drug)],["📏 Dosage", cleanText(selHistory.dosage)],["⏱️ Duration", cleanText(selHistory.duration)]].map(([l,v],i) => (
                           <div key={i} style={{ padding: "14px 16px", borderRadius: 13, background: SURFACE, border: `1px solid ${BORDER}` }}>
                             <div style={{ fontSize: 10.5, color: TEXT3, letterSpacing: "0.04em", marginBottom: 7 }}>{l}</div>
                             <div style={{ fontSize: 13.5, fontWeight: 700, color: ACCENT }}>{v || "N/A"}</div>
@@ -1749,9 +1785,9 @@ function AppInner() {
 
               <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 13, marginBottom: 18 }}>
                 {[
-                  [analyticsData?.totalConsultations ?? patientHistory.length ?? "...", "Total Consultations", "🩺", analyticsData?.totalConsultations ? `${patientHistory.length} records` : "Live from DB"],
-                  [analyticsData?.triage?.find(t => t.level === "HIGH")?.count ?? "...", "High Risk Cases", "🚨", "Real-time triage data"],
-                  [analyticsData?.diseases?.length ? `${analyticsData.diseases.length} types` : "...", "Disease Types", "🎯", "Tracked from records"],
+                  [analyticsData?.totalConsultations ?? patientHistory.length, "My Consultations", "🩺", "Your personal records"],
+                  [analyticsData?.triage?.find(t => t.level === "HIGH")?.count ?? 0, "High Risk Cases", "🚨", "From your history"],
+                  [analyticsData?.diseases?.length ? `${analyticsData.diseases.length} types` : "–", "Disease Types", "🎯", "Your tracked conditions"],
                   ["10/10", "Agents Active", "🤖", "100% uptime"],
                 ].map(([v,l,ic,t],i) => (
                   <div key={i} className="glass" style={{ padding: 18, animation: `fadeUp 0.3s ease ${i*0.07}s both` }}>

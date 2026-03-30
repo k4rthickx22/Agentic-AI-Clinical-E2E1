@@ -87,6 +87,11 @@ export const fetchAnalytics = async () => {
   return response.data;
 };
 
+export const clearHistory = async () => {
+  const response = await axios.delete(`${API_URL}/history`, { headers: authHeaders() });
+  return response.data;
+};
+
 export const sendChatMessage = async (
   message: string,
   history: Array<{ role: string; content: string }>,

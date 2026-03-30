@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { getMe, updateProfile, getUserActivity, logout, getStoredUser } from "@/services/api";
+import { getMe, updateProfile, getUserActivity, logout, getStoredUser, clearHistory } from "@/services/api";
 import { t } from "@/lib/i18n";
 
 const ACCENT = "#3b7eff";
@@ -70,9 +70,8 @@ const IconCheck = ({ size = 16, color = SUCCESS }) => (
 
 export default function ProfilePage() {
   const router = useRouter();
-  const [lang] = useState(() =>
-    typeof window !== "undefined" ? localStorage.getItem("lang") || "en" : "en"
-  );
+  // Always defaulting to English; only honour a lang param from URL if present
+  const [lang] = useState("en");
   const [user, setUser] = useState(null);
   const [activity, setActivity] = useState([]);
   const [editing, setEditing] = useState(false);
@@ -80,6 +79,7 @@ export default function ProfilePage() {
   const [saving, setSaving] = useState(false);
   const [loadingActivity, setLoadingActivity] = useState(true);
   const [saveMsg, setSaveMsg] = useState("");
+  const [clearingActivity, setClearingActivity] = useState(false);
 
   useEffect(() => {
     const stored = getStoredUser();
@@ -238,11 +238,32 @@ export default function ProfilePage() {
 
           {/* Recent activity */}
           <div className="glass" style={{ overflow: "hidden", animation: "fadeUp 0.4s ease 0.1s both" }}>
-            <div style={{ padding: "16px 22px", borderBottom: `1px solid ${BORDER}`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <div style={{ padding: "16px 22px", borderBottom: `1px solid ${BORDER}`, display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 8 }}>
               <div style={{ fontSize: 14, fontWeight: 700, display: "flex", alignItems: "center", gap: 8 }}>
                 <IconActivity color={ACCENT} /> {t(lang, "recentActivity")}
               </div>
-              <div style={{ fontSize: 12, color: TEXT3 }}>{activity.length} {lang === "ta" ? "பதிவுகள்" : lang === "hi" ? "रिकॉर्ड" : "records"}</div>
+              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                <div style={{ fontSize: 12, color: TEXT3 }}>{activity.length} {lang === "ta" ? "பதிவுகள்" : lang === "hi" ? "रिकॉर्ड" : "records"}</div>
+                {activity.length > 0 && (
+                  <button
+                    onClick={async () => {
+                      if (!confirm("Clear all your consultation history? This cannot be undone.")) return;
+                      setClearingActivity(true);
+                      try {
+                        await clearHistory();
+                        setActivity([]);
+                      } catch { alert("Failed to clear history."); }
+                      finally { setClearingActivity(false); }
+                    }}
+                    disabled={clearingActivity}
+                    className="btn btn-danger"
+                    style={{ fontSize: 11.5, padding: "5px 12px", display: "inline-flex", alignItems: "center", gap: 5, opacity: clearingActivity ? 0.6 : 1, cursor: clearingActivity ? "not-allowed" : "pointer" }}
+                  >
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+                    {clearingActivity ? "Clearing..." : (lang === "ta" ? "வரலாற்றை அழி" : lang === "hi" ? "इतिहास साफ़ करें" : "Clear History")}
+                  </button>
+                )}
+              </div>
             </div>
             <div style={{ padding: 12 }}>
               {loadingActivity ? (

@@ -1,6 +1,6 @@
-﻿from fastapi import APIRouter, Response
+from fastapi import APIRouter, Response
 from orchestrator.clinical_orchestrator import ClinicalOrchestrator
-from services.db_service import save_consultation, get_user_consultations, get_consultations, get_analytics
+from services.db_service import save_consultation, get_user_consultations, get_consultations, get_analytics, get_user_analytics, delete_user_history
 from pydantic import BaseModel
 import os
 from dotenv import load_dotenv
@@ -94,8 +94,38 @@ def history(request: Request):
 
 
 @router.get("/analytics")
-def analytics():
+def analytics(request: Request):
+    """Return analytics — scoped to the logged-in user when authenticated."""
+    auth_header = request.headers.get("Authorization", "")
+    user_id = None
+    if auth_header.startswith("Bearer "):
+        try:
+            from auth.auth_handler import get_current_user_id_from_token
+            user_id = get_current_user_id_from_token(auth_header.replace("Bearer ", ""))
+        except Exception:
+            user_id = None
+
+    if user_id:
+        return get_user_analytics(user_id)
     return get_analytics()
+
+
+@router.delete("/history")
+def clear_history(request: Request):
+    """Delete all consultation records for the authenticated user."""
+    auth_header = request.headers.get("Authorization", "")
+    if not auth_header.startswith("Bearer "):
+        from fastapi import HTTPException
+        raise HTTPException(status_code=401, detail="Authentication required")
+    try:
+        from auth.auth_handler import get_current_user_id_from_token
+        user_id = get_current_user_id_from_token(auth_header.replace("Bearer ", ""))
+    except Exception:
+        from fastapi import HTTPException
+        raise HTTPException(status_code=401, detail="Invalid token")
+
+    deleted = delete_user_history(user_id)
+    return {"deleted": deleted, "message": f"Cleared {deleted} consultation(s) successfully"}
 
 
 class ChatRequest(BaseModel):
