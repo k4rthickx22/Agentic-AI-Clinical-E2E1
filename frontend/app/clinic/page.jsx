@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useRef, useEffect, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { diagnosePatient, fetchHistory, fetchAnalytics, sendChatMessage, getDiagnosisExplanation, getStoredUser, logout } from "@/services/api";
 import { t, languages } from "@/lib/i18n";
 
@@ -224,27 +224,55 @@ const ChatMessage = ({ content }) => {
   );
 };
 
-export default function App() {
+// ── Inner component that uses useSearchParams (must be inside Suspense) ──
+function AppInner() {
   const router = useRouter();
-  const [tab, setTab] = useState("diagnose");
+  const searchParams = useSearchParams();
+  const VALID_TABS = ["diagnose", "chat", "history", "analytics"];
+  const VALID_LANGS = ["en", "ta", "hi"];
+
+  const [tab, setTabState] = useState("diagnose");
   const [isMobile, setIsMobile] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  // ── Fix hydration: don't read localStorage on server ──────────
-  const [lang, setLang] = useState("en");
+  const [lang, setLangState] = useState("en");
   const [currentUser, setCurrentUser] = useState(null);
   const [traceOpen, setTraceOpen] = useState(false);
-  const [backendOnline, setBackendOnline] = useState(null); // null=checking, true=ok, false=offline
-  const [speakingField, setSpeakingField] = useState(null); // TTS state — null or field id string
+  const [backendOnline, setBackendOnline] = useState(null);
+  const [speakingField, setSpeakingField] = useState(null);
+
+  // ── Helpers: change tab/lang and update URL ──────────────────
+  const setTab = (newTab) => {
+    setTabState(newTab);
+    const params = new URLSearchParams(window.location.search);
+    params.set("tab", newTab);
+    router.replace(`/clinic?${params.toString()}`, { scroll: false });
+  };
+
+  const setLang = (newLang) => {
+    setLangState(newLang);
+    localStorage.setItem("lang", newLang);
+    const params = new URLSearchParams(window.location.search);
+    params.set("lang", newLang);
+    router.replace(`/clinic?${params.toString()}`, { scroll: false });
+  };
 
   useEffect(() => {
-    // Always default to English on page load
-    setLang("en");
-    localStorage.setItem("lang", "en");
+    // Read tab and lang from URL on mount (enables refresh to restore state)
+    const urlTab = searchParams.get("tab");
+    const urlLang = searchParams.get("lang");
+    if (urlTab && VALID_TABS.includes(urlTab)) setTabState(urlTab);
+    if (urlLang && VALID_LANGS.includes(urlLang)) {
+      setLangState(urlLang);
+      localStorage.setItem("lang", urlLang);
+    } else {
+      // Fallback: read from localStorage, then default to 'en'
+      const saved = localStorage.getItem("lang");
+      if (saved && VALID_LANGS.includes(saved)) setLangState(saved);
+    }
     setCurrentUser(getStoredUser());
     const checkMobile = () => setIsMobile(window.innerWidth < 768);
     checkMobile();
     window.addEventListener("resize", checkMobile);
-    // ── Backend health check ──────────────────────────────────────
     fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000"}/api/health`)
       .then(r => r.ok ? r.json() : Promise.reject())
       .then(d => setBackendOnline(d.status === "ok"))
@@ -455,104 +483,149 @@ export default function App() {
   // ── Voice recognition – shared lang codes ───────────────────
   const LANG_CODES = { en: "en-US", ta: "ta-IN", hi: "hi-IN" };
 
-  // ── Diagnosis voice: auto-stops after 2.5 s of silence and auto-submits ─
+  // ── Diagnosis voice ──────────────────────────────────────────
+  // Tamil uses non-continuous mode (restart-on-end) for mobile compatibility.
+  // Other languages use continuous mode with 2.5 s silence auto-stop.
   const toggleListen = () => {
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SR) { alert("Voice recognition not supported. Please use Chrome or Edge."); return; }
     if (listening) {
       if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
       recRef.current?.stop();
+      recRef.current = null;
       setListening(false);
       return;
     }
     diagTranscriptRef.current = "";
-    const rec = new SR();
-    rec.continuous = true;
-    rec.interimResults = true;
-    rec.maxAlternatives = 1;
-    rec.lang = LANG_CODES[lang] || "en-US";
-    rec.onresult = e => {
-      // Accumulate all results (interim + final) into one string
-      let full = "";
-      for (let i = 0; i < e.results.length; i++) {
-        full += e.results[i][0].transcript + (e.results[i].isFinal ? " " : "");
-      }
-      diagTranscriptRef.current = full.trim();
-      setSymptoms(full.trim());
-      // Reset silence timer on every new speech result — auto-stop after 2.5 s
-      if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
-      silenceTimerRef.current = setTimeout(() => {
-        recRef.current?.stop(); // triggers onend → auto-submit
-      }, 2500);
+    const isTamil = lang === "ta";
+    let shouldRestart = true; // used for Tamil restart loop
+
+    const startRec = () => {
+      const rec = new SR();
+      rec.continuous = !isTamil; // Tamil: non-continuous (mobile fix)
+      rec.interimResults = true;
+      rec.maxAlternatives = 1;
+      rec.lang = LANG_CODES[lang] || "en-US";
+      rec.onresult = e => {
+        let full = "";
+        for (let i = 0; i < e.results.length; i++) {
+          full += e.results[i][0].transcript + (e.results[i].isFinal ? " " : "");
+        }
+        const combined = (diagTranscriptRef.current + " " + full).trim();
+        diagTranscriptRef.current = combined;
+        setSymptoms(combined);
+        if (!isTamil) {
+          if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
+          silenceTimerRef.current = setTimeout(() => { recRef.current?.stop(); }, 2500);
+        }
+      };
+      rec.onend = () => {
+        if (isTamil) {
+          // Tamil: restart unless user clicked stop
+          if (shouldRestart && recRef.current !== null) {
+            try { const r2 = startRec(); recRef.current = r2; } catch(_) {}
+          } else {
+            setListening(false);
+            const captured = diagTranscriptRef.current.trim();
+            if (captured) { setSymptoms(captured); setTimeout(() => diagnose(captured), 300); }
+          }
+        } else {
+          if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
+          setListening(false);
+          const captured = diagTranscriptRef.current.trim();
+          if (captured) { setSymptoms(captured); setTimeout(() => diagnose(captured), 300); }
+        }
+      };
+      rec.onerror = (e) => {
+        if (e.error === "no-speech" && isTamil && shouldRestart && recRef.current !== null) {
+          // Restart on no-speech for Tamil
+          try { const r2 = startRec(); recRef.current = r2; } catch(_) {}
+          return;
+        }
+        if (e.error !== "no-speech") {
+          if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
+          shouldRestart = false;
+          setListening(false);
+        }
+      };
+      rec.start();
+      return rec;
     };
-    rec.onend = () => {
-      if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
-      setListening(false);
-      // Auto-submit: pass captured text directly to diagnose (avoids stale closure)
-      const captured = diagTranscriptRef.current.trim();
-      if (captured) {
-        setSymptoms(captured);
-        setTimeout(() => diagnose(captured), 300);
-      }
-    };
-    rec.onerror = (e) => {
-      if (e.error !== "no-speech") {
-        if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
-        setListening(false);
-      }
-    };
+
+    shouldRestart = true;
+    const rec = startRec();
     recRef.current = rec;
-    rec.start();
     setListening(true);
   };
 
-  // ── Chat voice: auto-stops after 2.5 s of silence and auto-sends ────────
+  // ── Chat voice: non-continuous restart for Tamil, silence-stop for others ──
   const toggleChatListen = () => {
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SR) { alert("Voice recognition not supported. Please use Chrome or Edge."); return; }
     if (chatListening) {
       if (chatSilenceTimerRef.current) clearTimeout(chatSilenceTimerRef.current);
       chatRecRef.current?.stop();
+      chatRecRef.current = null;
       setChatListening(false);
       return;
     }
     chatTranscriptRef.current = "";
-    const rec = new SR();
-    rec.continuous = true;
-    rec.interimResults = true;
-    rec.maxAlternatives = 1;
-    rec.lang = LANG_CODES[lang] || "en-US";
-    rec.onresult = e => {
-      let full = "";
-      for (let i = 0; i < e.results.length; i++) {
-        full += e.results[i][0].transcript + (e.results[i].isFinal ? " " : "");
-      }
-      chatTranscriptRef.current = full.trim();
-      setChatInput(full.trim());
-      // Reset silence timer
-      if (chatSilenceTimerRef.current) clearTimeout(chatSilenceTimerRef.current);
-      chatSilenceTimerRef.current = setTimeout(() => {
-        chatRecRef.current?.stop();
-      }, 2500);
+    const isTamil = lang === "ta";
+    let shouldRestartChat = true;
+
+    const startChatRec = () => {
+      const rec = new SR();
+      rec.continuous = !isTamil;
+      rec.interimResults = true;
+      rec.maxAlternatives = 1;
+      rec.lang = LANG_CODES[lang] || "en-US";
+      rec.onresult = e => {
+        let full = "";
+        for (let i = 0; i < e.results.length; i++) {
+          full += e.results[i][0].transcript + (e.results[i].isFinal ? " " : "");
+        }
+        const combined = (chatTranscriptRef.current + " " + full).trim();
+        chatTranscriptRef.current = combined;
+        setChatInput(combined);
+        if (!isTamil) {
+          if (chatSilenceTimerRef.current) clearTimeout(chatSilenceTimerRef.current);
+          chatSilenceTimerRef.current = setTimeout(() => { chatRecRef.current?.stop(); }, 2500);
+        }
+      };
+      rec.onend = () => {
+        if (isTamil) {
+          if (shouldRestartChat && chatRecRef.current !== null) {
+            try { const r2 = startChatRec(); chatRecRef.current = r2; } catch(_) {}
+          } else {
+            setChatListening(false);
+            const captured = chatTranscriptRef.current.trim();
+            if (captured) { setChatInput(""); chatTranscriptRef.current = ""; setTimeout(() => sendChatWithMsg(captured), 200); }
+          }
+        } else {
+          if (chatSilenceTimerRef.current) clearTimeout(chatSilenceTimerRef.current);
+          setChatListening(false);
+          const captured = chatTranscriptRef.current.trim();
+          if (captured) { setChatInput(""); chatTranscriptRef.current = ""; setTimeout(() => sendChatWithMsg(captured), 200); }
+        }
+      };
+      rec.onerror = (e) => {
+        if (e.error === "no-speech" && isTamil && shouldRestartChat && chatRecRef.current !== null) {
+          try { const r2 = startChatRec(); chatRecRef.current = r2; } catch(_) {}
+          return;
+        }
+        if (e.error !== "no-speech") {
+          if (chatSilenceTimerRef.current) clearTimeout(chatSilenceTimerRef.current);
+          shouldRestartChat = false;
+          setChatListening(false);
+        }
+      };
+      rec.start();
+      return rec;
     };
-    rec.onend = () => {
-      if (chatSilenceTimerRef.current) clearTimeout(chatSilenceTimerRef.current);
-      setChatListening(false);
-      const captured = chatTranscriptRef.current.trim();
-      if (captured) {
-        setChatInput("");
-        chatTranscriptRef.current = "";
-        setTimeout(() => sendChatWithMsg(captured), 200);
-      }
-    };
-    rec.onerror = (e) => {
-      if (e.error !== "no-speech") {
-        if (chatSilenceTimerRef.current) clearTimeout(chatSilenceTimerRef.current);
-        setChatListening(false);
-      }
-    };
+
+    shouldRestartChat = true;
+    const rec = startChatRec();
     chatRecRef.current = rec;
-    rec.start();
     setChatListening(true);
   };
 
@@ -732,22 +805,74 @@ export default function App() {
         doc.line(14, y, W - 14, y); y += 6;
         doc.setTextColor(30, 30, 30);
       };
+      // ── Load Unicode font for Tamil/Hindi ─────────────────────────────
+      // Noto Sans fonts support Tamil (U+0B80-0BFF) and Devanagari (U+0900-097F)
+      let unicodeFontName = "helvetica";
+      if (lang === "ta" || lang === "hi") {
+        try {
+          const fontFile = lang === "ta" ? "/NotoSansTamil-Regular.ttf" : "/NotoSansDevanagari-Regular.ttf";
+          const fontKey = lang === "ta" ? "NotoSansTamil" : "NotoSansDevanagari";
+          const fontRes = await fetch(fontFile);
+          if (fontRes.ok) {
+            const fontBuffer = await fontRes.arrayBuffer();
+            const fontUint8 = new Uint8Array(fontBuffer);
+            let binary = "";
+            for (let i = 0; i < fontUint8.length; i++) binary += String.fromCharCode(fontUint8[i]);
+            const fontB64 = btoa(binary);
+            doc.addFileToVFS(`${fontKey}.ttf`, fontB64);
+            doc.addFont(`${fontKey}.ttf`, fontKey, "normal");
+            unicodeFontName = fontKey;
+          }
+        } catch (e) { console.warn("Font load failed, using helvetica:", e); }
+      }
+
+      // ── Text cleaner: fix HTML entities and special chars ─────────────
+      const norm = (s) => {
+        if (s === null || s === undefined) return "N/A";
+        return String(s)
+          .replace(/\u2019|\u2018/g, "'")
+          .replace(/\u201C|\u201D/g, '"')
+          .replace(/\u2022/g, "-")
+          .replace(/\u2013/g, "-")
+          .replace(/\u2014/g, "--")
+          .replace(/&amp;/g, "&")
+          .replace(/&lt;/g, "<")
+          .replace(/&gt;/g, ">")
+          .trim() || "N/A";
+      };
+
+      // ── font helpers ──────────────────────────────────────────────────
+      const setLatinFont = (style = "normal") => doc.setFont("helvetica", style);
+      const setContentFont = () => doc.setFont(unicodeFontName, "normal");
+
       const row = (label, value, indent = 14) => {
         if (y > 270) { doc.addPage(); y = 16; }
-        doc.setFont("helvetica", "bold"); doc.setFontSize(9); doc.setTextColor(80, 80, 120);
-        doc.text(label + ":", indent, y);
-        doc.setFont("helvetica", "normal"); doc.setTextColor(20, 20, 20);
-        const lines = doc.splitTextToSize(String(value || "N/A"), W - indent - 60);
-        doc.text(lines, indent + 55, y);
-        y += lines.length * 5.5 + 1;
+        setLatinFont("bold"); doc.setFontSize(9); doc.setTextColor(80, 80, 120);
+        doc.text(String(label) + ":", indent, y);
+        setContentFont(); doc.setFontSize(9); doc.setTextColor(20, 20, 20);
+        const vlines = doc.splitTextToSize(norm(value), W - indent - 60);
+        doc.text(vlines, indent + 55, y);
+        y += vlines.length * 5.5 + 2;
       };
       const para = (text, indent = 14) => {
         if (y > 270) { doc.addPage(); y = 16; }
-        doc.setFont("helvetica", "normal"); doc.setFontSize(9); doc.setTextColor(40, 40, 40);
-        const lines = doc.splitTextToSize(String(text || ""), W - indent - 14);
-        lines.forEach(l => { if (y > 270) { doc.addPage(); y = 16; } doc.text(l, indent, y); y += 5.5; });
-        y += 2;
+        const safeText = norm(text);
+        if (!safeText || safeText === "N/A") { y += 2; return; }
+        setContentFont(); doc.setFontSize(9); doc.setTextColor(40, 40, 40);
+        const plines = doc.splitTextToSize(safeText, W - indent - 14);
+        plines.forEach(l => { if (y > 270) { doc.addPage(); y = 16; } doc.text(l, indent, y); y += 5.5; });
+        y += 3;
       };
+
+      // Language indicator banner (only for non-English)
+      if (lang === "ta" || lang === "hi") {
+        doc.setFillColor(235, 245, 255);
+        doc.roundedRect(14, y - 2, W - 28, 12, 2, 2, "F");
+        setLatinFont("italic"); doc.setFontSize(8); doc.setTextColor(60, 80, 160);
+        doc.text(lang === "ta" ? "Report language: Tamil | வரவேற்கிறோம்" : "Report language: Hindi | हिंदी में रिपोर्ट", 16, y + 5);
+        doc.setTextColor(30, 30, 30);
+        y += 18;
+      }
 
       // 1. Patient
       section("Patient Information");
@@ -910,7 +1035,7 @@ export default function App() {
             ["chat", <svg key="c" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>, t(lang, "chat")],
             ["history", <svg key="h" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>, t(lang, "history")],
             ["analytics", <svg key="a" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>, t(lang, "analytics")],
-          ] ).map(([id, icon, label]) => (
+          ]).map(([id, icon, label]) => (
             <button key={id} className={`slink ${tab===id?"active":""}`} onClick={() => { setTab(id); setSidebarOpen(false); }}>
               <span style={{ display: "flex", alignItems: "center", flexShrink: 0 }}>{icon}</span>{label}
             </button>
@@ -927,7 +1052,7 @@ export default function App() {
             <div style={{ fontSize: 10, color: TEXT3, fontWeight: 600, letterSpacing: "0.05em", padding: "0 13px", marginBottom: 7 }}>LANGUAGE</div>
             <div style={{ display: "flex", gap: 4, padding: "0 6px", flexWrap: "wrap" }}>
               {languages.map(l => (
-                <button key={l.code} onClick={() => { setLang(l.code); localStorage.setItem("lang", l.code); }}
+                <button key={l.code} onClick={() => setLang(l.code)}
                   style={{ padding: "5px 9px", borderRadius: 7, border: lang === l.code ? `1px solid ${ACCENT}` : `1px solid ${BORDER}`, background: lang === l.code ? `rgba(59,126,255,0.12)` : "transparent", color: lang === l.code ? ACCENT : TEXT2, fontSize: 11.5, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", transition: "all 0.15s" }}>
                   {l.label}
                 </button>
@@ -1010,7 +1135,16 @@ export default function App() {
                     </div>
 
                     <div>
-                      <label style={{ fontSize: 11, color: TEXT2, display: "block", marginBottom: 5, letterSpacing: "0.04em" }}>{t(lang, "symptoms")}</label>
+                      <label style={{ fontSize: 11, color: TEXT2, display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 5, letterSpacing: "0.04em" }}>
+                        <span>{t(lang, "symptoms")}</span>
+                        {symptoms.length > 0 && (
+                          <button onClick={() => { setSymptoms(""); if (listening) { recRef.current?.stop(); recRef.current = null; setListening(false); } }}
+                            style={{ background: "rgba(255,69,58,0.08)", border: "1px solid rgba(255,69,58,0.22)", borderRadius: 8, color: "rgba(255,69,58,0.8)", fontSize: 11, fontWeight: 600, padding: "2px 9px", cursor: "pointer", fontFamily: "inherit", display: "flex", alignItems: "center", gap: 4, transition: "all 0.15s" }}
+                            title="Clear symptoms">
+                            ✕ Clear
+                          </button>
+                        )}
+                      </label>
                       <div style={{ position: "relative" }}>
                         <textarea className="field" rows={4} placeholder={t(lang, "symptomsPlaceholder")}
                           value={symptoms} onChange={e => setSymptoms(e.target.value)}
@@ -1033,11 +1167,17 @@ export default function App() {
 
                     <div className="pair-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
                       <div>
-                        <label style={{ fontSize: 11, color: TEXT2, display: "block", marginBottom: 5, letterSpacing: "0.04em" }}>{t(lang, "conditions")} <span style={{ opacity: 0.4 }}>({lang === "ta" ? "விருப்பம்" : lang === "hi" ? "वैकल्पिक" : "optional"})</span></label>
+                        <label style={{ fontSize: 11, color: TEXT2, display: "flex", alignItems: "center", gap: 4, marginBottom: 5, letterSpacing: "0.04em", flexWrap: "nowrap", overflow: "hidden" }}>
+                          <span style={{ flexShrink: 0 }}>{t(lang, "conditions")}</span>
+                          <span style={{ opacity: 0.4, fontSize: 10, whiteSpace: "nowrap", flexShrink: 0 }}>({lang === "ta" ? "விரும்பினால்" : lang === "hi" ? "वैकल्पिक" : "optional"})</span>
+                        </label>
                         <input className="field" placeholder={t(lang, "conditionsPlaceholder")} value={conditions} onChange={e => setConditions(e.target.value)} />
                       </div>
                       <div>
-                        <label style={{ fontSize: 11, color: TEXT2, display: "block", marginBottom: 5, letterSpacing: "0.04em" }}>{t(lang, "allergies")} <span style={{ opacity: 0.4 }}>({lang === "ta" ? "விருப்பம்" : lang === "hi" ? "वैकल्पिक" : "optional"})</span></label>
+                        <label style={{ fontSize: 11, color: TEXT2, display: "flex", alignItems: "center", gap: 4, marginBottom: 5, letterSpacing: "0.04em", flexWrap: "nowrap", overflow: "hidden" }}>
+                          <span style={{ flexShrink: 0 }}>{t(lang, "allergies")}</span>
+                          <span style={{ opacity: 0.4, fontSize: 10, whiteSpace: "nowrap", flexShrink: 0 }}>({lang === "ta" ? "விரும்பினால்" : lang === "hi" ? "वैकल्पिक" : "optional"})</span>
+                        </label>
                         <input className="field" placeholder={t(lang, "allergiesPlaceholder")} value={allergies} onChange={e => setAllergies(e.target.value)} />
                       </div>
                     </div>
@@ -1651,5 +1791,14 @@ export default function App() {
         </main>
       </div>
     </>
+  );
+}
+
+// ── Default export wraps AppInner in Suspense (required for useSearchParams) ──
+export default function App() {
+  return (
+    <Suspense fallback={<div style={{ background: "#060912", minHeight: "100vh" }} />}>
+      <AppInner />
+    </Suspense>
   );
 }

@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Depends, status
+﻿from fastapi import APIRouter, HTTPException, Depends, status
 from pydantic import BaseModel, EmailStr
 from datetime import datetime
 from sqlalchemy.orm import Session
@@ -136,3 +136,30 @@ def get_activity(user_id: int = Depends(get_current_user_id), db: Session = Depe
         }
         for c in consultations
     ]
+
+class ForgotPasswordRequest(BaseModel):
+    email: str
+    new_password: str
+
+
+@router.post("/forgot-password")
+def forgot_password(req: ForgotPasswordRequest, db: Session = Depends(get_db)):
+    """Reset password by email. In production, this would require email verification.
+    For now, allows reset if the email exists."""
+    user = db.query(User).filter(User.email == req.email.lower().strip()).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="No account found with this email address.")
+    if len(req.new_password) < 8:
+        raise HTTPException(status_code=400, detail="New password must be at least 8 characters.")
+    
+    user.hashed_password = hash_password(req.new_password)
+    user.last_login = datetime.utcnow()
+    db.commit()
+
+    token = create_access_token({"sub": str(user.id), "email": user.email, "role": user.role})
+    return {
+        "message": "Password reset successfully. You are now logged in.",
+        "access_token": token,
+        "token_type": "bearer",
+        "user": {"id": user.id, "name": user.name, "email": user.email, "role": user.role}
+    }

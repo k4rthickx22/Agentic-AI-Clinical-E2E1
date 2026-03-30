@@ -14,8 +14,8 @@ SECRET_KEY = os.getenv("SECRET_KEY", "ai-clinic-super-secret-key-2026-change-in-
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_HOURS = 24
 
-# sha256_crypt: compatible with all bcrypt/passlib versions, no 72-char limit
-pwd_context = CryptContext(schemes=["sha256_crypt"], deprecated="auto")
+# bcrypt: industry-standard, consistent across all platforms
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 bearer_scheme = HTTPBearer(auto_error=False)
 
 

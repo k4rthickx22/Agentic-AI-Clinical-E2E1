@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Response
+﻿from fastapi import APIRouter, Response
 from orchestrator.clinical_orchestrator import ClinicalOrchestrator
 from services.db_service import save_consultation, get_user_consultations, get_consultations, get_analytics
 from pydantic import BaseModel
@@ -33,10 +33,11 @@ Your role is similar to a knowledgeable personal doctor who:
 • Always responds with compassion and clarity
 
 IMPORTANT RULES:
-1. ALWAYS respond in the SAME LANGUAGE the patient used to ask their question.
-   - If they write in Tamil (தமிழ்), respond fully in Tamil
-   - If they write in Hindi (हिंदी), respond fully in Hindi
-   - If they write in English, respond in English
+1. ALWAYS respond in the language specified by the LANGUAGE TAG provided in the system prompt.
+   - If language=en is set, respond ENTIRELY in English — even if the patient wrote in Tamil or Hindi
+   - If language=ta is set, respond ENTIRELY in Tamil script
+   - If language=hi is set, respond ENTIRELY in Hindi script
+   - The language TAG always overrides the script used in the message
 2. Structure your responses with clear sections using:
    🔍 SUMMARY | 💊 MEDICATION | 🥗 DIET & LIFESTYLE | ⚠️ WHEN TO SEE A DOCTOR
 3. Be specific — give actual drug names, dosages, duration when safe to do so
@@ -116,12 +117,17 @@ def chat(request: ChatRequest):
         system_content += f"\n\nCURRENT PATIENT CONTEXT:\n- Diagnosis: {ctx.get('disease', 'Unknown')}\n- Drug: {ctx.get('drug', 'N/A')}\n- Triage: {ctx.get('triage', 'N/A')}\n- Symptoms: {ctx.get('symptoms', 'N/A')}"
     
     # Language hint
-    lang_hints = {"ta": "IMPORTANT: The patient is using Tamil. Respond ENTIRELY in Tamil script.", "hi": "IMPORTANT: The patient is using Hindi. Respond ENTIRELY in Hindi script.", "en": ""}
+    lang_hints = {
+        "ta": "CRITICAL LANGUAGE RULE: language=ta. You MUST respond ENTIRELY in Tamil script. Never use English, Hindi, or any other language in your response.",
+        "hi": "CRITICAL LANGUAGE RULE: language=hi. You MUST respond ENTIRELY in Hindi (Devanagari script). Never use English, Tamil, or any other language in your response.",
+        "en": "CRITICAL LANGUAGE RULE: language=en. You MUST respond ENTIRELY in ENGLISH. Never use Tamil, Hindi, or any other language regardless of what language the question is in.",
+    }
     lang_hint = lang_hints.get(request.language, "")
-    if lang_hint:
-        system_content = lang_hint + "\n\n" + system_content
+    # lang_hint will be appended at end for highest priority (see below)
 
-    messages = [{"role": "system", "content": system_content}]
+    # Place language rule after system content so it takes highest priority
+    final_system = system_content + "\n\n" + lang_hint if lang_hint else system_content
+    messages = [{"role": "system", "content": final_system}]
     
     for h in request.history:
         role = h.get("role", "user")

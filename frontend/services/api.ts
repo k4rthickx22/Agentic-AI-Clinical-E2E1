@@ -26,6 +26,13 @@ export const loginUser = async (email: string, password: string) => {
   return res.data;
 };
 
+export const forgotPassword = async (email: string, newPassword: string) => {
+  const res = await axios.post(`${API_URL}/auth/forgot-password`, { email, new_password: newPassword });
+  if (res.data.access_token) localStorage.setItem("auth_token", res.data.access_token);
+  if (res.data.user) localStorage.setItem("auth_user", JSON.stringify(res.data.user));
+  return res.data;
+};
+
 export const getMe = async () => {
   const res = await axios.get(`${API_URL}/auth/me`, { headers: authHeaders() });
   return res.data;

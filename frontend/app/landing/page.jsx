@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { loginUser, registerUser } from "@/services/api";
+import { loginUser, registerUser, forgotPassword } from "@/services/api";
 
 const ACCENT = "#3b7eff";
 const SUCCESS = "#30d158";
@@ -254,7 +254,28 @@ export default function LandingPage() {
     }
   };
 
-  const closeModal = () => { setModal(null); setError(""); setSuccess(""); setForm({ name: "", email: "", password: "", confirmPassword: "" }); };
+  const [forgotForm, setForgotForm] = useState({ email: "", newPassword: "", confirmNewPassword: "" });
+
+  const handleForgotPassword = async (e) => {
+    e.preventDefault();
+    setError("");
+    if (!forgotForm.email) { setError("Please enter your email address."); return; }
+    if (!forgotForm.newPassword || forgotForm.newPassword.length < 8) { setError("New password must be at least 8 characters."); return; }
+    if (forgotForm.newPassword !== forgotForm.confirmNewPassword) { setError("Passwords do not match."); return; }
+    setLoading(true);
+    try {
+      await forgotPassword(forgotForm.email, forgotForm.newPassword);
+      setSuccess("Password reset successfully! Taking you to the clinic...");
+      await new Promise(r => setTimeout(r, 800));
+      router.push("/clinic");
+    } catch (err) {
+      setError(err?.response?.data?.detail || "Reset failed. Please check your email address.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const closeModal = () => { setError(""); setSuccess(""); setForm({ name: "", email: "", password: "", confirmPassword: "" }); };
 
   return (
     <>
@@ -421,13 +442,43 @@ export default function LandingPage() {
                       <input className="input" type="password" name="password" placeholder="••••••••" value={form.password} onChange={handleChange} required />
                     </div>
                     <div style={{ textAlign: "right", marginBottom: 20 }}>
-                      <span style={{ fontSize: 13, color: ACCENT, cursor: "pointer" }}>Forgot password?</span>
+                      <span style={{ fontSize: 13, color: ACCENT, cursor: "pointer" }} onClick={() => { setError(""); setSuccess(""); setForgotForm({ email: form.email, newPassword: "", confirmNewPassword: "" }); setModal("forgot"); }}>Forgot password?</span>
                     </div>
                     <button type="submit" className="btn btn-primary btn-full" style={{ height: 48 }} disabled={loading}>
                       {loading ? <div style={{ width: 16, height: 16, border: "2px solid rgba(255,255,255,0.3)", borderTopColor: "white", borderRadius: "50%", animation: "spin 0.7s linear infinite" }} /> : "Sign In →"}
                     </button>
                   </form>
                   <div className="modal-footer">Don't have an account? <span onClick={() => setModal("signup")}>Create one free</span></div>
+                </>
+              ) : modal === "forgot" ? (
+                <>
+                  <div style={{ display: "flex", justifyContent: "center", marginBottom: 14 }}>
+                    <div style={{ width: 56, height: 56, borderRadius: 18, background: "linear-gradient(135deg,#3b7eff,#5e5ce6)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                    </div>
+                  </div>
+                  <div className="modal-title">Reset Password</div>
+                  <div className="modal-sub">Enter your email and choose a new password</div>
+                  {error && <div className="alert alert-error">⚠️ {error}</div>}
+                  {success && <div className="alert alert-success">✅ {success}</div>}
+                  <form onSubmit={handleForgotPassword}>
+                    <div className="input-group">
+                      <label className="input-label">EMAIL ADDRESS</label>
+                      <input className="input" type="email" placeholder="your@email.com" value={forgotForm.email} onChange={e => { setForgotForm({ ...forgotForm, email: e.target.value }); setError(""); }} required />
+                    </div>
+                    <div className="input-group">
+                      <label className="input-label">NEW PASSWORD</label>
+                      <input className="input" type="password" placeholder="Min 8 characters" value={forgotForm.newPassword} onChange={e => { setForgotForm({ ...forgotForm, newPassword: e.target.value }); setError(""); }} required />
+                    </div>
+                    <div className="input-group">
+                      <label className="input-label">CONFIRM NEW PASSWORD</label>
+                      <input className="input" type="password" placeholder="Repeat new password" value={forgotForm.confirmNewPassword} onChange={e => { setForgotForm({ ...forgotForm, confirmNewPassword: e.target.value }); setError(""); }} required />
+                    </div>
+                    <button type="submit" className="btn btn-primary btn-full" style={{ height: 48 }} disabled={loading}>
+                      {loading ? <div style={{ width: 16, height: 16, border: "2px solid rgba(255,255,255,0.3)", borderTopColor: "white", borderRadius: "50%", animation: "spin 0.7s linear infinite" }} /> : "Reset Password & Sign In →"}
+                    </button>
+                  </form>
+                  <div className="modal-footer">Remember your password? <span onClick={() => setModal("login")}>Sign in</span></div>
                 </>
               ) : (
                 <>
