@@ -157,3 +157,27 @@ export const downloadPdfReport = async (reportData: any) => {
   });
   return response.data;
 };
+
+export const correctLastConsultation = async (data: {
+  disease: string;
+  drug: string;
+  dosage?: string;
+  duration?: string;
+  lifestyle?: string[];
+  warnings?: string[];
+  treatment_plan?: string[];
+  when_to_seek_care?: string;
+}) => {
+  try {
+    const response = await axios.patch(
+      `${API_URL}/consultation/correct`,
+      data,
+      { headers: authHeaders() }
+    );
+    return response.data;
+  } catch (err) {
+    // Non-fatal — log and continue
+    console.warn("[correctLastConsultation] Failed to patch DB record:", err);
+    return { updated: false };
+  }
+};

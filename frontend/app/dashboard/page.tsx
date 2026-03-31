@@ -1,6 +1,4 @@
 "use client";
-
-import Navbar from "@/components/layout/navbar";
 import { useState } from "react";
 import { diagnosePatient } from "@/services/api";
 import { motion } from "framer-motion";
@@ -34,8 +32,6 @@ export default function Dashboard() {
   return (
 
     <div className="min-h-screen bg-gradient-to-br from-[#0f172a] via-[#1e3a8a] to-[#7c3aed] text-white overflow-x-hidden">
-
-      <Navbar />
 
       {/* HERO */}
 
@@ -195,4 +191,4 @@ export default function Dashboard() {
 
     </div>
   );
-}
+}

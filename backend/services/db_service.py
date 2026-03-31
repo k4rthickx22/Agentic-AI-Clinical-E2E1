@@ -194,3 +194,43 @@ def delete_user_history(user_id: int) -> int:
         return count
     finally:
         db.close()
+
+
+def update_last_consultation(user_id: int, disease: str, drug: str, dosage: str, duration: str,
+                              lifestyle: list, warnings: list, treatment_plan: list,
+                              when_to_seek_care: str) -> bool:
+    """
+    Overwrite the most-recently saved consultation with corrected Groq-fallback data.
+    Called when the ML model prediction was wrong and Groq returned a better diagnosis.
+    Returns True if a record was updated, False otherwise.
+    """
+    db = SessionLocal()
+    try:
+        record = (
+            db.query(Consultation)
+            .filter(Consultation.user_id == user_id)
+            .order_by(desc(Consultation.created_at))
+            .first()
+        )
+        if not record:
+            return False
+
+        # Update predicted_disease field
+        record.predicted_disease = disease
+
+        # Merge corrected fields into the treatment JSON
+        treatment = dict(record.treatment or {})
+        treatment["predicted_disease"]  = disease
+        treatment["recommended_drug"]   = drug
+        treatment["dosage"]             = dosage
+        treatment["duration"]           = duration
+        treatment["lifestyle"]          = lifestyle
+        treatment["warnings"]           = warnings
+        treatment["treatment_plan"]     = treatment_plan
+        treatment["when_to_seek_care"]  = when_to_seek_care
+        record.treatment = treatment
+
+        db.commit()
+        return True
+    finally:
+        db.close()

@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Response
 from orchestrator.clinical_orchestrator import ClinicalOrchestrator
-from services.db_service import save_consultation, get_user_consultations, get_consultations, get_analytics, get_user_analytics, delete_user_history
+from services.db_service import save_consultation, get_user_consultations, get_consultations, get_analytics, get_user_analytics, delete_user_history, update_last_consultation
 from pydantic import BaseModel
 import os
 from dotenv import load_dotenv
@@ -126,6 +126,49 @@ def clear_history(request: Request):
 
     deleted = delete_user_history(user_id)
     return {"deleted": deleted, "message": f"Cleared {deleted} consultation(s) successfully"}
+
+
+
+class CorrectConsultationRequest(BaseModel):
+    disease: str
+    drug: str
+    dosage: str = "As prescribed"
+    duration: str = "As advised"
+    lifestyle: list = []
+    warnings: list = []
+    treatment_plan: list = []
+    when_to_seek_care: str = ""
+
+
+@router.patch("/consultation/correct")
+def correct_last_consultation(body: CorrectConsultationRequest, request: Request):
+    """
+    Called by the frontend after Groq fallback overrides the ML model prediction.
+    Patches the most-recently saved consultation record with the correct Groq diagnosis
+    so that History and Profile show the same disease the user saw on screen.
+    """
+    auth_header = request.headers.get("Authorization", "")
+    if not auth_header.startswith("Bearer "):
+        # No auth — silently skip (user not logged in, no record to fix)
+        return {"updated": False, "reason": "unauthenticated"}
+    try:
+        from auth.auth_handler import get_current_user_id_from_token
+        user_id = get_current_user_id_from_token(auth_header.replace("Bearer ", ""))
+    except Exception:
+        return {"updated": False, "reason": "invalid_token"}
+
+    updated = update_last_consultation(
+        user_id=user_id,
+        disease=body.disease,
+        drug=body.drug,
+        dosage=body.dosage,
+        duration=body.duration,
+        lifestyle=body.lifestyle,
+        warnings=body.warnings,
+        treatment_plan=body.treatment_plan,
+        when_to_seek_care=body.when_to_seek_care,
+    )
+    return {"updated": updated}
 
 
 class ChatRequest(BaseModel):

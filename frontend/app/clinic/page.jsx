@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { diagnosePatient, fetchHistory, fetchAnalytics, clearHistory, sendChatMessage, getDiagnosisExplanation, getStoredUser, logout } from "@/services/api";
+import { diagnosePatient, fetchHistory, fetchAnalytics, clearHistory, sendChatMessage, getDiagnosisExplanation, getStoredUser, logout, correctLastConsultation } from "@/services/api";
 import { t, languages } from "@/lib/i18n";
 
 
@@ -436,6 +436,22 @@ function AppInner() {
             if (fb.when_to_seek_care) normalized.treatment.when_to_seek_care = fb.when_to_seek_care;
             setGroqFallback(true);
             console.log(`[GrokFallback] ✅ Grok diagnosed: ${fb.disease}`);
+
+            // ── Fix DB record: the /diagnose endpoint already saved the wrong ML prediction.
+            // Patch it now with the correct Groq diagnosis so History & Profile are accurate.
+            correctLastConsultation({
+              disease:          normalized.treatment.predicted_disease,
+              drug:             normalized.treatment.recommended_drug,
+              dosage:           normalized.treatment.dosage,
+              duration:         normalized.treatment.duration,
+              lifestyle:        normalized.treatment.lifestyle,
+              warnings:         normalized.treatment.warnings,
+              treatment_plan:   normalized.treatment.treatment_plan,
+              when_to_seek_care: normalized.treatment.when_to_seek_care,
+            }).then(r => {
+              if (r?.updated) console.log("[GrokFallback] ✅ DB record corrected successfully.");
+              else console.warn("[GrokFallback] ⚠️ DB correction returned no update (user may not be logged in).");
+            });
           }
         } catch (fbErr) {
           console.warn("[GrokFallback] Grok API call failed:", fbErr);
