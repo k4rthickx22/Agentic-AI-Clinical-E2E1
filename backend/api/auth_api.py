@@ -1,5 +1,5 @@
-﻿from fastapi import APIRouter, HTTPException, Depends, status
-from pydantic import BaseModel, EmailStr
+from fastapi import APIRouter, HTTPException, Depends
+from pydantic import BaseModel
 from datetime import datetime
 from sqlalchemy.orm import Session
 

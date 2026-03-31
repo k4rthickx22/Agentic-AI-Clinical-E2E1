@@ -7,7 +7,6 @@ from dotenv import load_dotenv
 try:
     from openai import OpenAI
     from pydantic import BaseModel
-    import pydantic
     HAS_LLM_DEPS = True
 except ImportError:
     HAS_LLM_DEPS = False

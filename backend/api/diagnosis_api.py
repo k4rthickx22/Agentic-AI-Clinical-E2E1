@@ -1,10 +1,9 @@
-from fastapi import APIRouter, Response
+from fastapi import APIRouter, Request
 from orchestrator.clinical_orchestrator import ClinicalOrchestrator
 from services.db_service import save_consultation, get_user_consultations, get_consultations, get_analytics, get_user_analytics, delete_user_history, update_last_consultation
 from pydantic import BaseModel
 import os
 from dotenv import load_dotenv
-from fastapi import Request
 
 try:
     from groq import Groq

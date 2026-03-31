@@ -9,12 +9,10 @@ body {
 
 /* Apple-style gradient background */
 body {
-  background: linear-gradient(
-    135deg,
-    #0f172a,
-    #1e3a8a,
-    #7c3aed
-  );
+  background: linear-gradient(135deg,
+      #0f172a,
+      #1e3a8a,
+      #7c3aed);
   color: white;
 }
 
