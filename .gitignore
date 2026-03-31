@@ -45,3 +45,12 @@ Thumbs.db
 dist/
 build/
 *.egg-info/
+
+# TypeScript incremental build cache
+*.tsbuildinfo
+
+# Backend script pycache
+backend/scripts/__pycache__/
+
+# SQLite database (runtime artifact)
+backend/clinic.db
